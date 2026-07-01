@@ -1,0 +1,16 @@
+# Dependencies / build junk
+node_modules/
+package-lock.json
+
+# nflverse downloads (fetched fresh by the workflow / local refresh)
+*.csv
+*.csv.gz
+*.parquet
+
+# Cowork leftovers / scratch
+code_only.txt
+test_w
+
+# OS
+.DS_Store
+Thumbs.db

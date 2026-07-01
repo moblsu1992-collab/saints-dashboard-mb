@@ -1,0 +1,52 @@
+name: Weekly nflverse data refresh
+
+# Regenerates the play-level data (Tendencies + Field Position tabs) from the
+# latest nflverse play-by-play + participation, then commits it. With GitHub
+# Pages set to "Deploy from a branch" (main / root), the commit auto-redeploys.
+#
+# The aggregate/curated tabs (Team Ratings, League EPA framing, Opponents,
+# Philosophy, Draft) are a maintained baseline and are NOT rebuilt here.
+
+on:
+  schedule:
+    # Wednesdays 12:00 UTC — after Tuesday's official stat corrections settle.
+    - cron: "0 12 * * 3"
+  workflow_dispatch:        # lets you run it on demand from the Actions tab
+
+env:
+  # Bump to 2026 once the 2026 regular season kicks off (Sept 2026).
+  SEASON: "2025"
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download nflverse data
+        run: |
+          set -e
+          base="https://github.com/nflverse/nflverse-data/releases/download"
+          curl -sSL --retry 3 -o pbp.csv.gz "$base/pbp/play_by_play_${SEASON}.csv.gz"
+          curl -sSL --retry 3 -o part.csv    "$base/pbp_participation/pbp_participation_${SEASON}.csv"
+          ls -lh pbp.csv.gz part.csv
+
+      - name: Rebuild play-level data
+        shell: pwsh
+        run: ./build_plays.ps1 -Gz pbp.csv.gz -Part part.csv -OutDir . -Year ([int]$env:SEASON)
+
+      - name: Commit refreshed data
+        run: |
+          rm -f pbp.csv.gz part.csv
+          git config user.name  "nflverse-refresh-bot"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if git diff --staged --quiet; then
+            echo "No data changes this week."
+          else
+            git commit -m "chore: weekly nflverse data refresh ($(date -u +%Y-%m-%d))"
+            git push
+          fi
