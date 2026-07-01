@@ -1,0 +1,2 @@
+# Normalize everything to LF in the repo (keeps CI bash/pwsh happy)
+* text=auto eol=lf
