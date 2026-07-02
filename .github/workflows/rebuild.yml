@@ -2,7 +2,7 @@ name: Weekly nflverse data refresh
 
 # Regenerates the play-level data (Tendencies + Field Position tabs) from the
 # latest nflverse play-by-play + participation, then commits it. With GitHub
-# Pages set to "Deploy from a branch" (main / root), the commit auto-redeploys.
+# Pages set to "Deploy from a branch" (master / root), the commit auto-redeploys.
 #
 # The aggregate/curated tabs (Team Ratings, League EPA framing, Opponents,
 # Philosophy, Draft) are a maintained baseline and are NOT rebuilt here.
