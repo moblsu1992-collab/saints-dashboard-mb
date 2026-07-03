@@ -80,9 +80,20 @@ tr.lg td{background:#fbf6e8 !important;font-weight:700;color:#6a6450}
 .banner{background:linear-gradient(0deg,#fdeee9,#fcf3ef);border:1px solid #f1c4b4;border-left:3px solid #d9794f;color:#8a3417;padding:9px 12px;border-radius:var(--r-sm);font-size:12.5px;margin:10px 0;font-weight:500}
 .staff{font-size:13px;color:var(--muted);margin:3px 0 6px;font-weight:500}
 .oppbtns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
-.oppbtns button{background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer;font-weight:700;font-size:12px;color:var(--text);transition:border-color .15s,background .15s,transform .1s,box-shadow .15s}
+.oppbtns button{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:6px 11px 6px 8px;cursor:pointer;font-weight:700;font-size:12px;color:var(--text);transition:border-color .15s,background .15s,transform .1s,box-shadow .15s}
 .oppbtns button:hover{border-color:var(--gold);box-shadow:var(--sh-1);transform:translateY(-1px)}
 .oppbtns button.on{background:var(--gold);border-color:var(--gold);color:var(--navy);box-shadow:0 2px 8px rgba(212,189,138,.35)}
+.oppbtns .obdiv{flex-basis:100%;height:0;margin:1px 0}
+.oppbtns .oblab{width:100%;font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:2px 0 -2px}
+.tlogo{width:18px;height:18px;object-fit:contain;vertical-align:middle;flex:none}
+.tlogo.sm{width:15px;height:15px}
+.tcell{display:inline-flex;align-items:center;gap:5px}
+.oppbtns button .tlogo{width:16px;height:16px}
+.tchip{display:inline-flex;align-items:center;gap:7px}
+.tchip .tlogo{width:22px;height:22px}
+h2 .tlogo{width:30px;height:30px}
+.sechead .tlogo{width:17px;height:17px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.tcaccent{display:inline-block;width:4px;height:1.05em;border-radius:2px;vertical-align:-2px;margin-right:7px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:780px){.grid2{grid-template-columns:1fr}}
 .sechead{font-weight:700;color:#fff;background:var(--navy2);padding:7px 12px;border-radius:8px;margin:18px 0 10px;font-size:12.5px;letter-spacing:.2px;display:flex;align-items:center;gap:6px}
@@ -317,11 +328,11 @@ function holisticList(){const sw=W.off+W.def+W.st||1;return DATA.ratings.teams.m
 function drawBoard(which){
  curRsub=which;const box=$('#rtbl');
  if(which==='holistic'){const L=holisticList();const mx=Math.max(...L.map(t=>t.h));
-  box.innerHTML=`<table><thead><tr><th>#</th><th class="tl">Team</th><th>Off</th><th>Def</th><th>ST</th><th>Holistic</th><th class="tl">Tier</th></tr></thead><tbody>${L.map((t,i)=>{const[tn,tc]=tier(t.h);return `<tr class="${t.abbr=='NO'?'no':''}"><td>${i+1}</td><td class="tl">${t.team}</td><td style="${heat(t.off,20,90)}">${t.off.toFixed(1)}</td><td style="${heat(t.def,20,90)}">${t.def.toFixed(1)}</td><td style="${heat(t.st,20,90)}">${t.st.toFixed(1)}</td><td><b>${t.h.toFixed(1)}</b></td><td class="tl"><span class="tier" style="background:${tc}">${tn}</span></td></tr>`}).join('')}</tbody></table>`;
+  box.innerHTML=`<table><thead><tr><th>#</th><th class="tl">Team</th><th>Off</th><th>Def</th><th>ST</th><th>Holistic</th><th class="tl">Tier</th></tr></thead><tbody>${L.map((t,i)=>{const[tn,tc]=tier(t.h);return `<tr class="${t.abbr=='NO'?'no':''}"><td>${i+1}</td><td class="tl">${teamCell(t.abbr,t.team)}</td><td style="${heat(t.off,20,90)}">${t.off.toFixed(1)}</td><td style="${heat(t.def,20,90)}">${t.def.toFixed(1)}</td><td style="${heat(t.st,20,90)}">${t.st.toFixed(1)}</td><td><b>${t.h.toFixed(1)}</b></td><td class="tl"><span class="tier" style="background:${tc}">${tn}</span></td></tr>`}).join('')}</tbody></table>`;
  } else {
   const key={off:'offM',def:'defM',st:'stM'}[which];const cols=DATA.ratings['metrics'+{off:'Off',def:'Def',st:'ST'}[which]];
   const teams=[...DATA.ratings.teams].sort((a,b)=>b[which]-a[which]);
-  box.innerHTML=`<table><thead><tr><th class="tl">Team</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>Eff</th></tr></thead><tbody>${teams.map(t=>`<tr class="${t.abbr=='NO'?'no':''}"><td class="tl">${t.team}</td>${cols.map(c=>{const m=t[key][c];const g=m.met===true?'background:#c6efce;color:#006100;font-weight:700':'';return `<td style="${g}">${fmt(m.v)}</td>`}).join('')}<td><b>${t[which].toFixed(1)}</b></td></tr>`).join('')}</tbody></table><p class="note">Green = met the elite benchmark from <i>Think Like a Quarterback</i>. Explosive play shown as a rate (not benchmark-scored).</p>`;
+  box.innerHTML=`<table><thead><tr><th class="tl">Team</th>${cols.map(c=>`<th>${c}</th>`).join('')}<th>Eff</th></tr></thead><tbody>${teams.map(t=>`<tr class="${t.abbr=='NO'?'no':''}"><td class="tl">${teamCell(t.abbr,t.team)}</td>${cols.map(c=>{const m=t[key][c];const g=m.met===true?'background:#c6efce;color:#006100;font-weight:700':'';return `<td style="${g}">${fmt(m.v)}</td>`}).join('')}<td><b>${t[which].toFixed(1)}</b></td></tr>`).join('')}</tbody></table><p class="note">Green = met the elite benchmark from <i>Think Like a Quarterback</i>. Explosive play shown as a rate (not benchmark-scored).</p>`;
  }
 }
 
@@ -470,7 +481,7 @@ function drawMatchup(){
  const offL=allTeamMetricsF('off',ALLF),defL=allTeamMetricsF('def',ALLF);
  const flags=[...flagsFor(offL,defL,A,B),...flagsFor(offL,defL,B,A)].sort((x,y)=>y.sev-x.sev).slice(0,6);
  const flagLi=f=>{const c=f.favor==='o'?'#2e5496':f.favor==='d'?'#2e7d4f':'#8a8f98';return `<li style="border-left:3px solid ${c};padding-left:9px;margin:8px 0;list-style:none">${f.txt}</li>`;};
- out.innerHTML=`<div class="grid2"><div class="card"><div class="sechead o">${teamName(A)} offense › ${teamName(B)} defense</div>${muBars(A,B,offL,defL,A,B)}</div><div class="card"><div class="sechead o">${teamName(B)} offense › ${teamName(A)} defense</div>${muBars(B,A,offL,defL,B,A)}</div></div><div class="card"><div class="sechead">⚑ Situational mismatches</div>${flags.length?`<ul class="keys" style="padding-left:2px">${flags.map(flagLi).join('')}</ul>`:'<p class="note">No extreme mismatches — an even matchup on paper.</p>'}<p class="note">Blue accent = the offense holds that edge · green = the defense. Flags fire on league-rank gaps ≥ ~8 plus directional/down tendencies. All-situations, 2025.</p></div><div class="card"><div class="sechead">Projected game flow</div><p style="font-size:13px;line-height:1.65">${gameFlowText(A,B,offL,defL)}</p></div>`;
+ out.innerHTML=`<div class="grid2"><div class="card" style="border-top:3px solid ${teamColor(A)}"><div class="sechead o">${teamLogo(A)}${teamName(A)} offense › ${teamLogo(B)}${teamName(B)} defense</div>${muBars(A,B,offL,defL,A,B)}</div><div class="card" style="border-top:3px solid ${teamColor(B)}"><div class="sechead o">${teamLogo(B)}${teamName(B)} offense › ${teamLogo(A)}${teamName(A)} defense</div>${muBars(B,A,offL,defL,B,A)}</div></div><div class="card"><div class="sechead">⚑ Situational mismatches</div>${flags.length?`<ul class="keys" style="padding-left:2px">${flags.map(flagLi).join('')}</ul>`:'<p class="note">No extreme mismatches — an even matchup on paper.</p>'}<p class="note">Blue accent = the offense holds that edge · green = the defense. Flags fire on league-rank gaps ≥ ~8 plus directional/down tendencies. All-situations, 2025.</p></div><div class="card"><div class="sechead">Projected game flow</div><p style="font-size:13px;line-height:1.65">${gameFlowText(A,B,offL,defL)}</p></div>`;
 }
 function renderMatchup(root){
  const teams=Object.keys(window.PLAYS||{}).sort();
@@ -512,7 +523,7 @@ function drawTracker(){
  const rel=specs.map(s=>relBar(s,M,league)).join('');
  const detail=TRK.side==='def'?coverageViz(P):personnelViz(P);
  const sc=TRK.side==='def'?'d':'o';
- out.innerHTML=`<div class="grid2"><div class="card"><div class="sechead ${sc}">${teamName(TRK.team)} — ${TRK.side==='def'?'Defense':'Offense'} ${filtNote()}</div><div class="fstatrow">${tiles}</div><div class="fsub">Relative to the league</div>${rel}<p class="note">Marker = this team on the league scale (left→right = low→high); rank shown. ${TRK.side==='def'?'Green = stingier than the league.':'Green = better than the league.'} Pass rate & aDOT are tendencies, shown in blue.</p></div><div class="card"><div class="sechead o">By field zone</div>${trkZoneField(P,TRK.side)}<button class="bigcta" onclick="gotoField('${TRK.team}');return false">Open the interactive ${TRK.team} field chart →</button></div></div><div class="card"><div class="sechead ${sc}">${TRK.side==='def'?'Coverage faced (man/zone & family)':'Personnel groupings'}</div>${detail}</div><div class="grid2"><div class="card"><div class="sechead ${sc}">Run direction, gap & formation${TRK.side==='def'?' faced':''}</div>${runViz(P)}</div><div class="card"><div class="sechead ${sc}">${TRK.side==='def'?'Routes faced':'Passing routes'}</div>${routeViz(P)}</div></div>`;
+ out.innerHTML=`<div class="grid2"><div class="card" style="border-top:3px solid ${teamColor(TRK.team)}"><div class="sechead ${sc}">${teamLogo(TRK.team)}${teamName(TRK.team)} — ${TRK.side==='def'?'Defense':'Offense'} ${filtNote()}</div><div class="fstatrow">${tiles}</div><div class="fsub">Relative to the league</div>${rel}<p class="note">Marker = this team on the league scale (left→right = low→high); rank shown. ${TRK.side==='def'?'Green = stingier than the league.':'Green = better than the league.'} Pass rate & aDOT are tendencies, shown in blue.</p></div><div class="card"><div class="sechead o">By field zone</div>${trkZoneField(P,TRK.side)}<button class="bigcta" onclick="gotoField('${TRK.team}');return false">Open the interactive ${TRK.team} field chart →</button></div></div><div class="card"><div class="sechead ${sc}">${TRK.side==='def'?'Coverage faced (man/zone & family)':'Personnel groupings'}</div>${detail}</div><div class="grid2"><div class="card"><div class="sechead ${sc}">Run direction, gap & formation${TRK.side==='def'?' faced':''}</div>${runViz(P)}</div><div class="card"><div class="sechead ${sc}">${TRK.side==='def'?'Routes faced':'Passing routes'}</div>${routeViz(P)}</div></div>`;
 }
 function drawTend(id){const box=$('#tbody');
  {const sa=DATA.saints;
@@ -929,7 +940,7 @@ function renderOverview(){
   const key=x.top?`<b>${x.side||x.top.side}:</b> ${x.top.k.lab} ${fmt(x.top.k.v)} <span class="rk" style="color:#667">(${x.top.k.z>0?'+':''}${x.top.k.z.toFixed(1)}σ)</span>`:'—';
   const d1=x.rTO-rND, d2=x.rTD-rNO;
   const cell=(d)=>`<td style="color:${d>=6?'#1e7a34':d<=-6?'#a23b3b':'#555'}">${d>0?'+':''}${d}</td>`;
-  return `<tr data-go="${x.o.abbr}" style="cursor:pointer"><td class="tl"><b>${x.o.name}</b>${flags?` <small class="src">⚠ ${flags}</small>`:''}</td><td>${x.h==null?'—':x.h.toFixed(1)}</td><td>${ord(x.rTO)} vs ${ord(rND)}</td>${cell(x.rTO-rND)}<td>${ord(x.rTD)} vs ${ord(rNO)}</td>${cell(x.rTD-rNO)}<td><span class="tier" style="background:${vc}">${vl}</span></td><td class="tl" style="white-space:normal;min-width:240px;font-size:11.5px">${key}</td></tr>`;
+  return `<tr data-go="${x.o.abbr}" style="cursor:pointer"><td class="tl"><span class="tcell">${teamLogo(x.o.abbr,'sm')}<b>${x.o.name}</b></span>${flags?` <small class="src">⚠ ${flags}</small>`:''}</td><td>${x.h==null?'—':x.h.toFixed(1)}</td><td>${ord(x.rTO)} vs ${ord(rND)}</td>${cell(x.rTO-rND)}<td>${ord(x.rTD)} vs ${ord(rNO)}</td>${cell(x.rTD-rNO)}<td><span class="tier" style="background:${vc}">${vl}</span></td><td class="tl" style="white-space:normal;min-width:240px;font-size:11.5px">${key}</td></tr>`;
  }).join('');
  const slateT=`<div class="scroll"><table><thead><tr><th class="tl">Opponent</th><th>Holistic</th><th>Their O vs our D</th><th>O edge</th><th>Their D vs our O</th><th>D edge</th><th>Verdict</th><th class="tl">Biggest tell</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note">Sorted toughest → most favorable. Edge columns = rank gaps (their unit's league rank minus ours; <b>positive favors the Saints</b>, ±6 ≈ even). Verdict averages both. Tell = the most extreme tendency from the auto game-plan keys. <b>Click any row to open that opponent's full card.</b></p>`;
  const guide=[
@@ -962,16 +973,50 @@ let curOpp=null,curOTab='match';
 function renderOpponents(){
  const s=$('#opponents');
  s.innerHTML=`${pageHead('opponents')}<div class="oppbtns" id="obtns"></div><div id="ocard"></div>`;
- const ob=$('#obtns');DATA.opponents.forEach((o,i)=>{const b=document.createElement('button');b.textContent=o.abbr;b.title=o.name;if(i==0)b.classList.add('on');b.onclick=()=>{document.querySelectorAll('#obtns button').forEach(x=>x.classList.remove('on'));b.classList.add('on');curOpp=o;drawOpp();};ob.appendChild(b);});
+ const ob=$('#obtns');
+ const curated=DATA.opponents.map(o=>o.abbr);
+ const rest=Object.keys(NFLNAMES).filter(a=>a!=='NO'&&curated.indexOf(a)<0).sort();
+ const mkBtn=(o,on)=>{const b=document.createElement('button');b.dataset.ab=o.abbr;b.innerHTML=teamLogo(o.abbr)+`<span>${o.abbr}</span>`;b.title=o.name;if(on){b.classList.add('on');paintOppBtn(b,o.abbr,true);}b.onclick=()=>{document.querySelectorAll('#obtns button').forEach(x=>{x.classList.remove('on');paintOppBtn(x,x.dataset.ab,false);});b.classList.add('on');paintOppBtn(b,o.abbr,true);curOpp=o;drawOpp();};ob.appendChild(b);};
+ const lab=t=>{const d=document.createElement('div');d.className='oblab';d.textContent=t;ob.appendChild(d);};
+ lab('2026 schedule — full scouting intel');
+ DATA.opponents.forEach((o,i)=>mkBtn(o,i===0));
+ lab('Rest of the league — live play-data profile');
+ rest.forEach(a=>mkBtn({abbr:a,name:teamName(a),derived:true},false));
  curOpp=DATA.opponents[0];drawOpp();
+}
+// Play-data-derived view for teams not on the curated schedule
+function derivedMatchupHTML(ab){
+ const offL=allTeamMetricsF('off',ALLF),defL=allTeamMetricsF('def',ALLF);
+ const flags=[...flagsFor(offL,defL,ab,'NO'),...flagsFor(offL,defL,'NO',ab)].sort((x,y)=>y.sev-x.sev).slice(0,6);
+ const flagLi=f=>{const c=f.favor==='o'?'#2e5496':f.favor==='d'?'#2e7d4f':'#8a8f98';return `<li style="border-left:3px solid ${c};padding-left:9px;margin:8px 0;list-style:none">${f.txt}</li>`;};
+ return `<div class="grid2"><div class="card"><div class="sechead o">${teamLogo(ab)}${ab} offense › ${teamLogo('NO')}Saints defense</div>${muBars(ab,'NO',offL,defL,ab,'NO')}</div><div class="card"><div class="sechead o">${teamLogo('NO')}Saints offense › ${teamLogo(ab)}${ab} defense</div>${muBars('NO',ab,offL,defL,'NO',ab)}</div></div><div class="card"><div class="sechead">⚑ Situational mismatches vs the Saints</div>${flags.length?`<ul class="keys" style="padding-left:2px">${flags.map(flagLi).join('')}</ul>`:'<p class="note">No extreme mismatches — an even matchup on paper.</p>'}<p class="note">Blue accent = the offense holds that edge · green = the defense. League-rank gaps ≥ ~8 plus directional/down tendencies. All-situations, 2025.</p></div><div class="card"><div class="sechead">Projected game flow</div><p style="font-size:13px;line-height:1.65">${gameFlowText(ab,'NO',offL,defL)}</p></div>`;
+}
+function derivedSideHTML(ab,side){
+ const P=cutF(ab,side,ALLF),M=trkMetrics(P),league=allTeamMetricsF(side,ALLF),specs=MSPEC[side];
+ const tiles=[['Plays',M.n],[side==='def'?'EPA allowed':'EPA/play',M.epa==null?'—':(M.epa>0?'+':'')+M.epa.toFixed(2)],['Success %',M.succ==null?'—':M.succ.toFixed(0)+'%'],side==='def'?['Avg box',M.box==null?'—':M.box.toFixed(1)]:['Pass rate',M.passRate==null?'—':M.passRate.toFixed(0)+'%']].map(t=>`<div class="fstat"><div class="v">${t[1]}</div><div class="l">${t[0]}</div></div>`).join('');
+ const rel=specs.map(sp=>relBar(sp,M,league)).join('');
+ const detail=side==='def'?coverageViz(P):personnelViz(P);
+ const sc=side==='def'?'d':'o';
+ return `<div class="grid2"><div class="card"><div class="sechead ${sc}">${teamLogo(ab)}${teamName(ab)} — ${side==='def'?'Defense':'Offense'} · all situations</div><div class="fstatrow">${tiles}</div><div class="fsub">Relative to the league</div>${rel}<p class="note">Marker = this team on the league scale; rank shown. ${side==='def'?'Green = stingier than the league.':'Green = better than the league.'} Pass rate & aDOT are tendencies, in blue.</p></div><div class="card"><div class="sechead o">By field zone</div>${trkZoneField(P,side)}<button class="bigcta" onclick="gotoField('${ab}');return false">Open the interactive ${ab} field chart →</button></div></div><div class="card"><div class="sechead ${sc}">${side==='def'?'Coverage faced (man/zone & family)':'Personnel groupings'}</div>${detail}</div><div class="grid2"><div class="card"><div class="sechead ${sc}">Run direction, gap & formation${side==='def'?' faced':''}</div>${runViz(P)}</div><div class="card"><div class="sechead ${sc}">${side==='def'?'Routes faced':'Passing routes'}</div>${routeViz(P)}</div></div>`;
+}
+function drawOppDerived(o,box){
+ const tabs=[['match','Matchup vs Saints'],['off','Their Offense'],['def','Their Defense']];
+ if(curOTab==='fz')curOTab='match';
+ const tb=`<div class="subnav" style="margin-top:10px">${tabs.map(([id,lab])=>`<button class="${id===curOTab?'on':''}" data-ot="${id}">${lab}</button>`).join('')}</div>`;
+ const body=curOTab==='match'?derivedMatchupHTML(o.abbr):derivedSideHTML(o.abbr,curOTab==='off'?'off':'def');
+ box.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(o.abbr)}"><h2 style="margin-top:0" class="tchip">${teamLogo(o.abbr)}${o.name}</h2>
+ <div class="staff">Not on the 2026 Saints schedule — profiled live from 2025 play-by-play (no curated 2026 coaching/scheme intel).</div>
+ ${tb}${body}</div>`;
+ box.querySelectorAll('[data-ot]').forEach(b=>b.onclick=()=>{curOTab=b.dataset.ot;drawOpp();});
 }
 function drawOpp(){
  const o=curOpp,box=$('#ocard');
+ if(o&&o.derived){drawOppDerived(o,box);return;}
  const tabs=[['match','Matchup vs Saints'],['off','Their Offense'],['def','Their Defense']];
  const tb=`<div class="subnav" style="margin-top:10px">${tabs.map(([id,lab])=>`<button class="${id===curOTab?'on':''}" data-ot="${id}">${lab}</button>`).join('')}</div>`;
  if(curOTab==='fz')curOTab='match';
  const body=curOTab==='match'?matchupHTML(o):curOTab==='off'?offHTML(o):defHTML(o);
- box.innerHTML=`<div class="card"><h2 style="margin-top:0">${o.name}</h2>
+ box.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(o.abbr)}"><h2 style="margin-top:0" class="tchip">${teamLogo(o.abbr)}${o.name}</h2>
  <div class="staff">2026: HC ${o.hc} · OC ${o.oc} · DC ${o.dc}</div>
  ${o.banner?`<div class="banner">⚠ ${o.banner}</div>`:''}${tb}${body}</div>`;
  box.querySelectorAll('[data-ot]').forEach(b=>b.onclick=()=>{curOTab=b.dataset.ot;drawOpp();});
@@ -988,9 +1033,9 @@ function renderField(){
   <div class="subnav" id="fmode">${modes.map(([id,l])=>`<button data-fm="${id}" class="${id===FIELDMODE?'on':''}">${l}</button>`).join('')}</div>
   <div class="oppbtns" id="fzteams"></div>
   <div id="fieldbody"></div>`;
- const teams=[{abbr:'NO',name:'New Orleans Saints'},...DATA.opponents];
+ const teams=['NO',...Object.keys(NFLNAMES).filter(a=>a!=='NO').sort()];
  const tb=$('#fzteams');
- teams.forEach(t=>{const b=document.createElement('button');b.textContent=t.abbr;b.title=t.name;if(t.abbr===curFZTeam)b.classList.add('on');b.onclick=()=>{curFZTeam=t.abbr;FFILT.qb='ALL';FFILT.rec='ALL';FFILT.run='ALL';FFILT.sel=null;document.querySelectorAll('#fzteams button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawFieldPage();};tb.appendChild(b);});
+ teams.forEach(ab=>{const b=document.createElement('button');b.dataset.ab=ab;b.innerHTML=teamLogo(ab)+`<span>${ab}</span>`;b.title=teamName(ab);if(ab===curFZTeam){b.classList.add('on');paintOppBtn(b,ab,true);}b.onclick=()=>{curFZTeam=ab;FFILT.qb='ALL';FFILT.rec='ALL';FFILT.run='ALL';FFILT.sel=null;document.querySelectorAll('#fzteams button').forEach(x=>{x.classList.remove('on');paintOppBtn(x,x.dataset.ab,false);});b.classList.add('on');paintOppBtn(b,ab,true);drawFieldPage();};tb.appendChild(b);});
  $('#fmode').querySelectorAll('[data-fm]').forEach(b=>b.onclick=()=>{FIELDMODE=b.dataset.fm;FFILT.sel=null;document.querySelectorAll('#fmode button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawFieldPage();});
  drawFieldPage();
 }
@@ -1008,12 +1053,18 @@ function drawFieldPage(){
 }
 function drawFZPage(){
  const box=$('#fzpage');const st=FZSTATE.opp;
- const o=curFZTeam==='NO'?null:DATA.opponents.find(x=>x.abbr===curFZTeam);
- const name=o?o.name:'New Orleans Saints';
- const ab=o?(st.side==='off'?(o.src||o.abbr):o.abbr):'NO';
+ const ab=curFZTeam,name=teamName(ab);
+ box.setAttribute('style',`border-top:3px solid ${teamColor(ab)}`);
+ const hasCurated=DATA.coverage&&DATA.coverage.teams&&DATA.coverage.teams[ab];
+ if(!hasCurated){
+  box.innerHTML=`<h2 style="margin-top:0" class="tchip">${teamLogo(ab)}${name}</h2><div class="banner" style="border-color:#cdd6e4;border-left-color:#7d93b8;background:#f3f6fb;color:#37445a">The curated zone tear sheet (route tree × field zone, coverage-charted) is built for a 17-team baseline and isn't available for ${ab}. Use the <b>Pass chart</b> and <b>Run chart</b> tabs above — they're computed live from 2025 play-by-play for all 32 teams, with full field-zone, direction, gap and route detail.</div>`;
+  return;
+ }
+ const o=ab==='NO'?null:DATA.opponents.find(x=>x.abbr===ab);
+ const srcAb=(o&&st.side==='off'&&o.src)?o.src:ab;
  const proxy=o&&st.side==='off'&&o.proxy?` · ⚠ offense proxied: 2025 ${o.srcName}`:'';
- const labs=o?['Their Offense','Their Defense']:['Offense','Defense'];
- box.innerHTML=`<h2 style="margin-top:0">${name}</h2>${o&&o.banner?`<div class="banner">⚠ ${o.banner}</div>`:''}${fzControls('opp',labs[0],labs[1])}${fzPanel(ab,st.side,st.lev,proxy)}<div style="margin-top:14px"><b style="font-size:12.5px">Passing volume map — where the ball goes by zone${st.side==='def'?' (faced)':''}</b>${rtViz(ab,st.side,st.lev)}</div><details><summary>View as sortable tables</summary><div style="margin-top:8px"><b style="font-size:12.5px">Pass direction by field zone</b>${passDirTable(ab,st.side,st.lev)}</div><div style="margin-top:10px"><b style="font-size:12.5px">Route tree by field zone</b>${routeTable(ab,st.side,st.lev)}</div></details>`;
+ const labs=(ab==='NO')?['Offense','Defense']:['Their Offense','Their Defense'];
+ box.innerHTML=`<h2 style="margin-top:0" class="tchip">${teamLogo(ab)}${name}</h2>${o&&o.banner?`<div class="banner">⚠ ${o.banner}</div>`:''}${fzControls('opp',labs[0],labs[1])}${fzPanel(srcAb,st.side,st.lev,proxy)}<div style="margin-top:14px"><b style="font-size:12.5px">Passing volume map — where the ball goes by zone${st.side==='def'?' (faced)':''}</b>${rtViz(srcAb,st.side,st.lev)}</div><details><summary>View as sortable tables</summary><div style="margin-top:8px"><b style="font-size:12.5px">Pass direction by field zone</b>${passDirTable(srcAb,st.side,st.lev)}</div><div style="margin-top:10px"><b style="font-size:12.5px">Route tree by field zone</b>${routeTable(srcAb,st.side,st.lev)}</div></details>`;
  bindFZ(box,drawFZPage);
 }
 
@@ -1047,6 +1098,13 @@ function fieldBase(){
 }
 const NFLNAMES={ARI:'Arizona Cardinals',ATL:'Atlanta Falcons',BAL:'Baltimore Ravens',BUF:'Buffalo Bills',CAR:'Carolina Panthers',CHI:'Chicago Bears',CIN:'Cincinnati Bengals',CLE:'Cleveland Browns',DAL:'Dallas Cowboys',DEN:'Denver Broncos',DET:'Detroit Lions',GB:'Green Bay Packers',HOU:'Houston Texans',IND:'Indianapolis Colts',JAX:'Jacksonville Jaguars',KC:'Kansas City Chiefs',LA:'Los Angeles Rams',LAC:'Los Angeles Chargers',LV:'Las Vegas Raiders',MIA:'Miami Dolphins',MIN:'Minnesota Vikings',NE:'New England Patriots',NO:'New Orleans Saints',NYG:'New York Giants',NYJ:'New York Jets',PHI:'Philadelphia Eagles',PIT:'Pittsburgh Steelers',SEA:'Seattle Seahawks',SF:'San Francisco 49ers',TB:'Tampa Bay Buccaneers',TEN:'Tennessee Titans',WAS:'Washington Commanders'};
 function teamName(ab){return NFLNAMES[ab]||ab;}
+const TEAMCOLORS={ARI:{p:'#97233F',s:'#000000'},ATL:{p:'#A71930',s:'#000000'},BAL:{p:'#241773',s:'#9E7C0C'},BUF:{p:'#00338D',s:'#C60C30'},CAR:{p:'#0085CA',s:'#101820'},CHI:{p:'#0B162A',s:'#C83803'},CIN:{p:'#FB4F14',s:'#000000'},CLE:{p:'#311D00',s:'#FF3C00'},DAL:{p:'#003594',s:'#869397'},DEN:{p:'#FB4F14',s:'#002244'},DET:{p:'#0076B6',s:'#B0B7BC'},GB:{p:'#203731',s:'#FFB612'},HOU:{p:'#03202F',s:'#A71930'},IND:{p:'#002C5F',s:'#A2AAAD'},JAX:{p:'#006778',s:'#D7A22A'},KC:{p:'#E31837',s:'#FFB81C'},LA:{p:'#003594',s:'#FFA300'},LAC:{p:'#0080C6',s:'#FFC20E'},LV:{p:'#000000',s:'#A5ACAF'},MIA:{p:'#008E97',s:'#FC4C02'},MIN:{p:'#4F2683',s:'#FFC62F'},NE:{p:'#002244',s:'#C60C30'},NO:{p:'#101820',s:'#D3BC8D'},NYG:{p:'#0B2265',s:'#A71930'},NYJ:{p:'#125740',s:'#000000'},PHI:{p:'#004C54',s:'#A5ACAF'},PIT:{p:'#101820',s:'#FFB612'},SEA:{p:'#002244',s:'#69BE28'},SF:{p:'#AA0000',s:'#B3995D'},TB:{p:'#D50A0A',s:'#34302B'},TEN:{p:'#0C2340',s:'#4B92DB'},WAS:{p:'#5A1414',s:'#FFB612'}};
+function teamColor(ab){return (TEAMCOLORS[ab]||{p:'#16284a'}).p;}
+function teamColor2(ab){return (TEAMCOLORS[ab]||{s:'#d4bd8a'}).s;}
+function teamLogo(ab,cls){return `<img class="tlogo${cls?' '+cls:''}" src="data/logos/${ab}.png" alt="${ab}" loading="lazy" onerror="this.style.visibility='hidden'">`;}
+function teamCell(ab,label){return `<span class="tcell">${teamLogo(ab,'sm')}${label==null?ab:label}</span>`;}
+// paint a selector button in its team's colors when active; neutral otherwise
+function paintOppBtn(b,ab,on){if(on){b.style.background=teamColor(ab);b.style.borderColor=teamColor(ab);b.style.color='#fff';b.style.boxShadow='0 2px 8px '+teamColor(ab)+'55';}else{b.style.background='';b.style.borderColor='';b.style.color='';b.style.boxShadow='';}}
 function renderFieldChart(){
  if(FIELDMODE==='run')return renderRunChart();
  const d=CURPLAYS,body=$('#fieldbody');if(!d||!body)return;
@@ -1084,7 +1142,7 @@ function renderFieldChart(){
  const routeRows=Object.keys(rt).sort((a,b)=>rt[b].n-rt[a].n).slice(0,9).map(r=>{const use=100*rt[r].n/rtot,e=fmean(rt[r].ep);return `<div class="persrow"><span class="pn" style="font-size:10.5px">${RT13[r]}</span><span class="pb" title="${rt[r].n} targets"><i style="width:${use.toFixed(0)}%"></i></span><span class="relval" style="color:${e==null?'#888':(e>=0?'#1e7a34':'#b23b3b')}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="relrk">${use.toFixed(0)}%</span></div>`;}).join('');
  const routePanel=rtot?`<div class="fsub" style="margin-top:14px">Route distribution <span class="hint">of ${rtot} charted targets</span></div>${routeRows}`:'';
  const agg=`<div class="fsub">${FFILT.qb==='ALL'?'All quarterbacks':FFILT.qb}${FFILT.rec!=='ALL'?' → '+FFILT.rec:''} — 2025</div><div class="fstatrow">${tiles}</div>${sub2}<div class="fsub">EPA / play by field zone</div>${zoneBars}<div class="fsub" style="margin-top:14px">Top targets <span class="hint">tap a row to filter</span></div>${recTable}${routePanel}`;
- body.innerHTML=`<div class="card"><div class="fieldwrap"><div><div class="fctrls">${qbSel}${recSel}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a throw, placed at its <b>target's field position</b> (line of scrimmage − air yards) and passing lane (jittered L/M/R). Colored by outcome; gold ring = touchdown. Tap a throw for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
+ body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — passing</h3><div class="fieldwrap"><div><div class="fctrls">${qbSel}${recSel}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a throw, placed at its <b>target's field position</b> (line of scrimmage − air yards) and passing lane (jittered L/M/R). Colored by outcome; gold ring = touchdown. Tap a throw for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
  bindFieldChart();
 }
 function passDetail(p){return `<div class="big">${p[2]} → ${p[3]||'—'} <span style="color:${OUT[p[12]].c}">●</span></div><div>${OUT[p[12]].lab}${p[13]?' · TD':''} · ${p[4]} air yds (${DIRN[p[5]]||'—'}) · ${p[8]} yds gained${p[9]!=null?' ('+p[9]+' YAC)':''}</div><div class="muted">Wk ${p[0]} vs ${p[1]} · from ${fieldDesc(p[6])} · ${p[7]!=null?p[7]+(['','st','nd','rd','th'][p[7]]||'th')+' down · ':''}EPA ${p[10]==null?'—':(p[10]>0?'+':'')+p[10]}</div>`;}
@@ -1123,7 +1181,7 @@ function renderRunChart(){
  const crows=Object.entries(cg).sort((a,b)=>b[1].c-a[1].c).slice(0,8).map(([run,t])=>{const e=fmean(t.ep);return `<tr data-run="${run}" class="${FFILT.run===run?'sel':''}"><td>${run}</td><td>${t.c}</td><td>${(t.y/t.c).toFixed(1)}</td><td>${t.td}</td><td>${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</td></tr>`;}).join('');
  const carTable=`<table class="frecs"><thead><tr><th>Carrier</th><th>Att</th><th>Y/C</th><th>TD</th><th>EPA</th></tr></thead><tbody>${crows||'<tr><td colspan="5" class="muted">no carries</td></tr>'}</tbody></table>`;
  const agg=`<div class="fsub">${FFILT.run==='ALL'?'All ball carriers':FFILT.run} — 2025</div><div class="fstatrow">${tiles}</div>${sub2}${dirMix}${gridHTML}<div class="fsub" style="margin-top:14px">EPA / play by field zone</div>${zoneBars}${zdHTML}<div class="fsub" style="margin-top:14px">Top carriers <span class="hint">tap a row to filter</span></div>${carTable}`;
- body.innerHTML=`<div class="card"><div class="fieldwrap"><div><div class="fctrls">${runSel}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a carry at its line of scrimmage, by run direction (jittered L/M/R). Colored by EPA (red = lost value, green = gained); gold ring = touchdown. Tap a carry for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
+ body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — rushing</h3><div class="fieldwrap"><div><div class="fctrls">${runSel}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a carry at its line of scrimmage, by run direction (jittered L/M/R). Colored by EPA (red = lost value, green = gained); gold ring = touchdown. Tap a carry for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
  bindFieldChart();
 }
 function runDetail(p){return `<div class="big">${p[2]} <span style="color:${epaColor(p[8])}">●</span></div><div>${GAPN[p[3]]!=null?'off '+(DIRN[p[4]]||'')+' '+GAPN[p[3]]:(DIRN[p[4]]||'')+' side'} · ${p[7]} yds${p[10]?' · TD':''}${p[11]?' · FUMBLE LOST':''}</div><div class="muted">Wk ${p[0]} vs ${p[1]} · from ${fieldDesc(p[5])} · ${p[6]!=null?p[6]+(['','st','nd','rd','th'][p[6]]||'th')+' down · ':''}EPA ${p[8]==null?'—':(p[8]>0?'+':'')+p[8]}</div>`;}
@@ -1148,7 +1206,7 @@ function drawPhil(sel){const box=$('#philbody');const divs=Object.keys(DATA.phil
  box.innerHTML=divs.map(d=>`<div class="card"><div class="sechead">${d}</div><div class="scroll"><table><thead><tr><th class="tl">Team</th><th class="tl">HC</th><th class="tl">OC</th><th class="tl">DC</th><th class="tl">Offensive System & Lineage</th><th class="tl">Defensive Scheme & Lineage</th></tr></thead><tbody>${DATA.philosophy[d].map(r=>`<tr class="${r[0].includes('Saints')?'no':''}"><td class="tl"><b>${r[0]}</b></td><td class="tl">${r[1]}</td><td class="tl">${r[2]}</td><td class="tl">${r[3]}</td><td class="tl" style="white-space:normal;min-width:230px">${r[4]}</td><td class="tl" style="white-space:normal;min-width:230px">${r[5]}</td></tr>`).join('')}</tbody></table></div></div>`).join('');
 }
 
-function tbl(rows,cols,noKey){return `<div class="scroll"><table><thead><tr>${cols.map((c,i)=>`<th class="${i==0?'tl':''}">${c.lab}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr class="${r[noKey]=='NO'?'no':''}">${cols.map((c,i)=>{let v=r[c.k];let st='';if(c.heat&&typeof v==='number'){st=heat(v,c.heat[0],c.heat[1]);}return `<td class="${i==0?'tl':''}" style="${st}">${v==null?'—':(c.fmt?c.fmt(v):v)}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`;}
+function tbl(rows,cols,noKey){return `<div class="scroll"><table><thead><tr>${cols.map((c,i)=>`<th class="${i==0?'tl':''}">${c.lab}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr class="${r[noKey]=='NO'?'no':''}">${cols.map((c,i)=>{let v=r[c.k];let st='';if(c.heat&&typeof v==='number'){st=heat(v,c.heat[0],c.heat[1]);}const disp=v==null?'—':(c.fmt?c.fmt(v):v);return `<td class="${i==0?'tl':''}" style="${st}">${i==0&&NFLNAMES[r[noKey]]?teamCell(r[noKey],disp):disp}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`;}
 function epaScatter(){const T=DATA.leagueEPA.teams,lg=DATA.leagueEPA.lgOff;const ox=T.map(t=>t.off.epa),dx=T.map(t=>t.deff.epa);const oMin=Math.min(...ox,lg),oMax=Math.max(...ox,lg),dMin=Math.min(...dx,lg),dMax=Math.max(...dx,lg);const W=760,H=500,p=58;const X=v=>p+(v-oMin)/(oMax-oMin)*(W-2*p),Y=v=>p+(v-dMin)/(dMax-dMin)*(H-2*p);const cx=X(lg).toFixed(1),cy=Y(lg).toFixed(1);const pts=T.map(t=>{const x=X(t.off.epa).toFixed(1),y=Y(t.deff.epa).toFixed(1);const no=t.abbr=='NO';return `<circle cx="${x}" cy="${y}" r="${no?5.5:3.2}" fill="${no?'#D3BC8D':'#2e5496'}"/><text x="${(+x+5)}" y="${(+y+3.5)}" font-size="10" fill="${no?'#000':'#444'}" font-weight="${no?'700':'400'}">${t.abbr}</text>`;}).join('');return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:760px;background:#fff;border:1px solid #e3e7ee;border-radius:8px"><line x1="${cx}" y1="${p}" x2="${cx}" y2="${H-p}" stroke="#cfd6e0" stroke-dasharray="4"/><line x1="${p}" y1="${cy}" x2="${W-p}" y2="${cy}" stroke="#cfd6e0" stroke-dasharray="4"/><text x="${W-p}" y="${H-p+32}" text-anchor="end" font-size="11" fill="#666">Offense EPA/play → (better)</text><text x="14" y="${p-22}" font-size="11" fill="#666">↑ Better defense</text><text x="${W-p}" y="${p-10}" text-anchor="end" font-size="10" fill="#1e7a34" font-weight="700">Good O · Good D</text>${pts}</svg>`;}
 function renderEPA(){const s=$('#epa');s.innerHTML=`${pageHead('epa')}<div class="subnav" id="esub"></div><div id="ebody"></div>`;const subs=[['ov','League-Wide'],['off','Offense'],['def','Defense'],['qb','Quarterbacks'],['neutral','Neutral Pass Freq'],['proe','Pass Over Expected'],['fourth','Fourth Downs'],['luck','Luck'],['series','Series Success']];const es=$('#esub');subs.forEach(([id,lab],i)=>{const b=document.createElement('button');b.textContent=lab;if(i==0)b.classList.add('on');b.onclick=()=>{document.querySelectorAll('#esub button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawEPA(id);};es.appendChild(b);});drawEPA('ov');}
 function barChart(items,o){
