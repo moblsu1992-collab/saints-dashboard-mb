@@ -256,6 +256,21 @@ select:hover{border-color:var(--navy3)}
 .fzg{padding:3px 0;border-radius:3px;font-weight:600}
 .fzmute{opacity:.5}
 .bw{font-size:9.5px;font-weight:800}
+.obox{display:flex;gap:7px;margin:-2px 0 12px;flex-wrap:wrap}
+.obox .oc{font-weight:800;font-size:11px;padding:5px 11px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;border:1px solid;text-transform:uppercase;letter-spacing:.3px}
+.obox .oc .n{font-size:15px;letter-spacing:0}
+.oc.td{background:#fbf3dd;color:#8a6d1a;border-color:#e8d6a0}
+.oc.int{background:#fbeaea;color:#9b1c1c;border-color:#eec4c4}
+.oc.fum{background:#f0eefb;color:#4a2b8a;border-color:#d6cef0}
+.oc.neu{background:#eef2f8;color:#40506a;border-color:#d5deea}
+.rtrow{display:grid;grid-template-columns:116px 1fr 44px 38px;align-items:center;gap:8px;margin:5px 0;font-size:11px}
+.rtrow .rn{font-weight:700;color:var(--ink);font-size:9.5px;line-height:1.05;text-align:right}
+.rtrow .rb{height:14px;background:#eef2f8;border-radius:6px;overflow:hidden}
+.rtrow .rb>i{display:block;height:100%;background:linear-gradient(90deg,var(--navy3),var(--navy2));border-radius:6px}
+.rtrow .rv{font-weight:800;font-size:11px;text-align:left}
+.rtrow .rk{font-size:10px;color:var(--muted);font-weight:700;text-align:right}
+.hfield{width:100%;background:#e4efe4;border:1px solid #cdd9cd;border-radius:10px;display:block}
+.hfleg{display:flex;gap:12px;flex-wrap:wrap;font-size:10.5px;color:var(--muted);margin:8px 2px 2px;align-items:center}
 .rkc{color:#888;font-size:10.5px}
 th[data-rk]{min-width:18px}
 .rtv{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
@@ -285,6 +300,8 @@ const fmt=v=>v==null?'—':(typeof v==='number'?(Number.isInteger(v)?v:v.toFixed
 function heat(v,mn,mx,inv){if(v==null)return '';let t=(v-mn)/(mx-mn||1);if(inv)t=1-t;t=Math.max(0,Math.min(1,t));
  // light -> blue
  const r=Math.round(255-(255-157)*t),g=Math.round(255-(255-195)*t),b=Math.round(255-(255-230)*t);return `background:rgb(${r},${g},${b})`;}
+// Threshold shading: only color cells notably above (blue) / below (amber) the column average.
+function condStyle(v,vals){if(typeof v!=='number'||!vals||vals.length<4)return '';const m=vals.reduce((a,b)=>a+b,0)/vals.length;const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/vals.length)||1;const z=(v-m)/sd;if(Math.abs(z)<0.9)return '';const a=Math.min(1,(Math.abs(z)-0.9)/1.6);return z>0?`background:rgba(46,84,150,${(0.12+0.42*a).toFixed(2)})`:`background:rgba(214,134,33,${(0.12+0.42*a).toFixed(2)})`;}
 function heatRYG(v){if(v==null)return '';let t=Math.max(0,Math.min(1,v/100));
  let r,g,b;if(t<.5){r=248;g=Math.round(105+(235-105)*(t/.5));b=Math.round(107+(132-107)*(t/.5));}else{let u=(t-.5)/.5;r=Math.round(255-(255-99)*u);g=Math.round(235-(235-190)*u);b=Math.round(132-(132-123)*u);}return `background:rgb(${r},${g},${b})`;}
 function tier(h){return h>=65?['Elite','#1e7a34']:h>=55?['Strong','#2e5496']:h>=45?['Average','#b07d12']:['Rebuilding','#a23b3b'];}
@@ -328,7 +345,9 @@ function holisticList(){const sw=W.off+W.def+W.st||1;return DATA.ratings.teams.m
 function drawBoard(which){
  curRsub=which;const box=$('#rtbl');
  if(which==='holistic'){const L=holisticList();const mx=Math.max(...L.map(t=>t.h));
-  box.innerHTML=`<table><thead><tr><th>#</th><th class="tl">Team</th><th>Off</th><th>Def</th><th>ST</th><th>Holistic</th><th class="tl">Tier</th></tr></thead><tbody>${L.map((t,i)=>{const[tn,tc]=tier(t.h);return `<tr class="${t.abbr=='NO'?'no':''}"><td>${i+1}</td><td class="tl">${teamCell(t.abbr,t.team)}</td><td style="${heat(t.off,20,90)}">${t.off.toFixed(1)}</td><td style="${heat(t.def,20,90)}">${t.def.toFixed(1)}</td><td style="${heat(t.st,20,90)}">${t.st.toFixed(1)}</td><td><b>${t.h.toFixed(1)}</b></td><td class="tl"><span class="tier" style="background:${tc}">${tn}</span></td></tr>`}).join('')}</tbody></table>`;
+  const offs=L.map(t=>t.off),defs=L.map(t=>t.def),sts=L.map(t=>t.st),hs=L.map(t=>t.h);
+  const avgRow=`<tr class="lg"><td></td><td class="tl">NFL average</td><td>${(offs.reduce((a,b)=>a+b,0)/offs.length).toFixed(1)}</td><td>${(defs.reduce((a,b)=>a+b,0)/defs.length).toFixed(1)}</td><td>${(sts.reduce((a,b)=>a+b,0)/sts.length).toFixed(1)}</td><td><b>${(hs.reduce((a,b)=>a+b,0)/hs.length).toFixed(1)}</b></td><td></td></tr>`;
+  box.innerHTML=`<table><thead><tr><th>#</th><th class="tl">Team</th><th>Off</th><th>Def</th><th>ST</th><th>Holistic</th><th class="tl">Tier</th></tr></thead><tbody>${L.map((t,i)=>{const[tn,tc]=tier(t.h);return `<tr class="${t.abbr=='NO'?'no':''}"><td>${i+1}</td><td class="tl">${teamCell(t.abbr,t.team)}</td><td style="${condStyle(t.off,offs)}">${t.off.toFixed(1)}</td><td style="${condStyle(t.def,defs)}">${t.def.toFixed(1)}</td><td style="${condStyle(t.st,sts)}">${t.st.toFixed(1)}</td><td><b>${t.h.toFixed(1)}</b></td><td class="tl"><span class="tier" style="background:${tc}">${tn}</span></td></tr>`}).join('')}${avgRow}</tbody></table>`;
  } else {
   const key={off:'offM',def:'defM',st:'stM'}[which];const cols=DATA.ratings['metrics'+{off:'Off',def:'Def',st:'ST'}[which]];
   const teams=[...DATA.ratings.teams].sort((a,b)=>b[which]-a[which]);
@@ -423,9 +442,11 @@ function routeViz(P){
  const cnt={},ep={};let tot=0;
  pass.forEach(p=>{const r=p[PI.route];if(r==null)return;cnt[r]=(cnt[r]||0)+1;(ep[r]=ep[r]||[]);if(p[PI.epa]!=null)ep[r].push(p[PI.epa]);tot++;});
  if(!tot)return '<p class="note">No route data in this cut.</p>';
- const rows=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,9).map(r=>{const use=100*cnt[r]/tot,e=fmean(ep[r]);
-  return `<div class="persrow"><span class="pn" style="font-size:10.5px">${RT13[r]}</span><span class="pb" title="${cnt[r]} targets"><i style="width:${use.toFixed(0)}%"></i></span><span class="relval" style="color:${e==null?'#888':(e>=0?'#1e7a34':'#b23b3b')}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="relrk">${use.toFixed(0)}%</span></div>`;}).join('');
- return `<p class="note" style="margin-top:0">Share of targeted routes · EPA/play. Top routes (of ${tot} charted targets).</p>${rows}`;
+ const keys=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,9);
+ const maxN=Math.max(...keys.map(r=>cnt[r]),1);
+ const rows=keys.map(r=>{const use=100*cnt[r]/tot,e=fmean(ep[r]),w=100*cnt[r]/maxN;
+  return `<div class="rtrow"><span class="rn">${RT13[r]}</span><span class="rb" title="${cnt[r]} targets · ${use.toFixed(0)}% of routes"><i style="width:${w.toFixed(0)}%"></i></span><span class="rv" style="color:${e==null?'#888':(e>=0?'#1e7a34':'#b23b3b')}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="rk">${use.toFixed(0)}%</span></div>`;}).join('');
+ return `<p class="note" style="margin-top:0">Bar = share of targeted routes (scaled to the most-used) · <b>green/red</b> = EPA/play · right = % of all routes. Top routes of ${tot} charted targets.</p>${rows}`;
 }
 function filtNote(){const a=[];if(TRK.ptype!=='all')a.push(TRK.ptype==='pass'?'pass only':'run only');if(TRK.score!=='all')a.push({one:'one-score',trail:'trailing',lead:'leading'}[TRK.score]);if(TRK.down!=='all')a.push(TRK.down+(['','st','nd','rd','th'][+TRK.down]||'th')+' down');return a.length?'· '+a.join(' · '):'· all situations';}
 function trkSeg(key,opts){return `<div class="trkseg" data-seg="${key}">${opts.map(([v,l])=>`<button data-v="${v}" class="${TRK[key]===v?'on':''}">${l}</button>`).join('')}</div>`;}
@@ -435,14 +456,14 @@ const muPos=rk=>rk==null?null:3+(rk-1)/31*94;
 function mRank(L,team,k,better){const vals=Object.values(L).map(m=>m[k]).filter(x=>x!=null);const v=L[team]?L[team][k]:null;return v==null?null:rankOf(vals,v,better);}
 function muBars(O,D,offL,defL,oAb,dAb){
  const specs=[['epa','EPA/play'],['succ','Success %'],['passEpa','Pass EPA'],['rushEpa','Rush EPA'],['expl','Explosive %']];
- return `<div class="mbars"><div class="mbhdr"><span style="color:var(--navy2)">● ${oAb} offense</span><span class="mbscale">1st ◄ league rank ► 32nd</span><span style="color:#2e7d4f;text-align:right">${dAb} defense ●</span></div>${specs.map(([k,lab])=>{
+ return `<div class="mbars"><div class="mbhdr"><span style="color:${teamColor(oAb)};display:inline-flex;align-items:center;gap:4px">${teamLogo(oAb,'sm')}${oAb} offense</span><span class="mbscale">1st ◄ league rank ► 32nd</span><span style="color:${teamColor(dAb)};text-align:right;display:inline-flex;align-items:center;gap:4px;justify-content:flex-end">${dAb} defense${teamLogo(dAb,'sm')}</span></div>${specs.map(([k,lab])=>{
   const orank=mRank(offL,O,k,true), drank=mRank(defL,D,k,false);
   const ax=orank==null?null:muPos(orank), bx=drank==null?null:muPos(drank);
   let who='even',ec='var(--faint)';
   if(orank!=null&&drank!=null){const g=drank-orank;if(g>=6){who='o';ec='#2e5496';}else if(g<=-6){who='d';ec='#2e7d4f';}}
   const line=(ax!=null&&bx!=null)?`<div class="mbline" style="left:${Math.min(ax,bx)}%;width:${Math.abs(ax-bx)}%;background:${ec}"></div>`:'';
-  const da=orank==null?'':`<div class="mbdot a" style="left:${ax}%" title="${oAb} offense ${lab}: ${ord(orank)} of 32">${orank}</div>`;
-  const db=drank==null?'':`<div class="mbdot" style="left:${bx}%;background:#2e7d4f;z-index:3" title="${dAb} defense ${lab}: ${ord(drank)} of 32">${drank}</div>`;
+  const da=orank==null?'':`<div class="mbdot a" style="left:${ax}%;background:${teamColor(oAb)}" title="${oAb} offense ${lab}: ${ord(orank)} of 32">${orank}</div>`;
+  const db=drank==null?'':`<div class="mbdot" style="left:${bx}%;background:${teamColor(dAb)};z-index:3" title="${dAb} defense ${lab}: ${ord(drank)} of 32">${drank}</div>`;
   const et=who==='o'?oAb:who==='d'?dAb:'even';
   const ecls=who==='o'?'color:#1d3f78;background:#e3ecf7':who==='d'?'color:#245c34;background:#e5f1e8':'color:var(--faint);background:#f1f3f7';
   return `<div class="mbrow"><div class="mblab">${lab}</div><div class="mbtrack">${line}${da}${db}</div><div class="mbedge" style="${ecls}">${et}</div></div>`;
@@ -760,11 +781,43 @@ function fzZone(zi,Z,L,side){
  }
  return `<div class="fzz${mute}"><div class="fzh">${name}</div><div class="fzy">${FZYARDS[zi]} · <b>${n}</b> plays${n<20?' · small sample':''}</div>${bar}${epaRow}${pr}${shotRow}${rd}${g}</div>`;
 }
+// Horizontal football-field view of the 5 field zones — the at-a-glance tear sheet.
+const FZSHORT=['BACKED','OWN','MIDFIELD','GREEN','RED ZONE'];
+const FZWD=[16,24,20,20,20]; // display widths (own-1-10 widened for legibility vs true 10-yd span)
+function fzFieldSVG(rows,side){
+ const scale=100/FZWD.reduce((a,b)=>a+b,0),EZ=8;
+ let x=EZ,seg='';
+ rows.forEach((z,i)=>{
+  const w=FZWD[i]*scale,cx=x+w/2;
+  if(!z||z[0]==null){seg+=`<rect x="${x.toFixed(1)}" y="8" width="${w.toFixed(1)}" height="46" fill="#e8efe8"/><text x="${cx.toFixed(1)}" y="13.5" font-size="2.9" fill="#8a93a3" text-anchor="middle" font-weight="800">${FZSHORT[i]}</text><text x="${cx.toFixed(1)}" y="32" font-size="2.6" fill="#9aa" text-anchor="middle">no plays</text>`;x+=w;return;}
+  const n=z[0],pass=z[1],epa=z[2],succ=z[5];
+  const ev=side==='def'?(epa==null?null:-epa):epa,col=epaColor(ev),runP=pass==null?0:100-pass;
+  seg+=`<rect x="${x.toFixed(1)}" y="8" width="${w.toFixed(1)}" height="46" fill="${col}"/>`;
+  seg+=`<text x="${cx.toFixed(1)}" y="13.4" font-size="2.9" fill="#fff" font-weight="800" text-anchor="middle" letter-spacing="0.1" style="text-shadow:0 1px 1.5px rgba(0,0,0,.4)">${FZSHORT[i]}</text>`;
+  const chw=Math.min(w-2.5,18);
+  seg+=`<rect x="${(cx-chw/2).toFixed(1)}" y="16.5" width="${chw.toFixed(1)}" height="11.5" rx="2.4" fill="#fff" opacity="0.96"/>`;
+  const ecol=epa==null?'#999':(ev>=0?'#1a7a34':'#b23b3b');
+  seg+=`<text x="${cx.toFixed(1)}" y="22.4" font-size="4.5" fill="${ecol}" font-weight="800" text-anchor="middle">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</text>`;
+  seg+=`<text x="${cx.toFixed(1)}" y="26.6" font-size="2.2" fill="#5a6675" text-anchor="middle" font-weight="600">EPA${side==='def'?' allowed':''}</text>`;
+  const by=33,bw=Math.min(w-3,20),bx=cx-bw/2;
+  seg+=`<rect x="${bx.toFixed(1)}" y="${by}" width="${bw.toFixed(1)}" height="3.2" rx="1.6" fill="#ffffff" opacity="0.55"/>`;
+  if(pass!=null)seg+=`<rect x="${bx.toFixed(1)}" y="${by}" width="${(bw*pass/100).toFixed(1)}" height="3.2" rx="1.6" fill="#16284a"/>`;
+  seg+=`<text x="${cx.toFixed(1)}" y="40.3" font-size="2.5" fill="#fff" text-anchor="middle" font-weight="700" style="text-shadow:0 1px 1.5px rgba(0,0,0,.4)">${pass==null?'—':'P '+Math.round(pass)+'% · R '+Math.round(runP)+'%'}</text>`;
+  seg+=`<text x="${cx.toFixed(1)}" y="45" font-size="2.4" fill="#eef2f8" text-anchor="middle" style="text-shadow:0 1px 1.5px rgba(0,0,0,.4)">${succ==null?n+' pl':Math.round(succ)+'% su · '+n+' pl'}</text>`;
+  x+=w;
+ });
+ let sepx=EZ,sep='';for(let i=0;i<rows.length-1;i++){sepx+=FZWD[i]*scale;sep+=`<line x1="${sepx.toFixed(1)}" y1="8" x2="${sepx.toFixed(1)}" y2="54" stroke="#ffffff" stroke-width="0.5" opacity="0.55"/>`;}
+ const lEZ=`<rect x="0" y="8" width="${EZ}" height="46" fill="#16284a"/><text x="${EZ/2}" y="31" font-size="2.6" fill="#d4bd8a" text-anchor="middle" font-weight="800" transform="rotate(-90 ${EZ/2} 31)" letter-spacing="0.6">OWN GOAL</text>`;
+ const rEZ=`<rect x="108" y="8" width="${EZ}" height="46" fill="#7a2a2a"/><text x="112" y="31" font-size="2.6" fill="#ffe0e0" text-anchor="middle" font-weight="800" transform="rotate(90 112 31)" letter-spacing="0.6">OPP GOAL</text>`;
+ const hdr=`<text x="58" y="5.4" font-size="3" fill="#5a6675" text-anchor="middle" font-weight="700" letter-spacing="0.4">◄ own territory     ·     driving toward the end zone     ·     scoring ►</text>`;
+ const foot=`<text x="58" y="60" font-size="2.7" fill="#8a93a3" text-anchor="middle">Zone tinted by EPA (green = good, red = bad for this ${side==='def'?'defense':'offense'}) · navy bar = pass share of the zone.</text>`;
+ return `<svg class="hfield" viewBox="0 0 116 62" preserveAspectRatio="xMidYMid meet">${hdr}${seg}${sep}${lEZ}${rEZ}${foot}</svg>`;
+}
 function fzPanel(ab,side,lev,proxyNote){
  const FZ=DATA.fieldZones;const tm=FZ.teams[ab];
  if(!tm)return '<p class="note">No field-zone data for this team.</p>';
  const rows=tm[side][lev],lg=FZ.league[lev];
- return `<div class="fz">${rows.map((z,i)=>fzZone(i,z,lg[i],side)).join('')}</div><p class="note">${FZLEVS.find(x=>x[0]===lev)[1]}${proxyNote||''} · Δ = vs league average, same zone & situation. EPA Δ green/red = better/worse for ${side==='def'?'this defense':'this offense'}; blue/orange Δ = above/below league frequency. Targets = % of located attempts (depth: BLOS = behind line of scrimmage). Greyed zone = under 20 plays; greyed grid = under 12 located attempts.</p>`;
+ return `${fzFieldSVG(rows,side)}<div class="hfleg"><span>${FZLEVS.find(x=>x[0]===lev)[1]}${proxyNote||''}</span></div><details style="margin-top:8px"><summary>Full zone-by-zone detail — targets grid, run direction, deltas vs league</summary><div class="fz" style="margin-top:10px">${rows.map((z,i)=>fzZone(i,z,lg[i],side)).join('')}</div><p class="note">Δ = vs league average, same zone & situation. EPA Δ green/red = better/worse for ${side==='def'?'this defense':'this offense'}; blue/orange Δ = above/below league frequency. Targets = % of located attempts (BLOS = behind line of scrimmage). Greyed zone = under 20 plays; greyed grid = under 12 located attempts.</p></details>`;
 }
 function fzControls(key,offLab,defLab){
  const st=FZSTATE[key];
@@ -1024,8 +1077,9 @@ function drawOpp(){
 
 // ---------- FIELD POSITION (zone tear sheets) ----------
 let curFZTeam='NO', FIELDMODE='pass';
-const FFILT={qb:'ALL',rec:'ALL',run:'ALL',vis:{C:1,I:1,N:1},sel:null};
+const FFILT={qb:'ALL',rec:'ALL',run:'ALL',zone:'ALL',gap:'ALL',dir:'ALL',lane:'ALL',vis:{C:1,I:1,N:1},sel:null};
 const PLAYCACHE={}; let CURPLAYS=null;
+function resetFieldFilters(){FFILT.qb='ALL';FFILT.rec='ALL';FFILT.run='ALL';FFILT.zone='ALL';FFILT.gap='ALL';FFILT.dir='ALL';FFILT.lane='ALL';FFILT.sel=null;}
 function renderField(){
  const s=$('#field');
  const modes=[['pass','Pass chart'],['run','Run chart'],['sheet','Zone tear sheet']];
@@ -1035,8 +1089,8 @@ function renderField(){
   <div id="fieldbody"></div>`;
  const teams=['NO',...Object.keys(NFLNAMES).filter(a=>a!=='NO').sort()];
  const tb=$('#fzteams');
- teams.forEach(ab=>{const b=document.createElement('button');b.dataset.ab=ab;b.innerHTML=teamLogo(ab)+`<span>${ab}</span>`;b.title=teamName(ab);if(ab===curFZTeam){b.classList.add('on');paintOppBtn(b,ab,true);}b.onclick=()=>{curFZTeam=ab;FFILT.qb='ALL';FFILT.rec='ALL';FFILT.run='ALL';FFILT.sel=null;document.querySelectorAll('#fzteams button').forEach(x=>{x.classList.remove('on');paintOppBtn(x,x.dataset.ab,false);});b.classList.add('on');paintOppBtn(b,ab,true);drawFieldPage();};tb.appendChild(b);});
- $('#fmode').querySelectorAll('[data-fm]').forEach(b=>b.onclick=()=>{FIELDMODE=b.dataset.fm;FFILT.sel=null;document.querySelectorAll('#fmode button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawFieldPage();});
+ teams.forEach(ab=>{const b=document.createElement('button');b.dataset.ab=ab;b.innerHTML=teamLogo(ab)+`<span>${ab}</span>`;b.title=teamName(ab);if(ab===curFZTeam){b.classList.add('on');paintOppBtn(b,ab,true);}b.onclick=()=>{curFZTeam=ab;resetFieldFilters();document.querySelectorAll('#fzteams button').forEach(x=>{x.classList.remove('on');paintOppBtn(x,x.dataset.ab,false);});b.classList.add('on');paintOppBtn(b,ab,true);drawFieldPage();};tb.appendChild(b);});
+ $('#fmode').querySelectorAll('[data-fm]').forEach(b=>b.onclick=()=>{FIELDMODE=b.dataset.fm;resetFieldFilters();document.querySelectorAll('#fmode button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawFieldPage();});
  drawFieldPage();
 }
 function loadTeam(ab){
@@ -1116,20 +1170,25 @@ function renderFieldChart(){
  const recCount={};byQb.forEach(p=>{if(p[3])recCount[p[3]]=(recCount[p[3]]||0)+1;});
  const recs=Object.keys(recCount).sort((a,b)=>recCount[b]-recCount[a]);
  if(FFILT.rec!=='ALL'&&!recCount[FFILT.rec])FFILT.rec='ALL';
- const sel=FFILT.rec==='ALL'?byQb:byQb.filter(p=>p[3]===FFILT.rec);
+ let sel=FFILT.rec==='ALL'?byQb:byQb.filter(p=>p[3]===FFILT.rec);
+ if(FFILT.zone!=='ALL')sel=sel.filter(p=>zoneOf(p[6])===FFILT.zone);
+ if(FFILT.lane!=='ALL')sel=sel.filter(p=>String(p[5])===FFILT.lane);
  CUR_SEL=sel;
  const dsvg=sel.map((p,i)=>{if(!FFILT.vis[p[12]])return '';const tp=p[6]-(p[4]==null?0:p[4]);const x=laneX(p[5],i);const y=ypos(tp);const td=p[13]===1;const r=td?3.6:2.8;const ssel=FFILT.sel===i?' sel':'';
   return `<circle class="fdot${ssel}" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${OUT[p[12]].c}" fill-opacity="0.82"${td?' stroke="#caa84e" stroke-width="1.3"':''}></circle>`;}).join('');
  const svg=`<svg class="ffield" id="fsvg" viewBox="0 0 100 ${FGEO.bot+12}" preserveAspectRatio="xMidYMid meet">${fieldBase()}${dsvg}</svg>`;
  const qbSel=`<div class="fc-group"><label>Quarterback</label><select id="fqb"><option value="ALL">All QBs (${all.length})</option>${qbs.map(q=>`<option value="${q}"${q===FFILT.qb?' selected':''}>${q} (${qbCount[q]})</option>`).join('')}</select></div>`;
  const recSel=`<div class="fc-group"><label>Receiver</label><select id="frec"><option value="ALL">All receivers</option>${recs.map(r=>`<option value="${r}"${r===FFILT.rec?' selected':''}>${r} (${recCount[r]})</option>`).join('')}</select></div>`;
+ const zoneSel=`<div class="fc-group"><label>Field zone</label><select id="fzone"><option value="ALL">All zones</option>${ZN.map(z=>`<option value="${z}"${z===FFILT.zone?' selected':''}>${z}</option>`).join('')}</select></div>`;
+ const laneSel=`<div class="fc-group"><label>Lane</label><select id="flane"><option value="ALL">All lanes</option>${['left','middle','right'].map((d,i)=>`<option value="${i}"${String(i)===FFILT.lane?' selected':''}>${d}</option>`).join('')}</select></div>`;
  const legend=`<div class="flegend">${Object.entries(OUT).map(([k,v])=>`<span class="lgchip${FFILT.vis[k]?'':' off'}" data-vis="${k}"><span class="lgdot" style="background:${v.c}"></span>${v.lab}</span>`).join('')}<span class="lgchip" style="cursor:default"><span class="lgdot" style="background:#fff;box-shadow:0 0 0 1.3px #caa84e inset"></span>TD</span></div>`;
  const detail=`<div class="fdetail" id="fdetail">${FFILT.sel!=null&&CUR_SEL[FFILT.sel]?passDetail(CUR_SEL[FFILT.sel]):'<span class="muted">Tap any throw to see the play detail.</span>'}</div>`;
  // aggregates over sel (all outcomes)
  const n=sel.length,comp=sel.filter(p=>p[12]==='C').length,intc=sel.filter(p=>p[12]==='N').length,td=sel.filter(p=>p[13]===1).length;
  const aDOT=fmean(sel.map(p=>p[4])),epa=fmean(sel.map(p=>p[10])),succ=fmean(sel.map(p=>p[11])),ypa=fmean(sel.map(p=>p[8]));
  const tiles=[['Throws',n],['Comp %',n?(100*comp/n).toFixed(0)+'%':'—'],['EPA/play',epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)],['aDOT',aDOT==null?'—':aDOT.toFixed(1)]].map(t=>`<div class="fstat"><div class="v">${t[1]}</div><div class="l">${t[0]}</div></div>`).join('');
- const sub2=`<div class="note" style="margin:-6px 0 12px">Success ${succ==null?'—':(100*succ).toFixed(0)+'%'} · YPA ${ypa==null?'—':ypa.toFixed(1)} · ${td} TD · ${intc} INT</div>`;
+ const obox=`<div class="obox"><span class="oc td"><span class="n">${td}</span> TD</span><span class="oc int"><span class="n">${intc}</span> INT</span><span class="oc neu"><span class="n">${comp}</span> Comp</span></div>`;
+ const sub2=`<div class="note" style="margin:-4px 0 12px">Success ${succ==null?'—':(100*succ).toFixed(0)+'%'} · YPA ${ypa==null?'—':ypa.toFixed(1)}</div>`;
  const zrows=ZN.map(nm=>{const s2=sel.filter(p=>zoneOf(p[6])===nm);return {nm,n:s2.length,e:fmean(s2.map(p=>p[10])),s:fmean(s2.map(p=>p[11]))};});
  const mx=Math.max(0.4,...zrows.map(z=>z.e==null?0:Math.abs(z.e)));
  const zoneBars=zrows.map(z=>{if(!z.n)return `<div class="fzrow"><span class="zl">${z.nm}</span><span class="zb"></span><span class="zv muted">—</span></div>`;
@@ -1139,10 +1198,12 @@ function renderFieldChart(){
  const trows=Object.entries(tg).sort((a,b)=>b[1].tgt-a[1].tgt).slice(0,8).map(([rec,t])=>{const e=fmean(t.ep);return `<tr data-rec="${rec}" class="${FFILT.rec===rec?'sel':''}"><td>${rec}</td><td>${t.tgt}</td><td>${(100*t.rec/t.tgt).toFixed(0)}%</td><td>${t.yds}</td><td>${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</td></tr>`;}).join('');
  const recTable=`<table class="frecs"><thead><tr><th>Receiver</th><th>Tgt</th><th>Catch</th><th>Yds</th><th>EPA</th></tr></thead><tbody>${trows||'<tr><td colspan="5" class="muted">no targets</td></tr>'}</tbody></table>`;
  const rt={};let rtot=0;sel.forEach(p=>{const r=p[18];if(r==null)return;(rt[r]=rt[r]||{n:0,ep:[]});rt[r].n++;if(p[10]!=null)rt[r].ep.push(p[10]);rtot++;});
- const routeRows=Object.keys(rt).sort((a,b)=>rt[b].n-rt[a].n).slice(0,9).map(r=>{const use=100*rt[r].n/rtot,e=fmean(rt[r].ep);return `<div class="persrow"><span class="pn" style="font-size:10.5px">${RT13[r]}</span><span class="pb" title="${rt[r].n} targets"><i style="width:${use.toFixed(0)}%"></i></span><span class="relval" style="color:${e==null?'#888':(e>=0?'#1e7a34':'#b23b3b')}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="relrk">${use.toFixed(0)}%</span></div>`;}).join('');
- const routePanel=rtot?`<div class="fsub" style="margin-top:14px">Route distribution <span class="hint">of ${rtot} charted targets</span></div>${routeRows}`:'';
- const agg=`<div class="fsub">${FFILT.qb==='ALL'?'All quarterbacks':FFILT.qb}${FFILT.rec!=='ALL'?' → '+FFILT.rec:''} — 2025</div><div class="fstatrow">${tiles}</div>${sub2}<div class="fsub">EPA / play by field zone</div>${zoneBars}<div class="fsub" style="margin-top:14px">Top targets <span class="hint">tap a row to filter</span></div>${recTable}${routePanel}`;
- body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — passing</h3><div class="fieldwrap"><div><div class="fctrls">${qbSel}${recSel}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a throw, placed at its <b>target's field position</b> (line of scrimmage − air yards) and passing lane (jittered L/M/R). Colored by outcome; gold ring = touchdown. Tap a throw for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
+ const rKeys=Object.keys(rt).sort((a,b)=>rt[b].n-rt[a].n).slice(0,9);
+ const rMax=Math.max(...rKeys.map(r=>rt[r].n),1);
+ const routeRows=rKeys.map(r=>{const use=100*rt[r].n/rtot,e=fmean(rt[r].ep),w=100*rt[r].n/rMax;return `<div class="rtrow"><span class="rn">${RT13[r]}</span><span class="rb" title="${rt[r].n} targets · ${use.toFixed(0)}%"><i style="width:${w.toFixed(0)}%"></i></span><span class="rv" style="color:${e==null?'#888':(e>=0?'#1e7a34':'#b23b3b')}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="rk">${use.toFixed(0)}%</span></div>`;}).join('');
+ const routePanel=rtot?`<div class="fsub" style="margin-top:14px">Route distribution <span class="hint">bar scaled to most-used · of ${rtot} charted targets</span></div>${routeRows}`:'';
+ const agg=`<div class="fsub">${FFILT.qb==='ALL'?'All quarterbacks':FFILT.qb}${FFILT.rec!=='ALL'?' → '+FFILT.rec:''}${FFILT.zone!=='ALL'?' · '+FFILT.zone+' zone':''}${FFILT.lane!=='ALL'?' · '+['left','middle','right'][+FFILT.lane]+' lane':''} — 2025</div><div class="fstatrow">${tiles}</div>${obox}${sub2}<div class="fsub">EPA / play by field zone</div>${zoneBars}<div class="fsub" style="margin-top:14px">Top targets <span class="hint">tap a row to filter</span></div>${recTable}${routePanel}`;
+ body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — passing</h3><div class="fieldwrap"><div><div class="fctrls">${qbSel}${recSel}${laneSel}${zoneSel}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a throw, placed at its <b>target's field position</b> (line of scrimmage − air yards) and passing lane (jittered L/M/R). Colored by outcome; gold ring = touchdown. Tap a throw for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
  bindFieldChart();
 }
 function passDetail(p){return `<div class="big">${p[2]} → ${p[3]||'—'} <span style="color:${OUT[p[12]].c}">●</span></div><div>${OUT[p[12]].lab}${p[13]?' · TD':''} · ${p[4]} air yds (${DIRN[p[5]]||'—'}) · ${p[8]} yds gained${p[9]!=null?' ('+p[9]+' YAC)':''}</div><div class="muted">Wk ${p[0]} vs ${p[1]} · from ${fieldDesc(p[6])} · ${p[7]!=null?p[7]+(['','st','nd','rd','th'][p[7]]||'th')+' down · ':''}EPA ${p[10]==null?'—':(p[10]>0?'+':'')+p[10]}</div>`;}
@@ -1152,18 +1213,25 @@ function renderRunChart(){
  const rc={};all.forEach(p=>{rc[p[2]]=(rc[p[2]]||0)+1;});
  const runs=Object.keys(rc).sort((a,b)=>rc[b]-rc[a]);
  if(FFILT.run!=='ALL'&&!rc[FFILT.run])FFILT.run='ALL';
- const sel=FFILT.run==='ALL'?all:all.filter(p=>p[2]===FFILT.run);
+ let sel=FFILT.run==='ALL'?all:all.filter(p=>p[2]===FFILT.run);
+ if(FFILT.gap!=='ALL')sel=sel.filter(p=>String(p[3])===FFILT.gap);
+ if(FFILT.dir!=='ALL')sel=sel.filter(p=>String(p[4])===FFILT.dir);
+ if(FFILT.zone!=='ALL')sel=sel.filter(p=>zoneOf(p[5])===FFILT.zone);
  CUR_SEL=sel;
  const dsvg=sel.map((p,i)=>{const x=laneX(p[4],i);const y=ypos(p[5]);const td=p[10]===1;const r=td?3.7:2.8;const ssel=FFILT.sel===i?' sel':'';
   return `<circle class="fdot${ssel}" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${epaColor(p[8])}" fill-opacity="0.85"${td?' stroke="#caa84e" stroke-width="1.3"':''}></circle>`;}).join('');
  const svg=`<svg class="ffield" id="fsvg" viewBox="0 0 100 ${FGEO.bot+12}" preserveAspectRatio="xMidYMid meet">${fieldBase()}${dsvg}</svg>`;
  const runSel=`<div class="fc-group"><label>Ball carrier</label><select id="frun"><option value="ALL">All carriers (${all.length})</option>${runs.map(r=>`<option value="${r}"${r===FFILT.run?' selected':''}>${r} (${rc[r]})</option>`).join('')}</select></div>`;
+ const gapSel=`<div class="fc-group"><label>Gap</label><select id="fgap"><option value="ALL">All gaps</option>${GAPN.map((g,i)=>`<option value="${i}"${String(i)===FFILT.gap?' selected':''}>${g}</option>`).join('')}</select></div>`;
+ const dirSel=`<div class="fc-group"><label>Direction</label><select id="fdir"><option value="ALL">All</option>${DIRN.map((d,i)=>`<option value="${i}"${String(i)===FFILT.dir?' selected':''}>${d}</option>`).join('')}</select></div>`;
+ const zoneSel=`<div class="fc-group"><label>Field zone</label><select id="fzone"><option value="ALL">All zones</option>${ZN.map(z=>`<option value="${z}"${z===FFILT.zone?' selected':''}>${z}</option>`).join('')}</select></div>`;
  const legend=`<div class="flegend"><span class="lgchip" style="cursor:default"><span class="lgdot" style="background:${epaColor(-0.6)}"></span>worse play (− EPA)</span><span class="lgchip" style="cursor:default"><span class="lgdot" style="background:${epaColor(0.6)}"></span>better play (+ EPA)</span><span class="lgchip" style="cursor:default"><span class="lgdot" style="background:#fff;box-shadow:0 0 0 1.3px #caa84e inset"></span>TD</span></div>`;
  const detail=`<div class="fdetail" id="fdetail">${FFILT.sel!=null&&CUR_SEL[FFILT.sel]?runDetail(CUR_SEL[FFILT.sel]):'<span class="muted">Tap any carry to see the play detail.</span>'}</div>`;
  const n=sel.length,td=sel.filter(p=>p[10]===1).length,fum=sel.filter(p=>p[11]===1).length;
  const ypc=fmean(sel.map(p=>p[7])),epa=fmean(sel.map(p=>p[8])),succ=fmean(sel.map(p=>p[9]));
  const tiles=[['Carries',n],['Yds/carry',ypc==null?'—':ypc.toFixed(1)],['EPA/play',epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)],['Success %',succ==null?'—':(100*succ).toFixed(0)+'%']].map(t=>`<div class="fstat"><div class="v">${t[1]}</div><div class="l">${t[0]}</div></div>`).join('');
- const sub2=`<div class="note" style="margin:-6px 0 12px">${td} TD · ${fum} fumble lost</div>`;
+ const expl=sel.filter(p=>p[7]>=10).length;
+ const obox=`<div class="obox"><span class="oc td"><span class="n">${td}</span> TD</span><span class="oc fum"><span class="n">${fum}</span> Fum lost</span><span class="oc neu"><span class="n">${expl}</span> 10+ yd</span></div>`;
  const dirCnt=[0,0,0],gapCnt=[0,0,0];sel.forEach(p=>{if(p[4]!=null)dirCnt[p[4]]++;if(p[3]!=null)gapCnt[p[3]]++;});
  const dirTot=dirCnt.reduce((a,b)=>a+b,0)||1,gapTot=gapCnt.reduce((a,b)=>a+b,0)||1;
  const formCnt={S:0,U:0,P:0};sel.forEach(p=>{const f=p[17];if(f&&formCnt[f]!=null)formCnt[f]++;});const fT=(formCnt.S+formCnt.U+formCnt.P)||1;
@@ -1180,8 +1248,8 @@ function renderRunChart(){
  const cg={};sel.forEach(p=>{const t=cg[p[2]]||(cg[p[2]]={c:0,y:0,ep:[],td:0});t.c++;t.y+=p[7]||0;if(p[8]!=null)t.ep.push(p[8]);if(p[10]===1)t.td++;});
  const crows=Object.entries(cg).sort((a,b)=>b[1].c-a[1].c).slice(0,8).map(([run,t])=>{const e=fmean(t.ep);return `<tr data-run="${run}" class="${FFILT.run===run?'sel':''}"><td>${run}</td><td>${t.c}</td><td>${(t.y/t.c).toFixed(1)}</td><td>${t.td}</td><td>${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</td></tr>`;}).join('');
  const carTable=`<table class="frecs"><thead><tr><th>Carrier</th><th>Att</th><th>Y/C</th><th>TD</th><th>EPA</th></tr></thead><tbody>${crows||'<tr><td colspan="5" class="muted">no carries</td></tr>'}</tbody></table>`;
- const agg=`<div class="fsub">${FFILT.run==='ALL'?'All ball carriers':FFILT.run} — 2025</div><div class="fstatrow">${tiles}</div>${sub2}${dirMix}${gridHTML}<div class="fsub" style="margin-top:14px">EPA / play by field zone</div>${zoneBars}${zdHTML}<div class="fsub" style="margin-top:14px">Top carriers <span class="hint">tap a row to filter</span></div>${carTable}`;
- body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — rushing</h3><div class="fieldwrap"><div><div class="fctrls">${runSel}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a carry at its line of scrimmage, by run direction (jittered L/M/R). Colored by EPA (red = lost value, green = gained); gold ring = touchdown. Tap a carry for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
+ const agg=`<div class="fsub">${FFILT.run==='ALL'?'All ball carriers':FFILT.run}${FFILT.gap!=='ALL'?' · '+GAPN[+FFILT.gap]+' gap':''}${FFILT.dir!=='ALL'?' · '+DIRN[+FFILT.dir]:''}${FFILT.zone!=='ALL'?' · '+FFILT.zone+' zone':''} — 2025</div><div class="fstatrow">${tiles}</div>${obox}${dirMix}${gridHTML}<div class="fsub" style="margin-top:14px">EPA / play by field zone</div>${zoneBars}${zdHTML}<div class="fsub" style="margin-top:14px">Top carriers <span class="hint">tap a row to filter</span></div>${carTable}`;
+ body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — rushing</h3><div class="fieldwrap"><div><div class="fctrls">${runSel}${gapSel}${dirSel}${zoneSel}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a carry at its line of scrimmage, by run direction (jittered L/M/R). Colored by EPA (red = lost value, green = gained); gold ring = touchdown. Tap a carry for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
  bindFieldChart();
 }
 function runDetail(p){return `<div class="big">${p[2]} <span style="color:${epaColor(p[8])}">●</span></div><div>${GAPN[p[3]]!=null?'off '+(DIRN[p[4]]||'')+' '+GAPN[p[3]]:(DIRN[p[4]]||'')+' side'} · ${p[7]} yds${p[10]?' · TD':''}${p[11]?' · FUMBLE LOST':''}</div><div class="muted">Wk ${p[0]} vs ${p[1]} · from ${fieldDesc(p[5])} · ${p[6]!=null?p[6]+(['','st','nd','rd','th'][p[6]]||'th')+' down · ':''}EPA ${p[8]==null?'—':(p[8]>0?'+':'')+p[8]}</div>`;}
@@ -1190,6 +1258,10 @@ function bindFieldChart(){
  const qb=$('#fqb');if(qb)qb.onchange=e=>{FFILT.qb=e.target.value;FFILT.rec='ALL';FFILT.sel=null;renderFieldChart();};
  const rec=$('#frec');if(rec)rec.onchange=e=>{FFILT.rec=e.target.value;FFILT.sel=null;renderFieldChart();};
  const run=$('#frun');if(run)run.onchange=e=>{FFILT.run=e.target.value;FFILT.sel=null;renderFieldChart();};
+ const fz=$('#fzone');if(fz)fz.onchange=e=>{FFILT.zone=e.target.value;FFILT.sel=null;renderFieldChart();};
+ const fg=$('#fgap');if(fg)fg.onchange=e=>{FFILT.gap=e.target.value;FFILT.sel=null;renderFieldChart();};
+ const fd=$('#fdir');if(fd)fd.onchange=e=>{FFILT.dir=e.target.value;FFILT.sel=null;renderFieldChart();};
+ const fl=$('#flane');if(fl)fl.onchange=e=>{FFILT.lane=e.target.value;FFILT.sel=null;renderFieldChart();};
  body.querySelectorAll('.lgchip[data-vis]').forEach(c=>c.onclick=()=>{FFILT.vis[c.dataset.vis]=!FFILT.vis[c.dataset.vis];renderFieldChart();});
  body.querySelectorAll('.frecs tbody tr[data-rec]').forEach(r=>r.onclick=()=>{FFILT.rec=FFILT.rec===r.dataset.rec?'ALL':r.dataset.rec;FFILT.sel=null;renderFieldChart();});
  body.querySelectorAll('.frecs tbody tr[data-run]').forEach(r=>r.onclick=()=>{FFILT.run=FFILT.run===r.dataset.run?'ALL':r.dataset.run;FFILT.sel=null;renderFieldChart();});
@@ -1206,8 +1278,12 @@ function drawPhil(sel){const box=$('#philbody');const divs=Object.keys(DATA.phil
  box.innerHTML=divs.map(d=>`<div class="card"><div class="sechead">${d}</div><div class="scroll"><table><thead><tr><th class="tl">Team</th><th class="tl">HC</th><th class="tl">OC</th><th class="tl">DC</th><th class="tl">Offensive System & Lineage</th><th class="tl">Defensive Scheme & Lineage</th></tr></thead><tbody>${DATA.philosophy[d].map(r=>`<tr class="${r[0].includes('Saints')?'no':''}"><td class="tl"><b>${r[0]}</b></td><td class="tl">${r[1]}</td><td class="tl">${r[2]}</td><td class="tl">${r[3]}</td><td class="tl" style="white-space:normal;min-width:230px">${r[4]}</td><td class="tl" style="white-space:normal;min-width:230px">${r[5]}</td></tr>`).join('')}</tbody></table></div></div>`).join('');
 }
 
-function tbl(rows,cols,noKey){return `<div class="scroll"><table><thead><tr>${cols.map((c,i)=>`<th class="${i==0?'tl':''}">${c.lab}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr class="${r[noKey]=='NO'?'no':''}">${cols.map((c,i)=>{let v=r[c.k];let st='';if(c.heat&&typeof v==='number'){st=heat(v,c.heat[0],c.heat[1]);}const disp=v==null?'—':(c.fmt?c.fmt(v):v);return `<td class="${i==0?'tl':''}" style="${st}">${i==0&&NFLNAMES[r[noKey]]?teamCell(r[noKey],disp):disp}</td>`}).join('')}</tr>`).join('')}</tbody></table></div>`;}
-function epaScatter(){const T=DATA.leagueEPA.teams,lg=DATA.leagueEPA.lgOff;const ox=T.map(t=>t.off.epa),dx=T.map(t=>t.deff.epa);const oMin=Math.min(...ox,lg),oMax=Math.max(...ox,lg),dMin=Math.min(...dx,lg),dMax=Math.max(...dx,lg);const W=760,H=500,p=58;const X=v=>p+(v-oMin)/(oMax-oMin)*(W-2*p),Y=v=>p+(v-dMin)/(dMax-dMin)*(H-2*p);const cx=X(lg).toFixed(1),cy=Y(lg).toFixed(1);const pts=T.map(t=>{const x=X(t.off.epa).toFixed(1),y=Y(t.deff.epa).toFixed(1);const no=t.abbr=='NO';return `<circle cx="${x}" cy="${y}" r="${no?5.5:3.2}" fill="${no?'#D3BC8D':'#2e5496'}"/><text x="${(+x+5)}" y="${(+y+3.5)}" font-size="10" fill="${no?'#000':'#444'}" font-weight="${no?'700':'400'}">${t.abbr}</text>`;}).join('');return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:760px;background:#fff;border:1px solid #e3e7ee;border-radius:8px"><line x1="${cx}" y1="${p}" x2="${cx}" y2="${H-p}" stroke="#cfd6e0" stroke-dasharray="4"/><line x1="${p}" y1="${cy}" x2="${W-p}" y2="${cy}" stroke="#cfd6e0" stroke-dasharray="4"/><text x="${W-p}" y="${H-p+32}" text-anchor="end" font-size="11" fill="#666">Offense EPA/play → (better)</text><text x="14" y="${p-22}" font-size="11" fill="#666">↑ Better defense</text><text x="${W-p}" y="${p-10}" text-anchor="end" font-size="10" fill="#1e7a34" font-weight="700">Good O · Good D</text>${pts}</svg>`;}
+function tbl(rows,cols,noKey){
+ const cvals={};cols.forEach(c=>{if(c.heat)cvals[c.k]=rows.map(r=>r[c.k]).filter(x=>typeof x==='number');});
+ const body=rows.map(r=>`<tr class="${r[noKey]=='NO'?'no':''}">${cols.map((c,i)=>{let v=r[c.k];let st='';if(c.heat&&typeof v==='number'){st=condStyle(v,cvals[c.k]);}const disp=v==null?'—':(c.fmt?c.fmt(v):v);return `<td class="${i==0?'tl':''}" style="${st}">${i==0&&NFLNAMES[r[noKey]]?teamCell(r[noKey],disp):disp}</td>`}).join('')}</tr>`).join('');
+ const avgRow=`<tr class="lg"><td class="tl">NFL average</td>${cols.slice(1).map(c=>{const vs=rows.map(r=>r[c.k]).filter(x=>typeof x==='number');if(!vs.length)return '<td></td>';const m=vs.reduce((a,b)=>a+b,0)/vs.length;return `<td>${c.fmt?c.fmt(m):(Math.round(m*10)/10)}</td>`;}).join('')}</tr>`;
+ return `<div class="scroll"><table><thead><tr>${cols.map((c,i)=>`<th class="${i==0?'tl':''}">${c.lab}</th>`).join('')}</tr></thead><tbody>${body}${avgRow}</tbody></table></div>`;}
+function epaScatter(){const T=DATA.leagueEPA.teams,lg=DATA.leagueEPA.lgOff;const ox=T.map(t=>t.off.epa),dx=T.map(t=>t.deff.epa);const oMin=Math.min(...ox,lg),oMax=Math.max(...ox,lg),dMin=Math.min(...dx,lg),dMax=Math.max(...dx,lg);const W=760,H=500,p=58;const X=v=>p+(v-oMin)/(oMax-oMin)*(W-2*p),Y=v=>p+(v-dMin)/(dMax-dMin)*(H-2*p);const cx=X(lg).toFixed(1),cy=Y(lg).toFixed(1);const pts=T.map(t=>{const x=+X(t.off.epa),y=+Y(t.deff.epa);const no=t.abbr=='NO';const s=no?30:21;return `<image href="data/logos/${t.abbr}.png" x="${(x-s/2).toFixed(1)}" y="${(y-s/2).toFixed(1)}" width="${s}" height="${s}"${no?' style="filter:drop-shadow(0 0 2px #D3BC8D)"':''}><title>${t.name}: offense ${t.off.epa.toFixed(3)}, defense ${t.deff.epa.toFixed(3)}</title></image>`;}).join('');return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:760px;background:#fff;border:1px solid #e3e7ee;border-radius:8px"><line x1="${cx}" y1="${p}" x2="${cx}" y2="${H-p}" stroke="#cfd6e0" stroke-dasharray="4"/><line x1="${p}" y1="${cy}" x2="${W-p}" y2="${cy}" stroke="#cfd6e0" stroke-dasharray="4"/><text x="${W-p}" y="${H-p+32}" text-anchor="end" font-size="11" fill="#666">Offense EPA/play → (better)</text><text x="14" y="${p-22}" font-size="11" fill="#666">↑ Better defense</text><text x="${W-p}" y="${p-10}" text-anchor="end" font-size="10" fill="#1e7a34" font-weight="700">Good O · Good D</text>${pts}</svg>`;}
 function renderEPA(){const s=$('#epa');s.innerHTML=`${pageHead('epa')}<div class="subnav" id="esub"></div><div id="ebody"></div>`;const subs=[['ov','League-Wide'],['off','Offense'],['def','Defense'],['qb','Quarterbacks'],['neutral','Neutral Pass Freq'],['proe','Pass Over Expected'],['fourth','Fourth Downs'],['luck','Luck'],['series','Series Success']];const es=$('#esub');subs.forEach(([id,lab],i)=>{const b=document.createElement('button');b.textContent=lab;if(i==0)b.classList.add('on');b.onclick=()=>{document.querySelectorAll('#esub button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawEPA(id);};es.appendChild(b);});drawEPA('ov');}
 function barChart(items,o){
  const W=Math.max(560,items.length*(o.bw||22)+70),H=o.h||250,p={l:48,r:10,t:16,b:o.b||30};
@@ -1219,7 +1295,7 @@ function barChart(items,o){
   const col=it.hl?'#D3BC8D':(it.v>=0?'#2e5496':'#b06a10');
   bars+=`<rect x="${(x+1).toFixed(1)}" y="${Math.min(y,y0).toFixed(1)}" width="${Math.max(1,bw-2).toFixed(1)}" height="${Math.max(1,Math.abs(y-y0)).toFixed(1)}" fill="${col}"><title>${it.title||it.lab}: ${it.v}</title></rect>`;
   const lx=x+bw/2;
-  labs+=o.rot?`<text x="${lx.toFixed(1)}" y="${H-p.b+10}" transform="rotate(-52 ${lx.toFixed(1)} ${H-p.b+10})" text-anchor="end" font-size="7.5" font-weight="${it.hl?'800':'400'}" fill="${it.hl?'#7a6420':'#555'}">${it.lab}</text>`:`<text x="${lx.toFixed(1)}" y="${H-p.b+10}" text-anchor="middle" font-size="8" font-weight="${it.hl?'800':'400'}" fill="${it.hl?'#7a6420':'#555'}">${it.lab}</text>`;});
+  labs+=o.rot?`<text x="${lx.toFixed(1)}" y="${H-p.b+10}" transform="rotate(-52 ${lx.toFixed(1)} ${H-p.b+10})" text-anchor="end" font-size="7.5" font-weight="${it.hl?'800':'400'}" fill="${it.hl?'#7a6420':'#555'}">${it.lab}</text>`:(it.ab?`<image href="data/logos/${it.ab}.png" x="${(lx-7).toFixed(1)}" y="${H-p.b+3}" width="14" height="14"${it.hl?' style="filter:drop-shadow(0 0 1.5px #caa84e)"':''}><title>${it.title||it.lab}: ${it.v}</title></image>`:`<text x="${lx.toFixed(1)}" y="${H-p.b+10}" text-anchor="middle" font-size="8" font-weight="${it.hl?'800':'400'}" fill="${it.hl?'#7a6420':'#555'}">${it.lab}</text>`);});
  const zero=`<line x1="${p.l}" y1="${Y(0).toFixed(1)}" x2="${W-p.r}" y2="${Y(0).toFixed(1)}" stroke="#9aa3b2"/>`;
  const avg=o.avg!=null?`<line x1="${p.l}" y1="${Y(o.avg).toFixed(1)}" x2="${W-p.r}" y2="${Y(o.avg).toFixed(1)}" stroke="#a23b3b" stroke-dasharray="4 3"/><text x="${W-p.r}" y="${(Y(o.avg)-3).toFixed(1)}" text-anchor="end" font-size="8" fill="#a23b3b">lg avg</text>`:'';
  return `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:${Math.min(W,920)}px;background:#fff;border:1px solid var(--line);border-radius:8px"><text x="10" y="11" font-size="9.5" font-weight="700" fill="#555">${o.label||''}</text>${ax}${zero}${avg}${bars}${labs}</svg></div>`;
@@ -1227,8 +1303,8 @@ function barChart(items,o){
 function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,k)=>{const v=arr.map(x=>x[k]).filter(x=>typeof x==='number');return [Math.min(...v),Math.max(...v)];};
  if(id=='ov'){box.innerHTML=`<div class="card">${epaScatter()}<p class="note">Both sides of the ball on one view — right and high is good. Single-variable breakdowns (with sortable tables) live in the Offense, Defense and Quarterbacks tabs.</p></div>`;}
  else
- if(id=='off'){const R=L.teams.map(t=>({name:t.name,abbr:t.abbr,...t.off})).sort((a,b)=>b.epa-a.epa);const e=mm(R,'epa');box.innerHTML=`<div class="card">${barChart(R.map(t=>({lab:t.abbr,v:t.epa,hl:t.abbr=='NO',title:t.name})),{avg:L.lgOff,label:'Offense EPA/play — sorted best → worst',dec:2})}</div><div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'epa',lab:'EPA/play',fmt:v=>v.toFixed(3),heat:e},{k:'succ',lab:'Success %'},{k:'passEPA',lab:'Pass EPA',fmt:v=>v.toFixed(3)},{k:'rushEPA',lab:'Rush EPA',fmt:v=>v.toFixed(3)},{k:'edEPA',lab:'Early-down EPA',fmt:v=>v.toFixed(3)}],'abbr')}<p class="note">Offensive EPA per play; higher = better. Chart dashed lines = league average.</p></div>`;}
- else if(id=='def'){const R=L.teams.map(t=>({name:t.name,abbr:t.abbr,...t.deff})).sort((a,b)=>a.epa-b.epa);const e=mm(R,'epa');box.innerHTML=`<div class="card">${barChart(R.map(t=>({lab:t.abbr,v:t.epa,hl:t.abbr=='NO',title:t.name})),{avg:L.lgOff,label:'Defense EPA/play allowed — sorted best → worst (lower is better)',dec:2})}</div><div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'epa',lab:'EPA/play allowed',fmt:v=>v.toFixed(3),heat:[e[1],e[0]]},{k:'succ',lab:'Success % allowed'},{k:'passEPA',lab:'Pass EPA',fmt:v=>v.toFixed(3)},{k:'rushEPA',lab:'Rush EPA',fmt:v=>v.toFixed(3)},{k:'edEPA',lab:'Early-down EPA',fmt:v=>v.toFixed(3)}],'abbr')}<p class="note">Defensive EPA per play allowed; lower = better.</p></div>`;}
+ if(id=='off'){const R=L.teams.map(t=>({name:t.name,abbr:t.abbr,...t.off})).sort((a,b)=>b.epa-a.epa);const e=mm(R,'epa');box.innerHTML=`<div class="card">${barChart(R.map(t=>({lab:t.abbr,ab:t.abbr,v:t.epa,hl:t.abbr=='NO',title:t.name})),{avg:L.lgOff,label:'Offense EPA/play — sorted best → worst',dec:2})}</div><div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'epa',lab:'EPA/play',fmt:v=>v.toFixed(3),heat:e},{k:'succ',lab:'Success %'},{k:'passEPA',lab:'Pass EPA',fmt:v=>v.toFixed(3)},{k:'rushEPA',lab:'Rush EPA',fmt:v=>v.toFixed(3)},{k:'edEPA',lab:'Early-down EPA',fmt:v=>v.toFixed(3)}],'abbr')}<p class="note">Offensive EPA per play; higher = better. Chart dashed lines = league average.</p></div>`;}
+ else if(id=='def'){const R=L.teams.map(t=>({name:t.name,abbr:t.abbr,...t.deff})).sort((a,b)=>a.epa-b.epa);const e=mm(R,'epa');box.innerHTML=`<div class="card">${barChart(R.map(t=>({lab:t.abbr,ab:t.abbr,v:t.epa,hl:t.abbr=='NO',title:t.name})),{avg:L.lgOff,label:'Defense EPA/play allowed — sorted best → worst (lower is better)',dec:2})}</div><div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'epa',lab:'EPA/play allowed',fmt:v=>v.toFixed(3),heat:[e[1],e[0]]},{k:'succ',lab:'Success % allowed'},{k:'passEPA',lab:'Pass EPA',fmt:v=>v.toFixed(3)},{k:'rushEPA',lab:'Rush EPA',fmt:v=>v.toFixed(3)},{k:'edEPA',lab:'Early-down EPA',fmt:v=>v.toFixed(3)}],'abbr')}<p class="note">Defensive EPA per play allowed; lower = better.</p></div>`;}
  else if(id=='qb'){const R=[...L.qbs].sort((a,b)=>b.epa-a.epa);const e=mm(R,'epa');const qavg=R.reduce((s,q)=>s+q.epa,0)/R.length;box.innerHTML=`<div class="card">${barChart(R.map(q=>({lab:q.qb,v:q.epa,hl:q.team=='NO',title:q.qb+' ('+q.team+')'})),{avg:qavg,label:'QB EPA/play (min 200 dropbacks) — sorted best → worst',dec:2,rot:1,b:56,h:280,bw:19})}</div><div class="card">${tbl(R,[{k:'qb',lab:'Quarterback'},{k:'team',lab:'Tm'},{k:'db',lab:'Dropbacks'},{k:'epa',lab:'EPA/play',fmt:v=>v.toFixed(3),heat:e},{k:'cpoe',lab:'CPOE'},{k:'succ',lab:'Success %'}],'team')}<p class="note">Min 200 dropbacks. EPA/play on all dropbacks; CPOE = completion % over expected.</p></div>`;}
  else if(id=='neutral'){const R=[...L.neutral].sort((a,b)=>b.neutralPass-a.neutralPass);const e=mm(R,'neutralPass');box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'neutralPass',lab:'Neutral pass %',heat:e},{k:'overallPass',lab:'Overall pass %'}],'abbr')}<p class="note">Neutral = 1st/2nd down, win prob 20–80%, outside the final 2:00 — the cleanest pass-vs-run identity.</p></div>`;}
  else if(id=='proe'){const R=[...L.proe].sort((a,b)=>b.proe-a.proe);const e=mm(R,'proe');box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'proe',lab:'PROE',heat:e},{k:'cpoe',lab:'CPOE'}],'abbr')}<p class="note">PROE = pass rate over expected (+ = pass more than the situation dictates). CPOE = completion % over expected.</p></div>`;}
