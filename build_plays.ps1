@@ -45,7 +45,7 @@ $I_down=C 'down'; $I_yl=C 'yardline_100'; $I_epa=C 'epa'; $I_succ=C 'success'; $
 $I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'
 $I_qb=C 'passer_player_name'; $I_rec=C 'receiver_player_name'; $I_ay=C 'air_yards'
 $I_ploc=C 'pass_location'; $I_yac=C 'yards_after_catch'
-$I_cmp=C 'complete_pass'; $I_int=C 'interception'; $I_ptd=C 'pass_touchdown'
+$I_cmp=C 'complete_pass'; $I_int=C 'interception'; $I_ptd=C 'pass_touchdown'; $I_cpoe=C 'cpoe'
 $I_run=C 'rusher_player_name'; $I_rloc=C 'run_location'; $I_rgap=C 'run_gap'
 $I_rtd=C 'rush_touchdown'; $I_fum=C 'fumble_lost'
 
@@ -113,7 +113,7 @@ while(-not $tp.EndOfData){
   if(IsOne $f[$I_2pt]){ continue }
   $pos=$f[$I_pos]; if($pos -eq '' -or $pos -eq 'NA'){ continue }
   $dn=$f[$I_down]; if($dn -eq '' -or $dn -eq 'NA'){ continue }
-  $jk=$f[$I_gid]+'|'+$f[$I_pid]; $pj= if($PJOIN.ContainsKey($jk)){ $PJOIN[$jk] } else { ',null,null,null,null' }
+  $jk=$f[$I_gid]+'|'+$f[$I_pid]; $pj= if($PJOIN.ContainsKey($jk)){ $PJOIN[$jk] } else { ',null,null,null,null,null,null' }
   $sd=NumOrNull $f[$I_sd]; $ytg=NumOrNull $f[$I_ytg]
   $wk=NumOrNull $f[$I_week]; $def=$f[$I_def]; $yl=NumOrNull $f[$I_yl]
   $epa=NumOrNull $f[$I_epa] 3; $succ= if(IsOne $f[$I_succ]){'1'}else{'0'}; $yg=NumOrNull $f[$I_yg]; $dnv=NumOrNull $dn
@@ -126,7 +126,8 @@ while(-not $tp.EndOfData){
     $td= if(IsOne $f[$I_ptd]){'1'}else{'0'}
     $out= if(IsOne $f[$I_int]){'"N"'}elseif(IsOne $f[$I_cmp]){'"C"'}else{'"I"'}
     $yac=NumOrNull $f[$I_yac]
-    $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+']'
+    $cpoe=NumOrNull $f[$I_cpoe] 1
+    $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+','+$cpoe+']'
     $tm=Team $pos; $tm.pass.Add($row); $np++
     if($tm.qbs.ContainsKey($qb)){ $tm.qbs[$qb]++ } else { $tm.qbs[$qb]=1 }
   } elseif(IsOne $f[$I_rush]){
@@ -153,7 +154,7 @@ New-Item -ItemType Directory -Force -Path $playDir | Out-Null
 $allp = [System.Text.StringBuilder]::new(); [void]$allp.Append('window.PLAYS={'); $pfirst=$true
 $idx = [System.Text.StringBuilder]::new()
 [void]$idx.Append('{"season":'+$Year+',"generated":"'+(Get-Date -Format 'yyyy-MM-dd')+'",')
-[void]$idx.Append('"fields":{"pass":["wk","def","qb","rec","ay","loc","yl","dn","yg","yac","epa","succ","out","td","pers","mz","cov","box","route","form","sd","ytg"],"rush":["wk","def","run","gap","dir","yl","dn","yg","epa","succ","td","fum","pers","mz","cov","box","route","form","sd","ytg"]},')
+[void]$idx.Append('"fields":{"pass":["wk","def","qb","rec","ay","loc","yl","dn","yg","yac","epa","succ","out","td","pers","mz","cov","box","route","form","sd","ytg","cpoe"],"rush":["wk","def","run","gap","dir","yl","dn","yg","epa","succ","td","fum","pers","mz","cov","box","route","form","sd","ytg"]},')
 [void]$idx.Append('"teams":{')
 $first=$true
 foreach($t in ($teams.Keys | Sort-Object)){
