@@ -21,6 +21,7 @@ param(
   [string]$Part = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/part2025.csv",
   [string]$Ftn = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/ftn2025.csv",
   [string]$Roster = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/roster2025.csv",
+  [string]$Pfr = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/pfrrush.csv",
   [string]$OutDir = "C:/Users/miles/AppData/Local/Packages/Claude_pzs8sxrjxfjjc/LocalCache/Roaming/Claude/local-agent-mode-sessions/eb2236da-4f45-4faf-848a-e61ff1c5f82e/1e19824b-7456-46d5-a988-785586ae0cbb/local_97362316-1558-446f-8479-3a400f8303cf/outputs",
   [int]$Year = 2025,      # season written into plays_index.json
   [int]$Limit = 0,        # 0 = all rows; >0 = stop early (validation)
@@ -48,7 +49,7 @@ $I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'
 $I_qb=C 'passer_player_name'; $I_rec=C 'receiver_player_name'; $I_ay=C 'air_yards'
 $I_ploc=C 'pass_location'; $I_yac=C 'yards_after_catch'
 $I_cmp=C 'complete_pass'; $I_int=C 'interception'; $I_ptd=C 'pass_touchdown'; $I_cpoe=C 'cpoe'; $I_rid=C 'receiver_player_id'
-$I_run=C 'rusher_player_name'; $I_rloc=C 'run_location'; $I_rgap=C 'run_gap'
+$I_run=C 'rusher_player_name'; $I_rloc=C 'run_location'; $I_rgap=C 'run_gap'; $I_rrid=C 'rusher_player_id'
 $I_rtd=C 'rush_touchdown'; $I_fum=C 'fumble_lost'
 
 function NumOrNull($v,[int]$dec=0){
@@ -57,6 +58,7 @@ function NumOrNull($v,[int]$dec=0){
   return ([int][math]::Round($d)).ToString()
 }
 function IsOne($v){ $v -eq '1' -or $v -eq '1.0' }
+function Num0($v){ if($null -eq $v -or $v -eq '' -or $v -eq 'NA'){ 0.0 } else { [double]$v } }
 function Jstr($s){
   if($null -eq $s -or $s -eq '' -or $s -eq 'NA'){ return 'null' }
   return '"' + ($s -replace '\\','\\' -replace '"','\"') + '"'
@@ -115,19 +117,31 @@ if(Test-Path $Ftn){
   $ffs.Close()
   Write-Host "FTN rows: $fc | drops: $dc"
 }
-# Weekly rosters -> gsis_id => position (for WR/TE tagging of targeted receivers)
+# Weekly rosters -> gsis_id => position + gsis_id => pfr_id crosswalk
 # NOTE: hashtable is $RPOS (not $POS) — $pos is the posteam string in the main loop and PS vars are case-insensitive.
-$RPOS=@{}
+$RPOS=@{}; $G2PFR=@{}
 if(Test-Path $Roster){
   $rfs=New-Object Microsoft.VisualBasic.FileIO.TextFieldParser($Roster)
   $rfs.SetDelimiters(@(",")); $rfs.HasFieldsEnclosedInQuotes=$true
   $rh=$rfs.ReadFields(); $rix=@{}; for($i=0;$i -lt $rh.Length;$i++){ $rix[$rh[$i]]=$i }
-  $R_id=$rix['gsis_id']; $R_pos=$rix['position']
-  while(-not $rfs.EndOfData){ $g=$rfs.ReadFields(); $id=$g[$R_id]; if($id){ $RPOS[$id]=$g[$R_pos] } }
+  $R_id=$rix['gsis_id']; $R_pos=$rix['position']; $R_pfr=$rix['pfr_id']
+  while(-not $rfs.EndOfData){ $g=$rfs.ReadFields(); $id=$g[$R_id]; if($id){ $RPOS[$id]=$g[$R_pos]; if($null -ne $R_pfr){ $pf=$g[$R_pfr]; if($pf){ $G2PFR[$id]=$pf } } } }
   $rfs.Close()
-  Write-Host "roster positions: $($RPOS.Count)"
+  Write-Host "roster positions: $($RPOS.Count) | gsis->pfr: $($G2PFR.Count)"
 }
-$RECPOS=@{}; $RECSNP=@{}; $SEENREC=@{}
+# PFR advanced rushing (weekly) -> pfr_id => season totals {carries, yds before/after contact, broken tackles}
+$PFRADV=@{}
+if(Test-Path $Pfr){
+  $afs=New-Object Microsoft.VisualBasic.FileIO.TextFieldParser($Pfr)
+  $afs.SetDelimiters(@(",")); $afs.HasFieldsEnclosedInQuotes=$true
+  $ah=$afs.ReadFields(); $aix=@{}; for($i=0;$i -lt $ah.Length;$i++){ $aix[$ah[$i]]=$i }
+  $A_id=$aix['pfr_player_id']; $A_car=$aix['carries']; $A_ybc=$aix['rushing_yards_before_contact']; $A_yac=$aix['rushing_yards_after_contact']; $A_brk=$aix['rushing_broken_tackles']
+  while(-not $afs.EndOfData){ $g=$afs.ReadFields(); $apid=$g[$A_id]; if(-not $apid){ continue }
+    if(-not $PFRADV.ContainsKey($apid)){ $PFRADV[$apid]=@{car=0.0;ybc=0.0;yac=0.0;mtf=0.0} }
+    $a=$PFRADV[$apid]; $a.car+=(Num0 $g[$A_car]); $a.ybc+=(Num0 $g[$A_ybc]); $a.yac+=(Num0 $g[$A_yac]); $a.mtf+=(Num0 $g[$A_brk]) }
+  $afs.Close(); Write-Host "PFR rush players: $($PFRADV.Count)"
+}
+$RECPOS=@{}; $RECSNP=@{}; $SEENREC=@{}; $RBDAT=@{}
 
 $teams=@{}    # team -> @{pass=List;rush=List;qbs=@{};rbs=@{}}
 function Team($t){
@@ -166,6 +180,15 @@ while(-not $tp.EndOfData){
     if($tm.qbs.ContainsKey($qb)){ $tm.qbs[$qb]++ } else { $tm.qbs[$qb]=1 }
   } elseif(IsOne $f[$I_rush]){
     $run=$f[$I_run]; if($run -eq '' -or $run -eq 'NA'){ continue }
+    if(-not $RBDAT.ContainsKey($run)){
+      $rrid=$f[$I_rrid]
+      $rp= if($RPOS.ContainsKey($rrid)){$RPOS[$rrid]}else{'?'}
+      $rs= if($SNAPCT.ContainsKey($rrid)){$SNAPCT[$rrid]}else{0}
+      $pf= if($G2PFR.ContainsKey($rrid)){$G2PFR[$rrid]}else{''}
+      $rcar=0.0;$rybc=0.0;$ryac=0.0;$rmtf=0.0
+      if($pf -and $PFRADV.ContainsKey($pf)){ $adv=$PFRADV[$pf]; $rcar=$adv.car; $rybc=$adv.ybc; $ryac=$adv.yac; $rmtf=$adv.mtf }
+      $RBDAT[$run]=@{pos=$rp;s=$rs;car=$rcar;ybc=$rybc;yac=$ryac;mtf=$rmtf}
+    }
     $gap=MapGap $f[$I_rgap]; $dir=MapLoc $f[$I_rloc]
     $td= if(IsOne $f[$I_rtd]){'1'}else{'0'}; $fum= if(IsOne $f[$I_fum]){'1'}else{'0'}
     $row='['+$wk+','+(Jstr $def)+','+(Jstr $run)+','+$gap+','+$dir+','+$yl+','+$dnv+','+$yg+','+$epa+','+$succ+','+$td+','+$fum+$pj+','+$sd+','+$ytg+']'
@@ -216,4 +239,13 @@ foreach($k in ($SEENREC.Keys | Sort-Object)){
 }
 [void]$posbuf.Append('};')
 [System.IO.File]::WriteAllText((Join-Path $dataDir 'positions.js'),$posbuf.ToString())
-Write-Host ("WROTE {0} team files + plays_index.json + plays.js + positions.js ({1} receivers) to {2}" -f $teams.Count,$SEENREC.Count,$dataDir)
+# rbadv.js -> window.RBADV = { "<rusher name>": {"pos":"RB","s":<snaps>,"car":<pfr carries>,"ybc":<yds before contact>,"yac":<yds after contact>,"mtf":<broken tackles>}, ... }
+$rbbuf = [System.Text.StringBuilder]::new(); [void]$rbbuf.Append('window.RBADV={'); $rbfirst=$true
+foreach($k in ($RBDAT.Keys | Sort-Object)){
+  $d=$RBDAT[$k]
+  if(-not $rbfirst){ [void]$rbbuf.Append(',') }; $rbfirst=$false
+  [void]$rbbuf.Append((Jstr $k)+':{"pos":"'+$d.pos+'","s":'+$d.s+',"car":'+([int]$d.car)+',"ybc":'+([math]::Round($d.ybc,1))+',"yac":'+([math]::Round($d.yac,1))+',"mtf":'+([int]$d.mtf)+'}')
+}
+[void]$rbbuf.Append('};')
+[System.IO.File]::WriteAllText((Join-Path $dataDir 'rbadv.js'),$rbbuf.ToString())
+Write-Host ("WROTE {0} team files + plays_index.json + plays.js + positions.js ({1} rec) + rbadv.js ({2} rushers) to {3}" -f $teams.Count,$SEENREC.Count,$RBDAT.Count,$dataDir)
