@@ -19,6 +19,7 @@ Rush row : [wk, def, run, gap, dir, yl, dn, yg, epa, succ, td, fum]
 param(
   [string]$Gz  = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/pbp2025.csv.gz",
   [string]$Part = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/part2025.csv",
+  [string]$Ftn = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/ftn2025.csv",
   [string]$OutDir = "C:/Users/miles/AppData/Local/Packages/Claude_pzs8sxrjxfjjc/LocalCache/Roaming/Claude/local-agent-mode-sessions/eb2236da-4f45-4faf-848a-e61ff1c5f82e/1e19824b-7456-46d5-a988-785586ae0cbb/local_97362316-1558-446f-8479-3a400f8303cf/outputs",
   [int]$Year = 2025,      # season written into plays_index.json
   [int]$Limit = 0,        # 0 = all rows; >0 = stop early (validation)
@@ -95,6 +96,21 @@ if(Test-Path $Part){
   }
   $pfs.Close()
   Write-Host "participation rows: $pc | joined keys: $($PJOIN.Count)"
+}
+# FTN charting -> drops, keyed game_id|play_id (is_drop = TRUE/FALSE)
+$DROPS=@{}
+if(Test-Path $Ftn){
+  $ffs=New-Object Microsoft.VisualBasic.FileIO.TextFieldParser($Ftn)
+  $ffs.SetDelimiters(@(",")); $ffs.HasFieldsEnclosedInQuotes=$true
+  $fh=$ffs.ReadFields(); $fix=@{}; for($i=0;$i -lt $fh.Length;$i++){ $fix[$fh[$i]]=$i }
+  $F_gid=$fix['nflverse_game_id']; $F_pid=$fix['nflverse_play_id']; $F_drop=$fix['is_drop']
+  $fc=0; $dc=0
+  while(-not $ffs.EndOfData){
+    $g=$ffs.ReadFields(); $fc++
+    if($g[$F_drop] -eq 'TRUE' -or $g[$F_drop] -eq 'true' -or $g[$F_drop] -eq '1'){ $DROPS[$g[$F_gid]+'|'+$g[$F_pid]]=1; $dc++ }
+  }
+  $ffs.Close()
+  Write-Host "FTN rows: $fc | drops: $dc"
 } else { Write-Host "participation file not found at $Part - personnel/coverage will be null" }
 
 $teams=@{}    # team -> @{pass=List;rush=List;qbs=@{};rbs=@{}}
@@ -127,7 +143,8 @@ while(-not $tp.EndOfData){
     $out= if(IsOne $f[$I_int]){'"N"'}elseif(IsOne $f[$I_cmp]){'"C"'}else{'"I"'}
     $yac=NumOrNull $f[$I_yac]
     $cpoe=NumOrNull $f[$I_cpoe] 1
-    $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+','+$cpoe+']'
+    $drop= if($DROPS.ContainsKey($jk)){'1'}else{'0'}
+    $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+','+$cpoe+','+$drop+']'
     $tm=Team $pos; $tm.pass.Add($row); $np++
     if($tm.qbs.ContainsKey($qb)){ $tm.qbs[$qb]++ } else { $tm.qbs[$qb]=1 }
   } elseif(IsOne $f[$I_rush]){
@@ -154,7 +171,7 @@ New-Item -ItemType Directory -Force -Path $playDir | Out-Null
 $allp = [System.Text.StringBuilder]::new(); [void]$allp.Append('window.PLAYS={'); $pfirst=$true
 $idx = [System.Text.StringBuilder]::new()
 [void]$idx.Append('{"season":'+$Year+',"generated":"'+(Get-Date -Format 'yyyy-MM-dd')+'",')
-[void]$idx.Append('"fields":{"pass":["wk","def","qb","rec","ay","loc","yl","dn","yg","yac","epa","succ","out","td","pers","mz","cov","box","route","form","sd","ytg","cpoe"],"rush":["wk","def","run","gap","dir","yl","dn","yg","epa","succ","td","fum","pers","mz","cov","box","route","form","sd","ytg"]},')
+[void]$idx.Append('"fields":{"pass":["wk","def","qb","rec","ay","loc","yl","dn","yg","yac","epa","succ","out","td","pers","mz","cov","box","route","form","sd","ytg","cpoe","drop"],"rush":["wk","def","run","gap","dir","yl","dn","yg","epa","succ","td","fum","pers","mz","cov","box","route","form","sd","ytg"]},')
 [void]$idx.Append('"teams":{')
 $first=$true
 foreach($t in ($teams.Keys | Sort-Object)){
