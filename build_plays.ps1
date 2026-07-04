@@ -20,6 +20,7 @@ param(
   [string]$Gz  = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/pbp2025.csv.gz",
   [string]$Part = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/part2025.csv",
   [string]$Ftn = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/ftn2025.csv",
+  [string]$Roster = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/roster2025.csv",
   [string]$OutDir = "C:/Users/miles/AppData/Local/Packages/Claude_pzs8sxrjxfjjc/LocalCache/Roaming/Claude/local-agent-mode-sessions/eb2236da-4f45-4faf-848a-e61ff1c5f82e/1e19824b-7456-46d5-a988-785586ae0cbb/local_97362316-1558-446f-8479-3a400f8303cf/outputs",
   [int]$Year = 2025,      # season written into plays_index.json
   [int]$Limit = 0,        # 0 = all rows; >0 = stop early (validation)
@@ -46,7 +47,7 @@ $I_down=C 'down'; $I_yl=C 'yardline_100'; $I_epa=C 'epa'; $I_succ=C 'success'; $
 $I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'
 $I_qb=C 'passer_player_name'; $I_rec=C 'receiver_player_name'; $I_ay=C 'air_yards'
 $I_ploc=C 'pass_location'; $I_yac=C 'yards_after_catch'
-$I_cmp=C 'complete_pass'; $I_int=C 'interception'; $I_ptd=C 'pass_touchdown'; $I_cpoe=C 'cpoe'
+$I_cmp=C 'complete_pass'; $I_int=C 'interception'; $I_ptd=C 'pass_touchdown'; $I_cpoe=C 'cpoe'; $I_rid=C 'receiver_player_id'
 $I_run=C 'rusher_player_name'; $I_rloc=C 'run_location'; $I_rgap=C 'run_gap'
 $I_rtd=C 'rush_touchdown'; $I_fum=C 'fumble_lost'
 
@@ -111,7 +112,20 @@ if(Test-Path $Ftn){
   }
   $ffs.Close()
   Write-Host "FTN rows: $fc | drops: $dc"
-} else { Write-Host "participation file not found at $Part - personnel/coverage will be null" }
+}
+# Weekly rosters -> gsis_id => position (for WR/TE tagging of targeted receivers)
+# NOTE: hashtable is $RPOS (not $POS) — $pos is the posteam string in the main loop and PS vars are case-insensitive.
+$RPOS=@{}
+if(Test-Path $Roster){
+  $rfs=New-Object Microsoft.VisualBasic.FileIO.TextFieldParser($Roster)
+  $rfs.SetDelimiters(@(",")); $rfs.HasFieldsEnclosedInQuotes=$true
+  $rh=$rfs.ReadFields(); $rix=@{}; for($i=0;$i -lt $rh.Length;$i++){ $rix[$rh[$i]]=$i }
+  $R_id=$rix['gsis_id']; $R_pos=$rix['position']
+  while(-not $rfs.EndOfData){ $g=$rfs.ReadFields(); $id=$g[$R_id]; if($id){ $RPOS[$id]=$g[$R_pos] } }
+  $rfs.Close()
+  Write-Host "roster positions: $($RPOS.Count)"
+}
+$RECPOS=@{}
 
 $teams=@{}    # team -> @{pass=List;rush=List;qbs=@{};rbs=@{}}
 function Team($t){
@@ -138,6 +152,7 @@ while(-not $tp.EndOfData){
     if($ay -eq '' -or $ay -eq 'NA'){ continue }   # thrown ball only (skip sacks/scrambles/no-air)
     $qb=$f[$I_qb]; if($qb -eq '' -or $qb -eq 'NA'){ continue }
     $rec=$f[$I_rec]
+    if($rec -and $rec -ne 'NA' -and -not $RECPOS.ContainsKey($rec)){ $rid=$f[$I_rid]; if($RPOS.ContainsKey($rid)){ $RECPOS[$rec]=$RPOS[$rid] } }
     $loc=MapLoc $f[$I_ploc]
     $td= if(IsOne $f[$I_ptd]){'1'}else{'0'}
     $out= if(IsOne $f[$I_int]){'"N"'}elseif(IsOne $f[$I_cmp]){'"C"'}else{'"I"'}
@@ -189,4 +204,12 @@ foreach($t in ($teams.Keys | Sort-Object)){
 [System.IO.File]::WriteAllText((Join-Path $dataDir 'plays_index.json'),$idx.ToString())
 [void]$allp.Append('};')
 [System.IO.File]::WriteAllText((Join-Path $dataDir 'plays.js'),$allp.ToString())
-Write-Host ("WROTE {0} team files + plays_index.json + plays.js to {1}" -f $teams.Count,$dataDir)
+# positions.js -> window.RECPOS = { "<receiver name>": "<POS>", ... } for WR/TE tagging
+$posbuf = [System.Text.StringBuilder]::new(); [void]$posbuf.Append('window.RECPOS={'); $rfirst=$true
+foreach($k in ($RECPOS.Keys | Sort-Object)){
+  if(-not $rfirst){ [void]$posbuf.Append(',') }; $rfirst=$false
+  [void]$posbuf.Append((Jstr $k)+':"'+$RECPOS[$k]+'"')
+}
+[void]$posbuf.Append('};')
+[System.IO.File]::WriteAllText((Join-Path $dataDir 'positions.js'),$posbuf.ToString())
+Write-Host ("WROTE {0} team files + plays_index.json + plays.js + positions.js ({1} receivers) to {2}" -f $teams.Count,$RECPOS.Count,$dataDir)
