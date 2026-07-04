@@ -1499,9 +1499,14 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
     `<div class="card">${tbl(rows,[{k:'name',lab:'Team'},{k:'havocR',lab:'HAVOC%',fmt:v=>v.toFixed(1)+'%',heat:1},{k:'epa',lab:'EPA/play allw',fmt:v=>v.toFixed(3),heat:1},{k:'succ',lab:'Succ% allw',fmt:v=>v.toFixed(1)+'%',heat:1},{k:'expl',lab:'Expl% allw',fmt:v=>v.toFixed(1)+'%',heat:1},{k:'sack',lab:'Sacks',heat:1},{k:'tfl',lab:'Run stuffs',heat:1},{k:'qbh',lab:'QB hits',heat:1},{k:'intc',lab:'INT',heat:1},{k:'pd',lab:'PD',heat:1},{k:'ff',lab:'FF',heat:1},{k:'pa',lab:'Pts allw',heat:1}],'abbr')}<p class="note">EPA/play, success% and explosive% allowed measure quality (lower = better). HAVOC, sacks, run stuffs (TFL), QB hits, INT, passes defended (PD) and forced fumbles (FF) measure disruption; points allowed is the season total. Cells shade only when a team is well above/below league average.</p></div>`;
   } else {
     const P=window.DEFPLAYERS||[];
+    // dynamic snap floor = half the league-average starter (top-11 per team by snaps) — recomputed from current data
+    const byTm={};P.forEach(x=>{if(x.snaps>0)(byTm[x.tm]=byTm[x.tm]||[]).push(x.snaps);});
+    const starterSnaps=[];Object.values(byTm).forEach(a=>{a.sort((m,n)=>n-m);starterSnaps.push(...a.slice(0,11));});
+    const lgStarter=starterSnaps.length?Math.round(starterSnaps.reduce((s,v)=>s+v,0)/starterSnaps.length):0;
+    const qualMin=Math.round(lgStarter/2), rotMin=Math.round(qualMin/2);
     const grpCtrl=seg('advgrp',ADVGRP,[['all','All'],['DL','DL'],['LB','LB / Edge'],['DB','DB']]);
-    const volCtrl=seg('advvol',ADVVOL,[['q','Qualified (300+ snaps)'],['o','Rotational (100+)']]);
-    const minSnap=ADVVOL==='q'?300:100;
+    const volCtrl=seg('advvol',ADVVOL,[['q','Qualified ('+qualMin+'+ snaps)'],['o','Rotational ('+rotMin+'+)']]);
+    const minSnap=ADVVOL==='q'?qualMin:rotMin;
     let pool=P.filter(x=>(ADVGRP==='all'||x.grp===ADVGRP)&&x.snaps>=minSnap);
     const isDB=ADVGRP==='DB';
     let bar,blab;
@@ -1511,7 +1516,7 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
     const bAvg=bar.reduce((s,x)=>s+x.v,0)/(bar.length||1);
     const tblRows=pool.slice(0,60);
     const cols=[{k:'name',lab:'Player'},{k:'tm',lab:'Tm'},{k:'pos',lab:'Pos'},{k:'snaps',lab:'Snaps'},{k:'sack',lab:'Sacks',heat:1},{k:'prs',lab:'Press',heat:1},{k:'qbh',lab:'QB hits',heat:1},{k:'tfl',lab:'Stuffs',heat:1},{k:'intc',lab:'INT',heat:1},{k:'pd',lab:'PD',heat:1},{k:'ff',lab:'FF',heat:1},{k:'missPct',lab:'Miss%',fmt:v=>v==null?'—':v.toFixed(1)+'%',heat:1},{k:'havocR',lab:'HAVOC%',fmt:v=>v==null?'—':v.toFixed(2)+'%',heat:1},{k:'tgt',lab:'Tgt'},{k:'cmpPct',lab:'Cmp%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'ypt',lab:'Yd/tgt',fmt:v=>v==null?'—':v.toFixed(1),heat:1},{k:'rtg',lab:'Rtg allw',fmt:v=>v==null?'—':v.toFixed(1),heat:1}];
-    box.innerHTML=`<div class="card">${sideCtrl}<div style="display:flex;flex-wrap:wrap;gap:2px 4px">${grpCtrl}${volCtrl}</div><p class="note" style="margin:2px 0 0">Individual defenders (${pool.length} shown, top 60 in table). Edge rushers appear under <b>DL</b> or <b>LB / Edge</b> depending on how the roster lists them. Sortable — click any column.</p></div>`+
+    box.innerHTML=`<div class="card">${sideCtrl}<div style="display:flex;flex-wrap:wrap;gap:2px 4px">${grpCtrl}${volCtrl}</div><p class="note" style="margin:2px 0 0">Individual defenders (${pool.length} shown, top 60 in table). <b>Qualified = half the league-average starter snap count</b> (${qualMin} snaps — recomputed from current data). Edge rushers appear under <b>DL</b> or <b>LB / Edge</b> depending on how the roster lists them. Sortable — click any column.</p></div>`+
     `<div class="card">${barChart(bar,{avg:bAvg,label:blab,dec:isDB?0:(ADVGRP==='all'?2:0),rot:1,b:66,h:300,bw:14})}</div>`+
     `<div class="card">${tbl(tblRows,cols,'tm',true)}<p class="note"><b>What's here vs what isn't:</b> sacks, pressures, QB hits, run stuffs (TFL), INT, passes defended (PD), forced fumbles and missed-tackle% come from nflverse play-by-play + PFR advanced charting. Coverage (targets, completion%, yards/target, passer rating allowed) is the public stand-in for coverage grade / separation. <b>PRWR, double-team rate, average separation allowed and PFF/ESPN coverage &amp; pass-rush grades are licensed products not in this free dataset</b> — pressures and passer rating allowed are the closest public proxies. HAVOC% = disruptive plays ÷ snaps.</p></div>`;
   }
