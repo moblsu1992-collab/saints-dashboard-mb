@@ -78,13 +78,14 @@ function PersGroup($s){
 $ROUTES=@{'QUICK OUT'=0;'HITCH/CURL'=1;'GO'=2;'SCREEN'=3;'IN/DIG'=4;'DEEP OUT'=5;'SHALLOW CROSS/DRAG'=6;'SLANT'=7;'POST'=8;'SWING'=9;'CORNER'=10;'WHEEL'=11;'TEXAS/ANGLE'=12}
 $FORMM=@{'SHOTGUN'='"S"';'UNDER CENTER'='"U"';'PISTOL'='"P"'}
 $PJOIN=@{}
+$SNAPCT=@{}   # gsis_id -> offensive snaps (counted from participation offense_players)
 if(Test-Path $Part){
   $pfs=New-Object Microsoft.VisualBasic.FileIO.TextFieldParser($Part)
   $pfs.SetDelimiters(@(",")); $pfs.HasFieldsEnclosedInQuotes=$true
   $ph=$pfs.ReadFields(); $pix=@{}; for($i=0;$i -lt $ph.Length;$i++){ $pix[$ph[$i]]=$i }
   $P_gid=$pix['nflverse_game_id']; $P_pid=$pix['play_id']; $P_pers=$pix['offense_personnel']
   $P_mz=$pix['defense_man_zone_type']; $P_cov=$pix['defense_coverage_type']; $P_box=$pix['defenders_in_box']
-  $P_route=$pix['route']; $P_form=$pix['offense_formation']
+  $P_route=$pix['route']; $P_form=$pix['offense_formation']; $P_off=$pix['offense_players']
   $pc=0
   while(-not $pfs.EndOfData){
     $g=$pfs.ReadFields(); $pc++
@@ -94,9 +95,10 @@ if(Test-Path $Part){
     $rtv=[string]$g[$P_route]; $rtc= if($ROUTES.ContainsKey($rtv)){$ROUTES[$rtv]}else{'null'}
     $fmv=[string]$g[$P_form]; $fmc= if($FORMM.ContainsKey($fmv)){$FORMM[$fmv]}else{'null'}
     $PJOIN[$g[$P_gid]+'|'+$g[$P_pid]]=','+(Jstr $grp)+','+$mzc+','+$cvc+','+(NumOrNull $g[$P_box])+','+$rtc+','+$fmc
+    if($null -ne $P_off){ $op=[string]$g[$P_off]; if($op){ foreach($id in $op.Split(';')){ if($id){ if($SNAPCT.ContainsKey($id)){$SNAPCT[$id]++}else{$SNAPCT[$id]=1} } } } }
   }
   $pfs.Close()
-  Write-Host "participation rows: $pc | joined keys: $($PJOIN.Count)"
+  Write-Host "participation rows: $pc | joined keys: $($PJOIN.Count) | snap ids: $($SNAPCT.Count)"
 }
 # FTN charting -> drops, keyed game_id|play_id (is_drop = TRUE/FALSE)
 $DROPS=@{}
@@ -125,7 +127,7 @@ if(Test-Path $Roster){
   $rfs.Close()
   Write-Host "roster positions: $($RPOS.Count)"
 }
-$RECPOS=@{}
+$RECPOS=@{}; $RECSNP=@{}; $SEENREC=@{}
 
 $teams=@{}    # team -> @{pass=List;rush=List;qbs=@{};rbs=@{}}
 function Team($t){
@@ -152,7 +154,7 @@ while(-not $tp.EndOfData){
     if($ay -eq '' -or $ay -eq 'NA'){ continue }   # thrown ball only (skip sacks/scrambles/no-air)
     $qb=$f[$I_qb]; if($qb -eq '' -or $qb -eq 'NA'){ continue }
     $rec=$f[$I_rec]
-    if($rec -and $rec -ne 'NA' -and -not $RECPOS.ContainsKey($rec)){ $rid=$f[$I_rid]; if($RPOS.ContainsKey($rid)){ $RECPOS[$rec]=$RPOS[$rid] } }
+    if($rec -and $rec -ne 'NA' -and -not $SEENREC.ContainsKey($rec)){ $SEENREC[$rec]=1; $rid=$f[$I_rid]; if($RPOS.ContainsKey($rid)){ $RECPOS[$rec]=$RPOS[$rid] }; if($SNAPCT.ContainsKey($rid)){ $RECSNP[$rec]=$SNAPCT[$rid] } }
     $loc=MapLoc $f[$I_ploc]
     $td= if(IsOne $f[$I_ptd]){'1'}else{'0'}
     $out= if(IsOne $f[$I_int]){'"N"'}elseif(IsOne $f[$I_cmp]){'"C"'}else{'"I"'}
@@ -206,10 +208,12 @@ foreach($t in ($teams.Keys | Sort-Object)){
 [System.IO.File]::WriteAllText((Join-Path $dataDir 'plays.js'),$allp.ToString())
 # positions.js -> window.RECPOS = { "<receiver name>": "<POS>", ... } for WR/TE tagging
 $posbuf = [System.Text.StringBuilder]::new(); [void]$posbuf.Append('window.RECPOS={'); $rfirst=$true
-foreach($k in ($RECPOS.Keys | Sort-Object)){
+foreach($k in ($SEENREC.Keys | Sort-Object)){
+  $pv= if($RECPOS.ContainsKey($k)){$RECPOS[$k]}else{'?'}
+  $sv= if($RECSNP.ContainsKey($k)){$RECSNP[$k]}else{0}
   if(-not $rfirst){ [void]$posbuf.Append(',') }; $rfirst=$false
-  [void]$posbuf.Append((Jstr $k)+':"'+$RECPOS[$k]+'"')
+  [void]$posbuf.Append((Jstr $k)+':{"p":"'+$pv+'","s":'+$sv+'}')
 }
 [void]$posbuf.Append('};')
 [System.IO.File]::WriteAllText((Join-Path $dataDir 'positions.js'),$posbuf.ToString())
-Write-Host ("WROTE {0} team files + plays_index.json + plays.js + positions.js ({1} receivers) to {2}" -f $teams.Count,$RECPOS.Count,$dataDir)
+Write-Host ("WROTE {0} team files + plays_index.json + plays.js + positions.js ({1} receivers) to {2}" -f $teams.Count,$SEENREC.Count,$dataDir)
