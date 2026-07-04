@@ -68,6 +68,10 @@ tr.lg td{background:#fbf6e8 !important;font-weight:700;color:#6a6450}
 .subnav button:hover{color:var(--navy2)}
 .subnav button.on{background:#fff;color:var(--navy2);box-shadow:var(--sh-1)}
 .subnav select{margin:0}
+.subgroups{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end;margin:0 0 16px}
+.subgroup{display:flex;flex-direction:column;gap:4px}
+.subgroup .subnav{margin:0}
+.subcap{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8a93a3;padding-left:5px}
 /* ---------- chips, pills, badges ---------- */
 .tier{display:inline-block;padding:2px 10px;border-radius:11px;font-size:11px;font-weight:700;color:#fff;letter-spacing:.2px}
 .bar{height:9px;border-radius:5px;background:var(--gold)}
@@ -1426,7 +1430,22 @@ function tbl(rows,cols,noKey,rank){
  const avgRow=`<tr class="lg">${rank?'<td class="rkc"></td>':''}<td class="tl">NFL average</td>${cols.slice(1).map(c=>{const vs=rows.map(r=>r[c.k]).filter(x=>typeof x==='number');if(!vs.length)return '<td></td>';const m=vs.reduce((a,b)=>a+b,0)/vs.length;return `<td>${c.fmt?c.fmt(m):(Math.round(m*10)/10)}</td>`;}).join('')}</tr>`;
  return `<div class="scroll"><table${rank?' data-ranked="1"':''}><thead><tr>${rank?'<th data-rk="1">#</th>':''}${cols.map((c,i)=>`<th class="${i==0?'tl':''}">${c.lab}</th>`).join('')}</tr></thead><tbody>${avgRow}${body}</tbody></table></div>`;}
 function epaScatter(){const T=DATA.leagueEPA.teams,lg=DATA.leagueEPA.lgOff;const ox=T.map(t=>t.off.epa),dx=T.map(t=>t.deff.epa);const oMin=Math.min(...ox,lg),oMax=Math.max(...ox,lg),dMin=Math.min(...dx,lg),dMax=Math.max(...dx,lg);const W=760,H=500,p=58;const X=v=>p+(v-oMin)/(oMax-oMin)*(W-2*p),Y=v=>p+(v-dMin)/(dMax-dMin)*(H-2*p);const cx=X(lg).toFixed(1),cy=Y(lg).toFixed(1);const pts=T.map(t=>{const x=+X(t.off.epa),y=+Y(t.deff.epa);const no=t.abbr=='NO';const s=no?30:21;return `<image href="data/logos/${t.abbr}.png" x="${(x-s/2).toFixed(1)}" y="${(y-s/2).toFixed(1)}" width="${s}" height="${s}"${no?' style="filter:drop-shadow(0 0 2px #D3BC8D)"':''}><title>${t.name}: offense ${t.off.epa.toFixed(3)}, defense ${t.deff.epa.toFixed(3)}</title></image>`;}).join('');return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:760px;background:#fff;border:1px solid #e3e7ee;border-radius:8px"><line x1="${cx}" y1="${p}" x2="${cx}" y2="${H-p}" stroke="#cfd6e0" stroke-dasharray="4"/><line x1="${p}" y1="${cy}" x2="${W-p}" y2="${cy}" stroke="#cfd6e0" stroke-dasharray="4"/><text x="${W-p}" y="${H-p+32}" text-anchor="end" font-size="11" fill="#666">Offense EPA/play → (better)</text><text x="14" y="${p-22}" font-size="11" fill="#666">↑ Better defense</text><text x="${W-p}" y="${p-10}" text-anchor="end" font-size="10" fill="#1e7a34" font-weight="700">Good O · Good D</text>${pts}</svg>`;}
-function renderEPA(){const s=$('#epa');s.innerHTML=`${pageHead('epa')}<div class="subnav" id="esub"></div><div id="ebody"></div>`;const subs=[['ov','League-Wide'],['off','Offense Ranking'],['def','Defense Ranking'],['qb','Quarterbacks'],['rec','Receivers'],['rb','Running Backs'],['advdef','Advanced Defense'],['neutral','Neutral Pass Freq'],['proe','Pass Over Expected'],['fourth','Fourth Downs'],['luck','Luck'],['series','Series Success']];const es=$('#esub');subs.forEach(([id,lab],i)=>{const b=document.createElement('button');b.textContent=lab;if(i==0)b.classList.add('on');b.onclick=()=>{document.querySelectorAll('#esub button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawEPA(id);};es.appendChild(b);});drawEPA('ov');}
+function renderEPA(){const s=$('#epa');s.innerHTML=`${pageHead('epa')}<div class="subgroups" id="esub"></div><div id="ebody"></div>`;
+ const groups=[
+   ['Overview',[['ov','League-Wide']]],
+   ['Rankings',[['off','Offense Ranking'],['def','Defense Ranking']]],
+   ['Personnel & Advanced Defense',[['qb','Quarterbacks'],['rec','Receivers'],['rb','Running Backs'],['advdef','Advanced Defense']]],
+   ['Additional Advanced Metrics',[['neutral','Neutral Pass Freq'],['proe','Pass Over Expected'],['fourth','Fourth Downs'],['luck','Luck'],['series','Series Success']]]
+ ];
+ const es=$('#esub');let firstBtn=true;
+ groups.forEach(([cap,items])=>{
+   const g=document.createElement('div');g.className='subgroup';
+   const c=document.createElement('span');c.className='subcap';c.textContent=cap;g.appendChild(c);
+   const nav=document.createElement('div');nav.className='subnav';
+   items.forEach(([id,lab])=>{const b=document.createElement('button');b.textContent=lab;if(firstBtn){b.classList.add('on');firstBtn=false;}b.onclick=()=>{document.querySelectorAll('#esub button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawEPA(id);};nav.appendChild(b);});
+   g.appendChild(nav);es.appendChild(g);
+ });
+ drawEPA('ov');}
 function barChart(items,o){
  const W=Math.max(560,items.length*(o.bw||22)+70),H=o.h||250,p={l:48,r:10,t:16,b:o.b||30};
  const vs=items.map(i=>i.v);const mn=Math.min(0,...vs),mx=Math.max(0,...vs);
