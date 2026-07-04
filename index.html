@@ -1141,17 +1141,24 @@ function renderField(){
  $('#fmode').querySelectorAll('[data-fm]').forEach(b=>b.onclick=()=>{FIELDMODE=b.dataset.fm;resetFieldFilters();document.querySelectorAll('#fmode button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawFieldPage();});
  drawFieldPage();
 }
+function fetchTeam(ab,tries){
+ return fetch('data/plays/'+ab+'.json',{cache:'reload'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+  .catch(err=>{if(tries>1)return new Promise(res=>setTimeout(res,700)).then(()=>fetchTeam(ab,tries-1));throw err;});
+}
 function loadTeam(ab){
  if(PLAYCACHE[ab])return Promise.resolve(PLAYCACHE[ab]);
  if(window.PLAYS&&window.PLAYS[ab]){PLAYCACHE[ab]=window.PLAYS[ab];return Promise.resolve(PLAYCACHE[ab]);}
- return fetch('data/plays/'+ab+'.json').then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(d=>{PLAYCACHE[ab]=d;return d;});
+ // window.PLAYS didn't load (big file dropped/slow) — pull just this team's file, with retries
+ return fetchTeam(ab,3).then(d=>{PLAYCACHE[ab]=d;return d;});
 }
 function drawFieldPage(){
  const body=$('#fieldbody');if(!body)return;
  if(FIELDMODE==='sheet'){body.innerHTML='<div class="card" id="fzpage"></div>';drawFZPage();return;}
  body.innerHTML='<div class="card floading">Loading 2025 plays…</div>';
  loadTeam(curFZTeam).then(d=>{if($('#fieldbody')&&FIELDMODE!=='sheet'){CURPLAYS=d;renderFieldChart();}})
-   .catch(e=>{const b=$('#fieldbody');if(b)b.innerHTML=`<div class="card banner">Couldn't load play data for ${curFZTeam}: ${e.message}. (The field charts need the dashboard served over http — they're loading data/plays/${curFZTeam}.json.)</div>`;});
+   .catch(e=>{const b=$('#fieldbody');if(!b)return;const isFile=location.protocol==='file:';
+     b.innerHTML=`<div class="card banner">Couldn't load ${teamName(curFZTeam)} play data (${e.message}).<br>${isFile?'It looks like you opened the file directly — open the hosted site (…github.io/saints-dashboard-mb/) so your browser can load the data.':'This is usually a slow or dropped connection while loading the play file — it should work on a retry.'} <button class="fclear" id="fretry" style="margin-left:6px">↻ Retry</button></div>`;
+     const rb=$('#fretry');if(rb)rb.onclick=()=>{delete PLAYCACHE[curFZTeam];drawFieldPage();};});
 }
 function drawFZPage(){
  const box=$('#fzpage');const st=FZSTATE.opp;
