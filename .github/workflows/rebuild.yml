@@ -35,11 +35,12 @@ jobs:
           curl -sSL --retry 3 -o ftn.csv     "$base/ftn_charting/ftn_charting_${SEASON}.csv"
           curl -sSL --retry 3 -o roster.csv  "$base/weekly_rosters/roster_weekly_${SEASON}.csv"
           curl -sSL --retry 3 -o pfrrush.csv "$base/pfr_advstats/advstats_week_rush_${SEASON}.csv"
-          ls -lh pbp.csv.gz part.csv ftn.csv roster.csv pfrrush.csv
+          curl -sSL --retry 3 -o pfrdef.csv  "$base/pfr_advstats/advstats_week_def_${SEASON}.csv"
+          ls -lh pbp.csv.gz part.csv ftn.csv roster.csv pfrrush.csv pfrdef.csv
 
       - name: Rebuild play-level data
         shell: pwsh
-        run: ./build_plays.ps1 -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -OutDir . -Year ([int]$env:SEASON)
+        run: ./build_plays.ps1 -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir . -Year ([int]$env:SEASON)
 
       - name: Commit refreshed data
         run: |
