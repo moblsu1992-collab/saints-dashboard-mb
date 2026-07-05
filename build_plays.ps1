@@ -46,7 +46,7 @@ function C([string]$n){ $ix[$n] }
 $I_gid=C 'game_id'; $I_pid=C 'play_id'; $I_sd=C 'score_differential'; $I_ytg=C 'ydstogo'
 $I_week=C 'week'; $I_st=C 'season_type'; $I_pos=C 'posteam'; $I_def=C 'defteam'
 $I_down=C 'down'; $I_yl=C 'yardline_100'; $I_epa=C 'epa'; $I_succ=C 'success'; $I_yg=C 'yards_gained'
-$I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'; $I_ptype=C 'play_type'
+$I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'; $I_ptype=C 'play_type'; $I_scr=C 'qb_scramble'
 $I_qb=C 'passer_player_name'; $I_rec=C 'receiver_player_name'; $I_ay=C 'air_yards'
 $I_ploc=C 'pass_location'; $I_yac=C 'yards_after_catch'
 $I_cmp=C 'complete_pass'; $I_int=C 'interception'; $I_ptd=C 'pass_touchdown'; $I_cpoe=C 'cpoe'; $I_rid=C 'receiver_player_id'
@@ -226,9 +226,9 @@ while(-not $tp.EndOfData){
     if($tf){ if($f[$I_tfl1] -and $f[$I_tfl1] -ne 'NA'){ AddPBPD $f[$I_tfl1] 'tfl' }; if($f[$I_tfl2] -and $f[$I_tfl2] -ne 'NA'){ AddPBPD $f[$I_tfl2] 'tfl' } }
     $gid=$f[$I_gid]; if(-not $GAMES.ContainsKey($gid)){ $GAMES[$gid]=@{ht=$f[$I_ht];at=$f[$I_at];h=(Num0 $f[$I_hs]);a=(Num0 $f[$I_as])} }
   }
-  if(IsOne $f[$I_pass]){
+  if((IsOne $f[$I_pass]) -and -not (IsOne $f[$I_scr])){
     $ay=$f[$I_ay]
-    if($ay -eq '' -or $ay -eq 'NA'){ continue }   # thrown ball only (skip sacks/scrambles/no-air)
+    if($ay -eq '' -or $ay -eq 'NA'){ continue }   # thrown ball only (skip sacks/no-air; scrambles handled as rushes below)
     $qb=$f[$I_qb]; if($qb -eq '' -or $qb -eq 'NA'){ continue }
     $rec=$f[$I_rec]
     if($rec -and $rec -ne 'NA' -and -not $SEENREC.ContainsKey($rec)){ $SEENREC[$rec]=1; $rid=$f[$I_rid]; if($RPOS.ContainsKey($rid)){ $RECPOS[$rec]=$RPOS[$rid] }; if($SNAPCT.ContainsKey($rid)){ $RECSNP[$rec]=$SNAPCT[$rid] } }
@@ -241,7 +241,8 @@ while(-not $tp.EndOfData){
     $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+','+$cpoe+','+$drop+']'
     $tm=Team $pos; $tm.pass.Add($row); $np++
     if($tm.qbs.ContainsKey($qb)){ $tm.qbs[$qb]++ } else { $tm.qbs[$qb]=1 }
-  } elseif(IsOne $f[$I_rush]){
+  } elseif((IsOne $f[$I_rush]) -or (IsOne $f[$I_scr])){
+    # includes QB scrambles (pass=1/rush=0/qb_scramble=1 in nflverse) — they're QB runs; run_gap/run_location are null on them
     $run=$f[$I_run]; if($run -eq '' -or $run -eq 'NA'){ continue }
     if(-not $RBDAT.ContainsKey($run)){
       $rrid=$f[$I_rrid]
