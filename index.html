@@ -1513,8 +1513,15 @@ function segRow(k,cur,opts,style){return `<div class="subnav" style="${style||'m
 // pass plays grouped by keyOf(p) -> {group:{player:raw}}
 function passSplitGroups(who,keyOf){const P=window.PLAYS||{},G={};for(const t in P){for(const p of P[t].pass){const nm=who==='rec'?p[3]:p[2];if(!nm)continue;const k=keyOf(p);if(k==null)continue;const g=G[k]||(G[k]={});const o=g[nm]||(g[nm]={name:nm,tm:{},tgt:0,rec:0,yds:0,td:0,ep:[],cp:[]});o.tgt++;o.tm[t]=(o.tm[t]||0)+1;if(p[12]==='C'){o.rec++;o.yds+=(p[8]||0);}if(p[13]===1)o.td++;if(p[10]!=null)o.ep.push(p[10]);if(p[22]!=null)o.cp.push(p[22]);}}return G;}
 function splitPassPlayers(gmap){return Object.values(gmap||{}).map(o=>({name:o.name,team:Object.keys(o.tm).sort((a,b)=>o.tm[b]-o.tm[a])[0],tgt:o.tgt,rec:o.rec,yds:o.yds,td:o.td,epaTgt:o.ep.length?fmean(o.ep):null,cpoe:o.cp.length?fmean(o.cp):null}));}
-function rankPass(pool,metric){if(metric==='ec')return zComposite(pool,['epaTgt','cpoe']).map(x=>({...x,mv:x.comp})).sort((a,b)=>(b.mv==null?-99:b.mv)-(a.mv==null?-99:a.mv));const k=metric==='cpoe'?'cpoe':'epaTgt';return pool.map(x=>({...x,mv:x[k]})).sort((a,b)=>(b.mv==null?-99:b.mv)-(a.mv==null?-99:a.mv));}
-function fmtPassMetric(v,m){if(v==null)return '—';if(m==='ec')return (v>0?'+':'')+v.toFixed(2);if(m==='cpoe')return (v>0?'+':'')+v.toFixed(1);return (v>0?'+':'')+v.toFixed(3);}
+function rankPass(pool,metric){if(metric==='ec')return zComposite(pool,['epaTgt','cpoe']).map(x=>({...x,mv:x.comp})).sort((a,b)=>(b.mv==null?-99:b.mv)-(a.mv==null?-99:a.mv));const k={epa:'epaTgt',cpoe:'cpoe',comp:'rec',yds:'yds',td:'td'}[metric];return pool.map(x=>({...x,mv:x[k]})).sort((a,b)=>(b.mv==null?-99:b.mv)-(a.mv==null?-99:a.mv));}
+function fmtPassMetric(v,m){if(v==null)return '—';if(m==='ec')return (v>0?'+':'')+v.toFixed(2);if(m==='cpoe')return (v>0?'+':'')+v.toFixed(1);if(m==='epa')return (v>0?'+':'')+v.toFixed(3);return String(v);}
+// underlying counting line for a leader within a split (rec/tgt · yds · TD). For QB, rec = completions.
+function underPass(x){return `${x.rec}/${x.tgt} · ${x.yds} yd · ${x.td} TD`;}
+function underRun(x){return `${x.att} att · ${x.yds} yd · ${x.td} TD`;}
+// total season volume per player + league "starter" average (top-N per team) for the 80%-of-avg qualifier.
+function passTotals(who){const P=window.PLAYS||{},T={};for(const t in P){for(const p of P[t].pass){const nm=who==='rec'?p[3]:p[2];if(!nm)continue;const o=T[nm]||(T[nm]={tm:{},n:0});o.n++;o.tm[t]=(o.tm[t]||0)+1;}}Object.values(T).forEach(o=>o.team=Object.keys(o.tm).sort((a,b)=>o.tm[b]-o.tm[a])[0]);return T;}
+function rushTotalsRB(){const P=window.PLAYS||{},A=window.RBADV||{},T={};for(const t in P){for(const p of P[t].rush){const nm=p[2];if(!nm)continue;const pos=A[nm]?A[nm].pos:'?';if(pos!=='RB'&&pos!=='FB')continue;const o=T[nm]||(T[nm]={tm:{},n:0});o.n++;o.tm[t]=(o.tm[t]||0)+1;}}Object.values(T).forEach(o=>o.team=Object.keys(o.tm).sort((a,b)=>o.tm[b]-o.tm[a])[0]);return T;}
+function starterAvgVol(T,topN){const byTm={};Object.values(T).forEach(o=>{(byTm[o.team]=byTm[o.team]||[]).push(o.n);});const arr=[];Object.values(byTm).forEach(a=>{a.sort((x,y)=>y-x);arr.push(...a.slice(0,topN));});return arr.length?Math.round(arr.reduce((s,v)=>s+v,0)/arr.length):0;}
 // run plays grouped by keyOf(p) -> {group:{player:raw}}
 function runSplitGroups(keyOf){const P=window.PLAYS||{},G={};for(const t in P){for(const p of P[t].rush){const nm=p[2];if(!nm)continue;const k=keyOf(p);if(k==null)continue;const g=G[k]||(G[k]={});const o=g[nm]||(g[nm]={name:nm,tm:{},att:0,yds:0,td:0,ep:[],sc:[],expl:0});o.att++;o.tm[t]=(o.tm[t]||0)+1;o.yds+=(p[7]||0);if(p[7]>=10)o.expl++;o.sc.push(p[9]);if(p[8]!=null)o.ep.push(p[8]);if(p[10]===1)o.td++;}}return G;}
 function splitRunPlayers(gmap){const A=window.RBADV||{};return Object.values(gmap||{}).map(o=>({name:o.name,team:Object.keys(o.tm).sort((a,b)=>o.tm[b]-o.tm[a])[0],pos:A[o.name]?A[o.name].pos:'?',att:o.att,yds:o.yds,td:o.td,ypc:o.att?o.yds/o.att:null,succ:o.sc.length?100*fmean(o.sc):null,expl:o.att?100*o.expl/o.att:null,epaRush:o.ep.length?fmean(o.ep):null}));}
@@ -1523,28 +1530,34 @@ function fmtRunMetric(v,m){if(v==null)return '—';if(m==='epa')return (v>0?'+':
 let ADVSIDE='team', ADVGRP='all', ADVVOL='q'; // Advanced Defense: side (team/player), position group (all/DL/LB/DB), snap volume
 // Route-tree / field-zone leader boards (pass). who='rec'|'qb', kind='route'|'zone'.
 function renderPassSplits(who,kind){
- const metrics=[['ec','EPA + CPOE'],['epa','EPA/tgt'],['cpoe','CPOE']];
+ const rlab=who==='qb'?'Completions':'Receptions', cabbr=who==='qb'?'comp':'rec';
+ const metrics=[['ec','EPA + CPOE'],['epa','EPA/tgt'],['cpoe','CPOE'],['comp',rlab],['yds','Yards'],['td','TDs']];
  const groupsN=kind==='route'?RT13:(function(){const a=[];for(let d=0;d<4;d++)for(let s=0;s<3;s++)a.push(DEPN2[d]+' · '+SIDN2[s]);return a;})();
  const keyOf=kind==='route'?(p=>p[18]==null?null:p[18]):(p=>{const d=depthBucket(p[4]),s=p[5];return (d==null||s==null||s==='')?null:d*3+s;});
- const minT=kind==='route'?10:8, unit=who==='rec'?'targets':'attempts';
+ const unit=who==='rec'?'targets':'attempts', unitS=who==='rec'?'target':'attempt';
+ // volume qualifier: only players with >=80% of the league-average starter volume (top-4 target-getters / the starter QB)
+ const totals=passTotals(who), lgVol=starterAvgVol(totals,who==='rec'?4:1), minVol=Math.round(0.8*lgVol);
+ const qual=new Set(Object.keys(totals).filter(nm=>totals[nm].n>=minVol));
+ const psMin=kind==='route'?3:2, okP=x=>qual.has(x.name)&&x.tgt>=psMin;
  const G=passSplitGroups(who,keyOf);
  let sg=SPLITGROUP; if(sg!=='all'&&(+sg>=groupsN.length||+sg<0))sg='all';
  const mLab=metrics.find(m=>m[0]===SPLITMETRIC)[1], posLab=who==='rec'?'Receiver':'Quarterback';
- const controls=`<div class="card">${segRow('spm',SPLITMETRIC,metrics)}${segRow('spg',sg,[['all',kind==='route'?'All routes':'All zones']].concat(groupsN.map((nm,i)=>[String(i),nm])),'margin:0 6px 6px 0;flex-wrap:wrap')}</div>`;
- // per-group leader summary
- const summ=groupsN.map((nm,i)=>{const all=splitPassPlayers(G[i]);const tot=all.reduce((s,x)=>s+x.tgt,0);const lgE=smAvg(all.filter(x=>x.epaTgt!=null).map(x=>x.epaTgt));const lgC=smAvg(all.filter(x=>x.cpoe!=null).map(x=>x.cpoe));const ld=rankPass(all.filter(x=>x.tgt>=minT),SPLITMETRIC)[0];return {i,nm,tot,lgE,lgC,ld};});
+ const dec={ec:2,epa:3,cpoe:1,comp:0,yds:0,td:0}[SPLITMETRIC];
+ const qNote=`Qualified: <b>${qual.size} ${posLab.toLowerCase()}s</b> with ≥${minVol} ${unit} — 80% of the ${lgVol}-${unitS} league-starter average.`;
+ const controls=`<div class="card">${segRow('spm',SPLITMETRIC,metrics)}${segRow('spg',sg,[['all',kind==='route'?'All routes':'All zones']].concat(groupsN.map((nm,i)=>[String(i),nm])),'margin:0 6px 6px 0;flex-wrap:wrap')}<p class="note" style="margin:2px 0 0">${qNote}</p></div>`;
+ // per-group leader summary (qualified pool only)
+ const summ=groupsN.map((nm,i)=>{const all=splitPassPlayers(G[i]);const tot=all.reduce((s,x)=>s+x.tgt,0);const lgE=smAvg(all.filter(x=>x.epaTgt!=null).map(x=>x.epaTgt));const lgC=smAvg(all.filter(x=>x.cpoe!=null).map(x=>x.cpoe));const ld=rankPass(all.filter(okP),SPLITMETRIC)[0];return {i,nm,tot,lgE,lgC,ld};});
  let body='';
  if(sg==='all'){
   if(kind==='zone'){
-   let cells='';for(let d=3;d>=0;d--){for(let s=0;s<3;s++){const r=summ[d*3+s];const ld=r.ld;cells+=`<div class="fzc cl" data-jump="${d*3+s}"><div class="fzc-h">${DEPN2[d]} · ${SIDN2[s]}</div><div class="fzc-l">${ld?teamCell(ld.team,ld.name):'<span class="fzmute">—</span>'}</div><div class="fzc-v">${ld?fmtPassMetric(ld.mv,SPLITMETRIC)+' · '+r.tot+' tgt':''}</div></div>`;}}
-   body=`<div class="card"><p class="note" style="margin:0 0 8px">Best ${posLab.toLowerCase()} in each area of the field by <b>${mLab}</b> (min ${minT} ${unit}). Deep at top, line of scrimmage at bottom — tap a zone for its top 50.</p><div class="fzgrid">${cells}</div></div>`;
+   let cells='';for(let d=3;d>=0;d--){for(let s=0;s<3;s++){const r=summ[d*3+s];const ld=r.ld;cells+=`<div class="fzc cl" data-jump="${d*3+s}"><div class="fzc-h">${DEPN2[d]} · ${SIDN2[s]}</div><div class="fzc-l">${ld?teamCell(ld.team,ld.name):'<span class="fzmute">—</span>'}</div><div class="fzc-v">${ld?underPass(ld):r.tot+' '+unit}</div></div>`;}}
+   body=`<div class="card"><p class="note" style="margin:0 0 8px">Best qualified ${posLab.toLowerCase()} in each area of the field by <b>${mLab}</b>; the cell shows his actual line in that zone (${cabbr}/tgt · yds · TD). Deep at top, line of scrimmage at bottom — tap a zone for its top 50.</p><div class="fzgrid">${cells}</div></div>`;
   } else {
-   body=`<div class="card"><p class="note" style="margin:0 0 8px">The route tree — each route's leader by <b>${mLab}</b> (min ${minT} ${unit}). Tap a route for its top 50 ${posLab.toLowerCase()}s.</p><div class="scroll"><table><thead><tr><th class="tl">Route</th><th>${who==='rec'?'Targets':'Att'}</th><th>Lg EPA/tgt</th><th>Lg CPOE</th><th class="tl">Leader · ${mLab}</th></tr></thead><tbody>${summ.map(r=>`<tr class="cl" data-jump="${r.i}"><td class="tl">${r.nm}</td><td>${r.tot}</td><td>${r.lgE==null?'—':(r.lgE>0?'+':'')+r.lgE.toFixed(3)}</td><td>${r.lgC==null?'—':(r.lgC>0?'+':'')+r.lgC.toFixed(1)}</td><td class="tl">${r.ld?teamCell(r.ld.team,r.ld.name)+' <b>'+fmtPassMetric(r.ld.mv,SPLITMETRIC)+'</b>':'—'}</td></tr>`).join('')}</tbody></table></div></div>`;
+   body=`<div class="card"><p class="note" style="margin:0 0 8px">The route tree — each route's leader by <b>${mLab}</b>, with his line on that route (${cabbr}/tgt · yds · TD). Tap a route for its top 50 ${posLab.toLowerCase()}s.</p><div class="scroll"><table><thead><tr><th class="tl">Route</th><th>${who==='rec'?'Targets':'Att'}</th><th>Lg EPA/tgt</th><th>Lg CPOE</th><th class="tl">Leader · ${mLab}</th></tr></thead><tbody>${summ.map(r=>`<tr class="cl" data-jump="${r.i}"><td class="tl">${r.nm}</td><td>${r.tot}</td><td>${r.lgE==null?'—':(r.lgE>0?'+':'')+r.lgE.toFixed(3)}</td><td>${r.lgC==null?'—':(r.lgC>0?'+':'')+r.lgC.toFixed(1)}</td><td class="tl">${r.ld?teamCell(r.ld.team,r.ld.name)+' <b>'+fmtPassMetric(r.ld.mv,SPLITMETRIC)+'</b> <span class="hint">'+underPass(r.ld)+'</span>':'—'}</td></tr>`).join('')}</tbody></table></div></div>`;
   }
  } else {
-  const i=+sg;const ranked=rankPass(splitPassPlayers(G[i]).filter(x=>x.tgt>=minT),SPLITMETRIC).slice(0,50);
-  const dec=SPLITMETRIC==='epa'?3:(SPLITMETRIC==='cpoe'?1:2);
-  body=`<div class="card">${barChart(ranked.slice(0,25).map(x=>({lab:x.name,v:x.mv==null?0:+x.mv.toFixed(dec),hl:x.team=='NO',title:x.name+' ('+x.team+') — '+x.tgt+' tgt · '+fmtPassMetric(x.mv,SPLITMETRIC)})),{avg:0,label:'Top '+posLab+'s — '+groupsN[i]+' · '+mLab,dec:dec,rot:1,b:64,h:300,bw:14})}</div><div class="card">${tbl(ranked,[{k:'name',lab:posLab},{k:'team',lab:'Tm'},{k:'tgt',lab:'Tgt'},{k:'rec',lab:'Rec'},{k:'yds',lab:'Yds',heat:1},{k:'td',lab:'TD',heat:1},{k:'epaTgt',lab:'EPA/tgt',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(1),heat:1},{k:'mv',lab:mLab,fmt:v=>fmtPassMetric(v,SPLITMETRIC),heat:1}],'team',true)}<p class="note">Top ${posLab.toLowerCase()}s on the <b>${groupsN[i]}</b> ${kind==='route'?'route':'area'} (min ${minT} ${unit}), ranked by ${mLab}. EPA/target and CPOE are on ${who==='rec'?'throws to him':'his throws'} in this split only. EPA+CPOE is the standardized blend within this group.</p></div>`;
+  const i=+sg;const ranked=rankPass(splitPassPlayers(G[i]).filter(okP),SPLITMETRIC).slice(0,50);
+  body=`<div class="card">${barChart(ranked.slice(0,25).map(x=>({lab:x.name,v:x.mv==null?0:+(+x.mv).toFixed(dec),hl:x.team=='NO',title:x.name+' ('+x.team+') — '+underPass(x)+' · '+mLab+' '+fmtPassMetric(x.mv,SPLITMETRIC)})),{avg:0,label:'Top '+posLab+'s — '+groupsN[i]+' · '+mLab,dec:dec,rot:1,b:64,h:300,bw:14})}</div><div class="card">${tbl(ranked,[{k:'name',lab:posLab},{k:'team',lab:'Tm'},{k:'tgt',lab:who==='rec'?'Tgt':'Att'},{k:'rec',lab:who==='rec'?'Rec':'Cmp'},{k:'yds',lab:'Yds',heat:1},{k:'td',lab:'TD',heat:1},{k:'epaTgt',lab:'EPA/tgt',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(1),heat:1},{k:'mv',lab:mLab,fmt:v=>fmtPassMetric(v,SPLITMETRIC),heat:1}],'team',true)}<p class="note">Qualified ${posLab.toLowerCase()}s on <b>${groupsN[i]}</b> (≥${minVol} ${unit} season, ≥${psMin} here), ranked by ${mLab}. EPA/target &amp; CPOE are on ${who==='rec'?'throws to him':'his throws'} in this split only.</p></div>`;
  }
  return controls+body;
 }
@@ -1553,18 +1566,22 @@ function renderRunSplits(){
  const POAN=['Left End','Left Tackle','Left Guard','Middle','Right Guard','Right Tackle','Right End'];
  // outside→inside, left→right; middle runs (which carry no gap in the data) fold into a single "Middle" bucket
  const keyOf=p=>{const gp=p[3],dr=p[4];if(dr==null||dr==='')return null;if(+dr===1)return 3;if(gp==null||gp==='')return null;if(+dr===0)return [2,1,0][+gp];if(+dr===2)return [4,5,6][+gp];return null;};
- const minA=8, isRB=x=>x.pos==='RB'||x.pos==='FB', G=runSplitGroups(keyOf);
+ const isRB=x=>x.pos==='RB'||x.pos==='FB', G=runSplitGroups(keyOf);
+ const totals=rushTotalsRB(), lgVol=starterAvgVol(totals,2), minVol=Math.round(0.8*lgVol);
+ const qual=new Set(Object.keys(totals).filter(nm=>totals[nm].n>=minVol));
+ const psMin=3, okR=x=>isRB(x)&&qual.has(x.name)&&x.att>=psMin;
  let sg=RBSPLITGROUP; if(sg!=='all'&&(+sg<0||+sg>6))sg='all';
  const mLab=RBMETRICS.find(m=>m[0]===RBSPLITMETRIC)[1];
- const controls=`<div class="card">${segRow('rbspm',RBSPLITMETRIC,RBMETRICS)}${segRow('rbspg',sg,[['all','All points of attack']].concat(POAN.map((nm,i)=>[String(i),nm])),'margin:0 6px 6px 0;flex-wrap:wrap')}</div>`;
+ const qNote=`Qualified: <b>${qual.size} backs</b> with ≥${minVol} carries — 80% of the ${lgVol}-carry league-starter average.`;
+ const controls=`<div class="card">${segRow('rbspm',RBSPLITMETRIC,RBMETRICS)}${segRow('rbspg',sg,[['all','All points of attack']].concat(POAN.map((nm,i)=>[String(i),nm])),'margin:0 6px 6px 0;flex-wrap:wrap')}<p class="note" style="margin:2px 0 0">${qNote}</p></div>`;
  let body='';
  if(sg==='all'){
-  const rows=POAN.map((nm,i)=>{const all=splitRunPlayers(G[i]).filter(isRB);const tot=all.reduce((s,x)=>s+x.att,0);const lgY=smAvg(all.filter(x=>x.ypc!=null).map(x=>x.ypc));const ld=rankRun(all.filter(x=>x.att>=minA),RBSPLITMETRIC)[0];return {i,nm,tot,lgY,ld};});
-  body=`<div class="card"><p class="note" style="margin:0 0 8px">Each point of attack's leading back by <b>${mLab}</b> (min ${minA} carries, RB/FB only). Tap a gap for its top 50.</p><div class="scroll"><table><thead><tr><th class="tl">Point of attack</th><th>Carries</th><th>Lg YPC</th><th class="tl">Leader · ${mLab}</th></tr></thead><tbody>${rows.map(r=>`<tr class="cl" data-rbjump="${r.i}"><td class="tl">${r.nm}</td><td>${r.tot}</td><td>${r.lgY==null?'—':r.lgY.toFixed(1)}</td><td class="tl">${r.ld?teamCell(r.ld.team,r.ld.name)+' <b>'+fmtRunMetric(r.ld.mv,RBSPLITMETRIC)+'</b>':'—'}</td></tr>`).join('')}</tbody></table></div></div>`;
+  const rows=POAN.map((nm,i)=>{const all=splitRunPlayers(G[i]);const tot=all.filter(isRB).reduce((s,x)=>s+x.att,0);const lgY=smAvg(all.filter(x=>isRB(x)&&x.ypc!=null).map(x=>x.ypc));const ld=rankRun(all.filter(okR),RBSPLITMETRIC)[0];return {i,nm,tot,lgY,ld};});
+  body=`<div class="card"><p class="note" style="margin:0 0 8px">Each point of attack's leading qualified back by <b>${mLab}</b>, with his line there (att · yds · TD). Tap a gap for its top 50.</p><div class="scroll"><table><thead><tr><th class="tl">Point of attack</th><th>Carries</th><th>Lg YPC</th><th class="tl">Leader · ${mLab}</th></tr></thead><tbody>${rows.map(r=>`<tr class="cl" data-rbjump="${r.i}"><td class="tl">${r.nm}</td><td>${r.tot}</td><td>${r.lgY==null?'—':r.lgY.toFixed(1)}</td><td class="tl">${r.ld?teamCell(r.ld.team,r.ld.name)+' <b>'+fmtRunMetric(r.ld.mv,RBSPLITMETRIC)+'</b> <span class="hint">'+underRun(r.ld)+'</span>':'—'}</td></tr>`).join('')}</tbody></table></div></div>`;
  } else {
-  const i=+sg;const nm=POAN[i];const ranked=rankRun(splitRunPlayers(G[i]).filter(x=>isRB(x)&&x.att>=minA),RBSPLITMETRIC).slice(0,50);
+  const i=+sg;const nm=POAN[i];const ranked=rankRun(splitRunPlayers(G[i]).filter(okR),RBSPLITMETRIC).slice(0,50);
   const dec=RBSPLITMETRIC==='epa'?3:(RBSPLITMETRIC==='ypc'?1:0);
-  body=`<div class="card">${barChart(ranked.slice(0,25).map(x=>({lab:x.name,v:x.mv==null?0:+x.mv.toFixed(dec),hl:x.team=='NO',title:x.name+' ('+x.team+') — '+x.att+' att · '+fmtRunMetric(x.mv,RBSPLITMETRIC)})),{avg:0,label:'Top backs — '+nm+' · '+mLab,dec:dec,rot:1,b:64,h:300,bw:14})}</div><div class="card">${tbl(ranked,[{k:'name',lab:'Running Back'},{k:'team',lab:'Tm'},{k:'att',lab:'Att'},{k:'ypc',lab:'YPC',fmt:v=>v==null?'—':v.toFixed(1),heat:1},{k:'succ',lab:'Succ%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'expl',lab:'Expl%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'epaRush',lab:'EPA/rush',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'td',lab:'TD',heat:1},{k:'mv',lab:mLab,fmt:v=>fmtRunMetric(v,RBSPLITMETRIC),heat:1}],'team',true)}<p class="note">Backs running <b>${nm}</b> (min ${minA} carries), ranked by ${mLab}. Gap = the hole hit; direction = the side. Only located runs (~73% of carries) carry a point of attack; scrambles/undesignated runs are excluded.</p></div>`;
+  body=`<div class="card">${barChart(ranked.slice(0,25).map(x=>({lab:x.name,v:x.mv==null?0:+x.mv.toFixed(dec),hl:x.team=='NO',title:x.name+' ('+x.team+') — '+underRun(x)+' · '+mLab+' '+fmtRunMetric(x.mv,RBSPLITMETRIC)})),{avg:0,label:'Top backs — '+nm+' · '+mLab,dec:dec,rot:1,b:64,h:300,bw:14})}</div><div class="card">${tbl(ranked,[{k:'name',lab:'Running Back'},{k:'team',lab:'Tm'},{k:'att',lab:'Att'},{k:'yds',lab:'Yds',heat:1},{k:'ypc',lab:'YPC',fmt:v=>v==null?'—':v.toFixed(1),heat:1},{k:'succ',lab:'Succ%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'expl',lab:'Expl%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'epaRush',lab:'EPA/rush',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'td',lab:'TD',heat:1},{k:'mv',lab:mLab,fmt:v=>fmtRunMetric(v,RBSPLITMETRIC),heat:1}],'team',true)}<p class="note">Qualified backs running <b>${nm}</b> (≥${minVol} carries season, ≥${psMin} here), ranked by ${mLab}. Gap = the hole hit; direction = the side. Only located runs (~73% of carries) carry a point of attack.</p></div>`;
  }
  return controls+body;
 }
