@@ -327,7 +327,6 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 <main>
 <section id="overview"></section>
 <section id="ratings"></section>
-<section id="tendencies"></section>
 <section id="epa"></section>
 <section id="opponents"></section>
 <section id="field"></section>
@@ -362,7 +361,7 @@ function heatRYG(v){if(v==null)return '';let t=Math.max(0,Math.min(1,v/100));
 function tier(h){return h>=65?['Elite','#1e7a34']:h>=55?['Strong','#2e5496']:h>=45?['Average','#b07d12']:['Rebuilding','#a23b3b'];}
 
 // ---------- NAV ----------
-const SECTIONS=[['overview','1 · Overview'],['ratings','2 · Team Ratings'],['epa','3 · League Stats'],['opponents','4 · Opponents'],['tendencies','5 · Tendencies'],['field','6 · Field Position'],['philosophy','7 · Philosophy']];
+const SECTIONS=[['overview','1 · Overview'],['ratings','2 · Team Ratings'],['epa','3 · League Stats'],['opponents','4 · Opponents'],['field','5 · Field Position'],['philosophy','6 · Philosophy']];
 const nav=$('#nav');
 SECTIONS.forEach(([id,lab],i)=>{const b=document.createElement('button');b.textContent=lab;b.onclick=()=>show(id,b);if(i==0)b.classList.add('on');nav.appendChild(b);});
 function show(id,btn){document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===id));document.querySelectorAll('#nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');window.scrollTo(0,0);}
@@ -376,9 +375,9 @@ const PAGE={
  ratings:{k:'Step 2 · The league',t:'Team Ratings — 2025',d:`0–100 efficiency per phase. Drag the weights to re-rank the holistic score live (default 40/40/20). Saints highlighted.`,h:['Drag the weight sliders to re-rank live','Click any column header to sort']},
  epa:{k:'Step 3 · League Stats',t:'League Stats — 2025',d:`Reproduced from the nflverse play-by-play that powers rbsdm.com (all pass + rush plays). Saints highlighted in gold.`,h:['Switch metric with the tabs below','Click any column header to sort','Hover scatter points for detail']},
  tendencies:{k:'Step 5 · Tendencies',t:'Tendencies & Matchups — 2025',d:`Any team, either side of the ball, sliced by situation — efficiency vs the league, field-zone EPA, run direction, routes, personnel and coverage, all recomputing live. Or switch to Matchup to pit any two teams head-to-head with strength/weakness bars and situational mismatch flags. (A league-wide overview is still to come.)`,h:['Team or Matchup mode','Toggle offense / defense','Filter by play type, score & down']},
- opponents:{k:'Step 4 · The slate',t:'Opponent Scouting Packages',d:`Saints' 2026 opponents. Matchup view scores their units against the Saints' with league ranks and auto-flagged game-plan keys; offense/defense views carry the full tendency detail. New-staff teams are proxy-matched to the new play-caller's 2025 unit.`,h:['Pick an opponent','Switch Matchup / Offense / Defense','Click any column header to sort']},
- field:{k:'Step 6 · The field',t:'Field Charts — Pass & Run',d:`Every pass and run for any team, plotted on the field. Filter by QB or ball carrier and drill into who, where, and the outcome — with success and EPA by field zone right alongside. The zone tear sheet (team tendencies by score state) is here too, under its own toggle.`,h:['Pick a team','Switch Pass / Run / Zone sheet','Tap any dot for the play','Filter by QB, receiver or carrier']},
- philosophy:{k:'Step 7 · Reference',t:'Coaching Philosophy & Scheme Lineage — 2026',d:`Each team's 2026 staff and the coaching tree its scheme descends from.`,h:['Filter by division']}
+ opponents:{k:'Step 4 · The slate',t:'Opponent Scouting Packages',d:`Every team — Saints' 2026 opponents up top, the rest of the league below. Matchup scores their units against the Saints' with league ranks and auto-flagged game-plan keys; Offense/Defense carry the full tendency detail plus live situational splits (play-type, score state & down). New-staff teams are proxy-matched to the new play-caller's 2025 unit.`,h:['Pick any team','Switch Matchup / Offense / Defense','Filter by play type, score state & down','Click any column header to sort']},
+ field:{k:'Step 5 · The field',t:'Field Charts — Pass & Run',d:`Every pass and run for any team, plotted on the field. Filter by QB or ball carrier and drill into who, where, and the outcome — with success and EPA by field zone right alongside. The zone tear sheet (team tendencies by score state) is here too, under its own toggle.`,h:['Pick a team','Switch Pass / Run / Zone sheet','Tap any dot for the play','Filter by QB, receiver or carrier']},
+ philosophy:{k:'Step 6 · Reference',t:'Coaching Philosophy & Scheme Lineage — 2026',d:`Each team's 2026 staff and the coaching tree its scheme descends from.`,h:['Filter by division']}
 };
 function pageHead(id){const p=PAGE[id];if(!p)return '';
  const hints=(p.h||[]).map(x=>`<span class="hint">${x}</span>`).join('');
@@ -1064,14 +1063,13 @@ function renderOverview(){
   ['1 · Overview','this page — the verdicts. Everything below is the evidence.'],
   ['2 · Team Ratings','the league as a whole: 3-phase 0–100 ratings, adjustable holistic weights, benchmark detail.'],
   ['3 · League Stats','league-wide stats — the two-axis EPA map, offense / defense rankings, QB / receiver / RB / defense boards, pass identity, 4th downs, luck.'],
-  ['4 · Opponents','one card per 2026 opponent: Matchup (the verdict + game-plan keys), Their Offense, Their Defense.'],
-  ['5 · Tendencies','any team, either side, sliced by situation — efficiency vs league, field-zone EPA, run direction, routes, personnel & coverage; plus head-to-head Matchup mode.'],
-  ['6 · Field Position','interactive field charts: every throw and carry plotted, by QB / ball-carrier, with the zone tear sheet.'],
-  ['7 · Philosophy','reference: every staff, scheme and coaching lineage.']
+  ['4 · Opponents','one card per team (all 32): Matchup (the verdict + game-plan keys), Their Offense, Their Defense — each with live situational splits by play-type, score state & down.'],
+  ['5 · Field Position','interactive field charts: every throw and carry plotted, by QB / ball-carrier, with the zone tear sheet.'],
+  ['6 · Philosophy','reference: every staff, scheme and coaching lineage.']
  ].map(([a,b])=>`<li><b>${a}</b> — ${b}</li>`).join('');
  const hidden=[
   '<b>Every table sorts</b> — click a column header (click again to flip); the # column re-ranks live.',
-  '<b>Filters re-cut everything</b> — side, play-type, score & down on Tendencies (and score-state on Field Position) recompute every visual live.',
+  '<b>Filters re-cut everything</b> — play-type, score state & down on any Opponent (and score-state on Field Position) recompute every visual live.',
   '<b>Hover for exact numbers</b> — chart bars, heat cells, volume maps and delta chips all carry tooltips.',
   '<b>Raw tables hide under disclosures</b> — "View as sortable tables" beneath the passing volume map.',
   '<b>Color language:</b> gold = Saints · blue/orange = above/below league frequency · green/red = good/bad for the unit shown · row tints = a team’s best/worst grouping.'
@@ -1108,14 +1106,27 @@ function derivedMatchupHTML(ab){
  const flagLi=f=>{const c=f.favor==='o'?'#2e5496':f.favor==='d'?'#2e7d4f':'#8a8f98';return `<li style="border-left:3px solid ${c};padding-left:9px;margin:8px 0;list-style:none">${f.txt}</li>`;};
  return `<div class="grid2"><div class="card"><div class="sechead o">${teamLogo(ab)}${ab} offense › ${teamLogo('NO')}Saints defense</div>${muBars(ab,'NO',offL,defL,ab,'NO')}</div><div class="card"><div class="sechead o">${teamLogo('NO')}Saints offense › ${teamLogo(ab)}${ab} defense</div>${muBars('NO',ab,offL,defL,'NO',ab)}</div></div><div class="card"><div class="sechead">⚑ Situational mismatches vs the Saints</div>${flags.length?`<ul class="keys" style="padding-left:2px">${flags.map(flagLi).join('')}</ul>`:'<p class="note">No extreme mismatches — an even matchup on paper.</p>'}<p class="note">Blue accent = the offense holds that edge · green = the defense. League-rank gaps ≥ ~8 plus directional/down tendencies. All-situations, 2025.</p></div><div class="card"><div class="sechead">Projected game flow</div><p style="font-size:13px;line-height:1.65">${gameFlowText(ab,'NO',offL,defL)}</p></div>`;
 }
-function derivedSideHTML(ab,side){
- const P=cutF(ab,side,ALLF),M=trkMetrics(P),league=allTeamMetricsF(side,ALLF),specs=MSPEC[side];
+// ----- Live situational-split filters (folded in from the retired Tendencies tab) -----
+const OPPF={ptype:'all',score:'all',down:'all'};
+function oppSegF(key,opts){return `<div class="trkseg" data-oseg="${key}">${opts.map(([v,l])=>`<button data-v="${v}" class="${OPPF[key]===v?'on':''}">${l}</button>`).join('')}</div>`;}
+function oppFilterBar(){return `<div class="trkfilters" id="oppfilt"><div class="fc-group"><label>Play type</label>${oppSegF('ptype',[['all','All'],['pass','Pass'],['run','Run']])}</div><div class="fc-group"><label>Score state</label>${oppSegF('score',[['all','All'],['one','1-score'],['trail','Trailing'],['lead','Leading']])}</div><div class="fc-group"><label>Down</label>${oppSegF('down',[['all','All'],['1','1st'],['2','2nd'],['3','3rd'],['4','4th']])}</div></div>`;}
+function oppFiltNote(){const p=[];if(OPPF.ptype!=='all')p.push(OPPF.ptype);if(OPPF.score!=='all')p.push({one:'1-score',trail:'trailing',lead:'leading'}[OPPF.score]);if(OPPF.down!=='all')p.push(ORD4[+OPPF.down]+' down');return p.length?`<span class="hint" style="font-weight:700;color:var(--navy2)">showing: ${p.join(' · ')}</span>`:'<span class="hint">all situations</span>';}
+function wireOppFilters(box){box.querySelectorAll('#oppfilt [data-oseg]').forEach(seg=>seg.querySelectorAll('button').forEach(b=>b.onclick=()=>{OPPF[seg.dataset.oseg]=b.dataset.v;drawOpp();}));}
+// Live, situation-filterable tendency panel for a team's side. compact = tiles + rel bars + field zone only
+// (used under the curated opponent tables); full = also personnel/coverage + run/route (used for derived teams).
+function sideTendencyPanel(ab,side,compact){
+ const P=cutF(ab,side,OPPF),M=trkMetrics(P),league=allTeamMetricsF(side,OPPF),specs=MSPEC[side];
  const tiles=[['Plays',M.n],[side==='def'?'EPA allowed':'EPA/play',M.epa==null?'—':(M.epa>0?'+':'')+M.epa.toFixed(2)],['Success %',M.succ==null?'—':M.succ.toFixed(0)+'%'],side==='def'?['Avg box',M.box==null?'—':M.box.toFixed(1)]:['Pass rate',M.passRate==null?'—':M.passRate.toFixed(0)+'%']].map(t=>`<div class="fstat"><div class="v">${t[1]}</div><div class="l">${t[0]}</div></div>`).join('');
  const rel=specs.map(sp=>relBar(sp,M,league)).join('');
- const detail=side==='def'?coverageViz(P):personnelViz(P);
  const sc=side==='def'?'d':'o';
- return `<div class="grid2"><div class="card"><div class="sechead ${sc}">${teamLogo(ab)}${teamName(ab)} — ${side==='def'?'Defense':'Offense'} · all situations</div><div class="fstatrow">${tiles}</div><div class="fsub">Relative to the league</div>${rel}<p class="note">Marker = this team on the league scale; rank shown. ${side==='def'?'Green = stingier than the league.':'Green = better than the league.'} Pass rate & aDOT are tendencies, in blue.</p></div><div class="card"><div class="sechead o">By field zone</div>${trkZoneField(P,side)}<button class="bigcta" onclick="gotoField('${ab}');return false">Open the interactive ${ab} field chart →</button></div></div><div class="card"><div class="sechead ${sc}">${side==='def'?'Coverage faced (man/zone & family)':'Personnel groupings'}</div>${detail}</div><div class="grid2"><div class="card"><div class="sechead ${sc}">Run direction, gap & formation${side==='def'?' faced':''}</div>${runViz(P)}</div><div class="card"><div class="sechead ${sc}">${side==='def'?'Routes faced':'Passing routes'}</div>${routeViz(P)}</div></div>`;
+ const head=`<div class="fsub" style="margin-top:14px">Live situational splits — ${oppFiltNote()}</div>${oppFilterBar()}`;
+ const core=`<div class="grid2"><div class="card"><div class="sechead ${sc}">${side==='def'?'Defense':'Offense'} — vs the league <span class="hint">(both re-cut to the chosen situation)</span></div><div class="fstatrow">${tiles}</div><div class="fsub">Relative to the league</div>${rel}<p class="note">Marker = this team on the league scale (both re-cut to the same situation); rank shown. ${side==='def'?'Green = stingier than the league.':'Green = better than the league.'} Pass rate & aDOT are tendencies, in blue.</p></div><div class="card"><div class="sechead o">By field zone</div>${trkZoneField(P,side)}<button class="bigcta" onclick="gotoField('${ab}');return false">Open the interactive ${ab} field chart →</button></div></div>`;
+ if(compact)return head+core;
+ const detail=side==='def'?coverageViz(P):personnelViz(P);
+ const extra=`<div class="card"><div class="sechead ${sc}">${side==='def'?'Coverage faced (man/zone & family)':'Personnel groupings'}</div>${detail}</div><div class="grid2"><div class="card"><div class="sechead ${sc}">Run direction, gap & formation${side==='def'?' faced':''}</div>${runViz(P)}</div><div class="card"><div class="sechead ${sc}">${side==='def'?'Routes faced':'Passing routes'}</div>${routeViz(P)}</div></div>`;
+ return head+core+extra;
 }
+function derivedSideHTML(ab,side){return sideTendencyPanel(ab,side,false);}
 function drawOppDerived(o,box){
  const tabs=[['match','Matchup vs Saints'],['off','Their Offense'],['def','Their Defense']];
  if(curOTab==='fz')curOTab='match';
@@ -1125,6 +1136,7 @@ function drawOppDerived(o,box){
  <div class="staff">Not on the 2026 Saints schedule — profiled live from 2025 play-by-play (no curated 2026 coaching/scheme intel).</div>
  ${tb}${body}</div>`;
  box.querySelectorAll('[data-ot]').forEach(b=>b.onclick=()=>{curOTab=b.dataset.ot;drawOpp();});
+ wireOppFilters(box);
 }
 function drawOpp(){
  const o=curOpp,box=$('#ocard');
@@ -1132,11 +1144,12 @@ function drawOpp(){
  const tabs=[['match','Matchup vs Saints'],['off','Their Offense'],['def','Their Defense']];
  const tb=`<div class="subnav" style="margin-top:10px">${tabs.map(([id,lab])=>`<button class="${id===curOTab?'on':''}" data-ot="${id}">${lab}</button>`).join('')}</div>`;
  if(curOTab==='fz')curOTab='match';
- const body=curOTab==='match'?matchupHTML(o):curOTab==='off'?offHTML(o):defHTML(o);
+ const body=curOTab==='match'?matchupHTML(o):curOTab==='off'?offHTML(o)+sideTendencyPanel(o.abbr,'off',true):defHTML(o)+sideTendencyPanel(o.abbr,'def',true);
  box.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(o.abbr)}"><h2 style="margin-top:0" class="tchip">${teamLogo(o.abbr)}${o.name}</h2>
  <div class="staff">2026: HC ${o.hc} · OC ${o.oc} · DC ${o.dc}</div>
  ${o.banner?`<div class="banner">⚠ ${o.banner}</div>`:''}${tb}${body}</div>`;
  box.querySelectorAll('[data-ot]').forEach(b=>b.onclick=()=>{curOTab=b.dataset.ot;drawOpp();});
+ wireOppFilters(box);
 }
 
 // ---------- FIELD POSITION (zone tear sheets) ----------
@@ -1647,7 +1660,7 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
  else if(id=='luck'){const R=L.luck.map(x=>({...x,osrec:x.osW+'-'+x.osL}));box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'osrec',lab:'1-score record'},{k:'fumRec',lab:'Fumble recovery %'},{k:'toMargin',lab:'TO margin / game'}],'abbr')}<p class="note">Luck indicators (approximation of rbsdm's view): one-score game record (≤8 pts), fumble-recovery rate (≈50% neutral), turnover margin per game.</p></div>`;}
  else if(id=='series'){const R=[...L.series].sort((a,b)=>b.off-a.off);const e=mm(R,'off');box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'off',lab:'Off series success %',heat:e},{k:'deff',lab:'Def series success % allowed'}],'abbr')}<p class="note">Series success = % of down series ending in a first down or TD. Offense higher = better; defense lower = better.</p></div>`;}
 }
-renderRatings();renderTendencies();renderEPA();renderOpponents();renderField();renderPhil();renderOverview();
+renderRatings();renderEPA();renderOpponents();renderField();renderPhil();renderOverview();
 // ---------- SORTABLE TABLES + DYNAMIC RANK ----------
 function srtVal(td){const t=td.textContent.trim();if(t===''||t==='—')return null;const x=parseFloat(t.replace(/[%↑↓+]/g,''));return isNaN(x)?t.toLowerCase():x;}
 function renumberTable(table){if(table.dataset.ranked!=='1')return;let i=1;[...table.tBodies[0].rows].forEach(r=>{r.cells[0].textContent=r.classList.contains('lg')?'':i++;});}
