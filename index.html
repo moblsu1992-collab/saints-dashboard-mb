@@ -78,6 +78,7 @@ tr.lg td{background:#fbf6e8 !important;font-weight:700;color:#6a6450}
 .fzc-h{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8a93a3;margin-bottom:4px}
 .fzc-l{font-size:12.5px;font-weight:600;color:var(--navy2);line-height:1.2}
 .fzc-v{font-size:11.5px;color:#5a6675;margin-top:2px}
+.fzc-rz{font-size:10px;font-weight:600;color:#a2543a;margin-top:2px}
 .fzmute{color:#aab4c2}
 tr.cl{cursor:pointer}
 tr.cl:hover td{background:#eef2f8}
@@ -1511,8 +1512,8 @@ const smAvg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null, smCap=s=>s.charAt(
 function depthBucket(ay){if(ay==null||ay==='')return null;if(ay<0)return 0;if(ay<10)return 1;if(ay<20)return 2;return 3;}
 function segRow(k,cur,opts,style){return `<div class="subnav" style="${style||'margin:0 6px 6px 0'}">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${String(cur)===String(v)?'on':''}">${l}</button>`).join('')}</div>`;}
 // pass plays grouped by keyOf(p) -> {group:{player:raw}}
-function passSplitGroups(who,keyOf){const P=window.PLAYS||{},G={};for(const t in P){for(const p of P[t].pass){const nm=who==='rec'?p[3]:p[2];if(!nm)continue;const k=keyOf(p);if(k==null)continue;const g=G[k]||(G[k]={});const o=g[nm]||(g[nm]={name:nm,tm:{},tgt:0,rec:0,yds:0,td:0,ep:[],cp:[]});o.tgt++;o.tm[t]=(o.tm[t]||0)+1;if(p[12]==='C'){o.rec++;o.yds+=(p[8]||0);}if(p[13]===1)o.td++;if(p[10]!=null)o.ep.push(p[10]);if(p[22]!=null)o.cp.push(p[22]);}}return G;}
-function splitPassPlayers(gmap){return Object.values(gmap||{}).map(o=>({name:o.name,team:Object.keys(o.tm).sort((a,b)=>o.tm[b]-o.tm[a])[0],tgt:o.tgt,rec:o.rec,yds:o.yds,td:o.td,epaTgt:o.ep.length?fmean(o.ep):null,cpoe:o.cp.length?fmean(o.cp):null}));}
+function passSplitGroups(who,keyOf){const P=window.PLAYS||{},G={};for(const t in P){for(const p of P[t].pass){const nm=who==='rec'?p[3]:p[2];if(!nm)continue;const k=keyOf(p);if(k==null)continue;const g=G[k]||(G[k]={});const o=g[nm]||(g[nm]={name:nm,tm:{},tgt:0,rec:0,yds:0,td:0,rzRec:0,rzYds:0,rzTd:0,ep:[],cp:[]});o.tgt++;o.tm[t]=(o.tm[t]||0)+1;const rz=p[6]!=null&&p[6]<=20;if(p[12]==='C'){o.rec++;o.yds+=(p[8]||0);if(rz){o.rzRec++;o.rzYds+=(p[8]||0);}}if(p[13]===1){o.td++;if(rz)o.rzTd++;}if(p[10]!=null)o.ep.push(p[10]);if(p[22]!=null)o.cp.push(p[22]);}}return G;}
+function splitPassPlayers(gmap){return Object.values(gmap||{}).map(o=>({name:o.name,team:Object.keys(o.tm).sort((a,b)=>o.tm[b]-o.tm[a])[0],tgt:o.tgt,rec:o.rec,yds:o.yds,td:o.td,rzRec:o.rzRec,rzYds:o.rzYds,rzTd:o.rzTd,epaTgt:o.ep.length?fmean(o.ep):null,cpoe:o.cp.length?fmean(o.cp):null}));}
 function rankPass(pool,metric){if(metric==='ec')return zComposite(pool,['epaTgt','cpoe']).map(x=>({...x,mv:x.comp})).sort((a,b)=>(b.mv==null?-99:b.mv)-(a.mv==null?-99:a.mv));const k={epa:'epaTgt',cpoe:'cpoe',comp:'rec',yds:'yds',td:'td'}[metric];return pool.map(x=>({...x,mv:x[k]})).sort((a,b)=>(b.mv==null?-99:b.mv)-(a.mv==null?-99:a.mv));}
 function fmtPassMetric(v,m){if(v==null)return '—';if(m==='ec')return (v>0?'+':'')+v.toFixed(2);if(m==='cpoe')return (v>0?'+':'')+v.toFixed(1);if(m==='epa')return (v>0?'+':'')+v.toFixed(3);return String(v);}
 // underlying counting line for a leader within a split (rec/tgt · yds · TD). For QB, rec = completions.
@@ -1541,6 +1542,7 @@ function renderPassSplits(who,kind){
  const psMin=kind==='route'?3:2, okP=x=>qual.has(x.name)&&x.tgt>=psMin;
  const G=passSplitGroups(who,keyOf);
  let sg=SPLITGROUP; if(sg!=='all'&&(+sg>=groupsN.length||+sg<0))sg='all';
+ if(!metrics.some(m=>m[0]===SPLITMETRIC))SPLITMETRIC='ec';
  const mLab=metrics.find(m=>m[0]===SPLITMETRIC)[1], posLab=who==='rec'?'Receiver':'Quarterback';
  const dec={ec:2,epa:3,cpoe:1,comp:0,yds:0,td:0}[SPLITMETRIC];
  const qNote=`Qualified: <b>${qual.size} ${posLab.toLowerCase()}s</b> with ≥${minVol} ${unit} — 80% of the ${lgVol}-${unitS} league-starter average.`;
@@ -1550,14 +1552,16 @@ function renderPassSplits(who,kind){
  let body='';
  if(sg==='all'){
   if(kind==='zone'){
-   let cells='';for(let d=3;d>=0;d--){for(let s=0;s<3;s++){const r=summ[d*3+s];const ld=r.ld;cells+=`<div class="fzc cl" data-jump="${d*3+s}"><div class="fzc-h">${DEPN2[d]} · ${SIDN2[s]}</div><div class="fzc-l">${ld?teamCell(ld.team,ld.name):'<span class="fzmute">—</span>'}</div><div class="fzc-v">${ld?underPass(ld):r.tot+' '+unit}</div></div>`;}}
-   body=`<div class="card"><p class="note" style="margin:0 0 8px">Best qualified ${posLab.toLowerCase()} in each area of the field by <b>${mLab}</b>; the cell shows his actual line in that zone (${cabbr}/tgt · yds · TD). Deep at top, line of scrimmage at bottom — tap a zone for its top 50.</p><div class="fzgrid">${cells}</div></div>`;
+   let cells='';for(let d=3;d>=0;d--){for(let s=0;s<3;s++){const r=summ[d*3+s];const ld=r.ld;const rz=ld&&(ld.rzRec||ld.rzTd||ld.rzYds)?`<div class="fzc-rz">red zone · ${ld.rzRec} ${cabbr} · ${ld.rzYds} yd · ${ld.rzTd} TD</div>`:'';cells+=`<div class="fzc cl" data-jump="${d*3+s}"><div class="fzc-h">${DEPN2[d]} · ${SIDN2[s]}</div><div class="fzc-l">${ld?teamCell(ld.team,ld.name):'<span class="fzmute">—</span>'}</div><div class="fzc-v">${ld?underPass(ld):r.tot+' '+unit}</div>${rz}</div>`;}}
+   body=`<div class="card"><p class="note" style="margin:0 0 8px">Best qualified ${posLab.toLowerCase()} in each area of the field by <b>${mLab}</b>; the cell shows his actual line in that zone (${cabbr}/tgt · yds · TD) with the <b>red-zone</b> share below (snaps inside the opponent 20). Deep at top, line of scrimmage at bottom — tap a zone for its top 50.</p><div class="fzgrid">${cells}</div></div>`;
   } else {
    body=`<div class="card"><p class="note" style="margin:0 0 8px">The route tree — each route's leader by <b>${mLab}</b>, with his line on that route (${cabbr}/tgt · yds · TD). Tap a route for its top 50 ${posLab.toLowerCase()}s.</p><div class="scroll"><table><thead><tr><th class="tl">Route</th><th>${who==='rec'?'Targets':'Att'}</th><th>Lg EPA/tgt</th><th>Lg CPOE</th><th class="tl">Leader · ${mLab}</th></tr></thead><tbody>${summ.map(r=>`<tr class="cl" data-jump="${r.i}"><td class="tl">${r.nm}</td><td>${r.tot}</td><td>${r.lgE==null?'—':(r.lgE>0?'+':'')+r.lgE.toFixed(3)}</td><td>${r.lgC==null?'—':(r.lgC>0?'+':'')+r.lgC.toFixed(1)}</td><td class="tl">${r.ld?teamCell(r.ld.team,r.ld.name)+' <b>'+fmtPassMetric(r.ld.mv,SPLITMETRIC)+'</b> <span class="hint">'+underPass(r.ld)+'</span>':'—'}</td></tr>`).join('')}</tbody></table></div></div>`;
   }
  } else {
   const i=+sg;const ranked=rankPass(splitPassPlayers(G[i]).filter(okP),SPLITMETRIC).slice(0,50);
-  body=`<div class="card">${barChart(ranked.slice(0,25).map(x=>({lab:x.name,v:x.mv==null?0:+(+x.mv).toFixed(dec),hl:x.team=='NO',title:x.name+' ('+x.team+') — '+underPass(x)+' · '+mLab+' '+fmtPassMetric(x.mv,SPLITMETRIC)})),{avg:0,label:'Top '+posLab+'s — '+groupsN[i]+' · '+mLab,dec:dec,rot:1,b:64,h:300,bw:14})}</div><div class="card">${tbl(ranked,[{k:'name',lab:posLab},{k:'team',lab:'Tm'},{k:'tgt',lab:who==='rec'?'Tgt':'Att'},{k:'rec',lab:who==='rec'?'Rec':'Cmp'},{k:'yds',lab:'Yds',heat:1},{k:'td',lab:'TD',heat:1},{k:'epaTgt',lab:'EPA/tgt',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(1),heat:1},{k:'mv',lab:mLab,fmt:v=>fmtPassMetric(v,SPLITMETRIC),heat:1}],'team',true)}<p class="note">Qualified ${posLab.toLowerCase()}s on <b>${groupsN[i]}</b> (≥${minVol} ${unit} season, ≥${psMin} here), ranked by ${mLab}. EPA/target &amp; CPOE are on ${who==='rec'?'throws to him':'his throws'} in this split only.</p></div>`;
+  const rzCols=kind==='zone'?[{k:'rzRec',lab:'RZ '+(who==='rec'?'Rec':'Cmp'),heat:1},{k:'rzYds',lab:'RZ Yds',heat:1},{k:'rzTd',lab:'RZ TD',heat:1}]:[];
+  const cols=[{k:'name',lab:posLab},{k:'team',lab:'Tm'},{k:'tgt',lab:who==='rec'?'Tgt':'Att'},{k:'rec',lab:who==='rec'?'Rec':'Cmp'},{k:'yds',lab:'Yds',heat:1},{k:'td',lab:'TD',heat:1},...rzCols,{k:'epaTgt',lab:'EPA/tgt',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(1),heat:1},{k:'mv',lab:mLab,fmt:v=>fmtPassMetric(v,SPLITMETRIC),heat:1}];
+  body=`<div class="card">${barChart(ranked.slice(0,25).map(x=>({lab:x.name,v:x.mv==null?0:+(+x.mv).toFixed(dec),hl:x.team=='NO',title:x.name+' ('+x.team+') — '+underPass(x)+' · '+mLab+' '+fmtPassMetric(x.mv,SPLITMETRIC)})),{avg:0,label:'Top '+posLab+'s — '+groupsN[i]+' · '+mLab,dec:dec,rot:1,b:64,h:300,bw:14})}</div><div class="card">${tbl(ranked,cols,'team',true)}<p class="note">Qualified ${posLab.toLowerCase()}s on <b>${groupsN[i]}</b> (≥${minVol} ${unit} season, ≥${psMin} here), ranked by ${mLab}.${kind==='zone'?' <b>RZ</b> columns = the red-zone share (snaps inside the opponent 20).':''} EPA/target &amp; CPOE are on ${who==='rec'?'throws to him':'his throws'} in this split only.</p></div>`;
  }
  return controls+body;
 }
