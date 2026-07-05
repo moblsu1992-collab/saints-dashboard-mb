@@ -46,7 +46,7 @@ function C([string]$n){ $ix[$n] }
 $I_gid=C 'game_id'; $I_pid=C 'play_id'; $I_sd=C 'score_differential'; $I_ytg=C 'ydstogo'
 $I_week=C 'week'; $I_st=C 'season_type'; $I_pos=C 'posteam'; $I_def=C 'defteam'
 $I_down=C 'down'; $I_yl=C 'yardline_100'; $I_epa=C 'epa'; $I_succ=C 'success'; $I_yg=C 'yards_gained'
-$I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'
+$I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'; $I_ptype=C 'play_type'
 $I_qb=C 'passer_player_name'; $I_rec=C 'receiver_player_name'; $I_ay=C 'air_yards'
 $I_ploc=C 'pass_location'; $I_yac=C 'yards_after_catch'
 $I_cmp=C 'complete_pass'; $I_int=C 'interception'; $I_ptd=C 'pass_touchdown'; $I_cpoe=C 'cpoe'; $I_rid=C 'receiver_player_id'
@@ -201,6 +201,7 @@ while(-not $tp.EndOfData){
   if($Limit -gt 0 -and $n -gt $Limit){ break }
   $st=$f[$I_st]; if($st -ne 'REG' -and $st -ne 'POST'){ continue }
   if(IsOne $f[$I_2pt]){ continue }
+  $pt=$f[$I_ptype]; if($pt -eq 'qb_kneel' -or $pt -eq 'qb_spike'){ continue }   # drop victory-formation kneels + clock-stop spikes (poison QB rush/pass EPA)
   $pos=$f[$I_pos]; if($pos -eq '' -or $pos -eq 'NA'){ continue }
   $dn=$f[$I_down]; if($dn -eq '' -or $dn -eq 'NA'){ continue }
   $jk=$f[$I_gid]+'|'+$f[$I_pid]; $pj= if($PJOIN.ContainsKey($jk)){ $PJOIN[$jk] } else { ',null,null,null,null,null,null' }
