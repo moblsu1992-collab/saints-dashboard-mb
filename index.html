@@ -97,21 +97,12 @@ tr.lg td{background:#fbf6e8 !important;font-weight:700;color:#6a6450}
 .shros{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:4px 16px;font-size:12px}
 .shros ul{margin:2px 0 6px;padding-left:16px}.shros li{margin:1px 0}
 .shros b{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8a93a3}
-.bubwrap{margin:4px 0 10px}
-.bub{display:grid;grid-template-columns:118px 1fr 74px;gap:10px;align-items:center;margin:5px 0}
-.bub-l{font-size:11.5px;color:#5a6675;line-height:1.15}
-.bub-t{position:relative;height:6px;background:linear-gradient(90deg,#e4efe7,#eef1f5 50%,#f7e6e6);border-radius:4px}
-.bub-d{position:absolute;top:50%;transform:translate(-50%,-50%);width:15px;height:15px;border-radius:50%;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.28)}
-.bub-v{font-size:12.5px;font-weight:700;color:var(--navy2);text-align:right;white-space:nowrap}
-.bub-rk{display:inline-block;font-size:9.5px;font-weight:800;color:#fff;padding:1px 5px;border-radius:9px;margin-left:4px}
-.bub-scale{grid-column:2;display:flex;justify-content:space-between;font-size:8.5px;color:#aab4c2;margin:-2px 0 4px}
-.fchero{display:flex;align-items:center;gap:8px 20px;flex-wrap:wrap;margin:6px 0 4px}
-.fcwin{text-align:center;padding:2px 10px}
-.fcwin .n{font-size:30px;font-weight:800;color:var(--navy2);line-height:1}
-.fcwin .l{font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;color:#8a93a3;margin-top:2px}
-.pengrade{display:flex;flex-direction:column;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;color:#fff;font-weight:800;font-size:21px;box-shadow:var(--sh-1);line-height:1}
-.pengrade small{font-size:7.5px;font-weight:700;opacity:.9;letter-spacing:.05em;margin-top:1px}
-.penhead{display:flex;align-items:center;gap:12px;margin:4px 0 8px}
+.shgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:6px;margin:4px 0 10px}
+.shtile{background:#f5f7fa;border:1px solid #e3e7ee;border-radius:8px;padding:7px 9px}
+.sht-l{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#8a93a3;line-height:1.15;display:block;margin-bottom:3px}
+.sht-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.sht-v{font-size:15px;font-weight:800;color:var(--navy2);line-height:1.1}
+.sht-r{font-size:11.5px;font-weight:800;white-space:nowrap}
 .fzmute{color:#aab4c2}
 tr.cl{cursor:pointer}
 tr.cl:hover td{background:#eef2f8}
@@ -1173,27 +1164,25 @@ function sharpPanel(ab){
  const pcol={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[t.pen]||'#5a6675';
  const rkC=r=>{const q=r/32;return q<=.25?'#1e7a34':q<=.5?'#2e5496':q<=.75?'#b07d12':'#a23b3b';};
  const kv=items=>`<div class="shkv">${items.map(([l,v,rk])=>`<div><span class="shk">${l}</span><span class="shv">${v}${rk?` <span class="shrk" style="color:${rkC(rk)}">#${rk}</span>`:''}</span></div>`).join('')}</div>`;
- // bubble on a 1..n rank scale (position = rank; color = quality). badLow=true → rank #1 is bad (e.g. most-penalized).
+ // uniform tile: label + statistic + rank rating (color by rank quality). badLow=true → rank #1 is bad (e.g. most-penalized).
  const qCol=q=>q>=.6?'#1e7a34':q>=.33?'#b07d12':'#a23b3b';
- const sBub=(label,val,rank,n,badLow)=>{n=n||32;const q=badLow?(rank-1)/(n-1):(n-rank)/(n-1);const c=qCol(q);const p=Math.max(3,Math.min(97,(rank-1)/(n-1)*100));return `<div class="bub"><span class="bub-l">${label}</span><span class="bub-t"><i class="bub-d" style="left:${p}%;background:${c}"></i></span><span class="bub-v">${val}<span class="bub-rk" style="background:${c}">#${rank}</span></span></div>`;};
- const vBub=(label,frac,val,goodHigh)=>{const q=goodHigh?frac:1-frac;const c=qCol(q);const p=Math.max(3,Math.min(97,frac*100));return `<div class="bub"><span class="bub-l">${label}</span><span class="bub-t"><i class="bub-d" style="left:${p}%;background:${c}"></i></span><span class="bub-v">${val}</span></div>`;};
- const scaleRow=(l,r)=>`<div class="bub"><span></span><span class="bub-scale"><span>${l}</span><span>${r}</span></span><span></span></div>`;
+ const box=(label,stat,rank,badLow,n)=>{n=n||32;let c='var(--navy2)';if(rank!=null){const q=badLow?(rank-1)/(n-1):(n-rank)/(n-1);c=qCol(q);}
+  const inner = stat!=null
+   ? `<span class="sht-v">${stat}</span>${rank!=null?`<span class="sht-r" style="color:${c}">#${rank}${n!==32?'/'+n:''}</span>`:''}`
+   : `<span class="sht-v" style="color:${c}">${ord(rank)}${n!==32?' / '+n:''}</span>`;
+  return `<div class="shtile"><span class="sht-l">${label}</span><span class="sht-row">${inner}</span></div>`;};
+ const grid=html=>`<div class="shgrid">${html}</div>`;
  let rich='';
  if(t.forecast){
   const pcol2={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[t.pen]||'#5a6675';
   rich=`<div class="fsub" style="margin-top:12px">2026 forecast &amp; schedule</div>`+
-   `<div class="fchero"><div class="fcwin"><div class="n">${t.forecast.wins}</div><div class="l">Win total</div></div><div class="bubwrap" style="flex:1;min-width:230px">`+
-     vBub('Win total (0–17)',t.forecast.wins/17,t.forecast.wins,true)+
-     sBub('Division finish','',t.forecast.div,4,false)+
-     sBub('Strength of schedule','easiest',t.sos.rank,32,false)+
-     sBub('Net rest edge','',t.rest.net,32,false)+
-   `</div></div>${scaleRow('best','worst')}`+
+   grid(box('Win total','&nbsp;'+t.forecast.wins,null)+box('Division finish',null,t.forecast.div,false,4)+box('Strength of schedule (easy=good)',null,t.sos.rank,false,32)+box('Net rest edge',null,t.rest.net,false,32))+
    `<p class="note">${t.sos.note} ${t.rest.note}</p>`+
-   `<div class="fsub">Scoring efficiency — offense</div><div class="bubwrap">${t.scoringOff.map(([l,v,r])=>sBub(l,v,r,32,false)).join('')}${scaleRow('#1 best','#32 worst')}</div>`+
-   `<div class="fsub">Scoring efficiency — defense</div><div class="bubwrap">${t.scoringDef.map(([l,v,r])=>sBub(l,v,r,32,false)).join('')}${scaleRow('#1 best','#32 worst')}</div>`+
-   `<div class="fsub">2026 unit rankings <span class="hint">(Sharp / McCrystal, 1–32)</span></div><div class="shunits">${t.units.map(([l,r])=>`<div class="shunit"><span class="shul">${l}</span><span class="shur" style="color:${rkC(r)}">${ord(r)}</span></div>`).join('')}</div>`+
+   `<div class="fsub">Scoring efficiency — offense <span class="hint">(rank 1 = best)</span></div>`+grid(t.scoringOff.map(([l,v,r])=>box(l,v,r,false,32)).join(''))+
+   `<div class="fsub">Scoring efficiency — defense <span class="hint">(rank 1 = best)</span></div>`+grid(t.scoringDef.map(([l,v,r])=>box(l,v,r,false,32)).join(''))+
+   `<div class="fsub">2026 unit rankings <span class="hint">(Sharp / McCrystal, 1–32)</span></div>`+grid(t.units.map(([l,r])=>box(l,null,r,false,32)).join(''))+
    `<div class="fsub" style="margin-top:10px">Roster churn</div><div class="shros"><div><b>Added</b><ul>${t.roster.add.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><b>Lost</b><ul>${t.roster.lost.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><b>Drafted</b><ul>${t.roster.draft.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>`+
-   `<div class="fsub">Penalty tendencies</div><div class="penhead"><div class="pengrade" style="background:${pcol2}">${t.pen}<small>DISCIPLINE</small></div><div style="flex:1;min-width:220px"><div class="bubwrap">${(t.penRanks||[]).map(([l,r])=>sBub(l,'',r,32,true)).join('')}${t.penRanks?scaleRow('#1 most penalized','#32 fewest'):''}</div></div></div>`+
+   `<div class="fsub">Penalty tendencies <span class="hint">(rank 1 = most-penalized/worst)</span></div>`+grid(`<div class="shtile"><span class="sht-l">Discipline grade</span><span class="sht-row"><span class="sht-v" style="color:${pcol2}">${t.pen}</span></span></div>`+(t.penRanks||[]).map(([l,r])=>box(l,null,r,true,32)).join(''))+
    `<ul class="note" style="margin:0;padding-left:16px">${t.penNotes.map(x=>`<li>${x}</li>`).join('')}</ul>`;
  }
  return `<div class="card shcard"><div class="sechead">📘 2026 Outlook <span class="src" style="color:#9aa6b8">· ${S.src}</span></div>`+
