@@ -38,6 +38,7 @@ window.SHARP2026={
       roster:{add:["Travis Etienne (RB)","Kaden Elliss (LB)","Tyree Wilson (EDGE)","Noah Fant (TE)","David Edwards (LG)","Martin Emerson (CB)"],
               lost:["Demario Davis (LB → NYJ)","Alontae Taylor (CB → TEN)","Taysom Hill (QB)","Foster Moreau (TE)","Cameron Jordan (EDGE, later re-signed)"],
               draft:["Jordyn Tyson (WR, R1 #8)","Christen Miller (DT, R2)","Oscar Delp (TE, R3)"]},
+      penRanks:[["Penalties / game",6],["Pre-snap penalty rate",3],["False starts / game",2],["1st-quarter penalty rate",2]],
       penNotes:["6th in penalties/game; a top-5 penalized home team","3rd in pre-snap penalty rate — false starts were 61.5% of those (2nd-most false starts/game)","2nd-highest penalty rate in the 1st quarter"]},
   NYG:{hc:["John Harbaugh",1],oc:["Matt Nagy",1],dc:["Dennard Wilson",1],pen:"C"},
   NYJ:{hc:["Aaron Glenn",0],oc:["Frank Reich",1],dc:["Brian Duker",1],pen:"D"},
