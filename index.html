@@ -20,7 +20,7 @@ body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg);fon
 ::selection{background:var(--gold);color:var(--navy)}
 /* ---------- header ---------- */
 header{background:radial-gradient(120% 140% at 0% 0%,var(--navy2),var(--navy) 70%);color:#fff;padding:18px 22px 16px;border-bottom:2px solid var(--gold)}
-header h1{margin:0;font-size:21px;font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+header h1{margin:0;font-size:21px;font-weight:800;letter-spacing:-.2px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
 header h1 .g{color:var(--gold)}
 header .sub{font-size:12px;opacity:.78;margin-top:4px;font-weight:500;letter-spacing:.1px}
 /* ---------- nav ---------- */
@@ -106,6 +106,23 @@ tr.lg td{background:#fbf6e8 !important;font-weight:700;color:#6a6450}
 .fzmute{color:#aab4c2}
 tr.cl{cursor:pointer}
 tr.cl:hover td{background:#eef2f8}
+/* ---------- overview hero strip ---------- */
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin:0 0 18px}
+.htile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;box-shadow:var(--sh-1)}
+.htile .hl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8a93a3;display:block;margin-bottom:4px;line-height:1.2}
+.htile .hv{font-size:20px;font-weight:800;color:var(--ink);line-height:1.05;letter-spacing:-.3px}
+.htile .hs{font-size:10.5px;font-weight:600;color:var(--muted);margin-top:3px;line-height:1.25}
+.htile.go{cursor:pointer;transition:border-color .12s,box-shadow .12s}
+.htile.go:hover{border-color:var(--gold);box-shadow:var(--sh-2)}
+/* ---------- drill affordances ---------- */
+.fzc.cl{position:relative}
+.fzc.cl::after{content:"top 50 ▸";position:absolute;top:7px;right:8px;font-size:8.5px;font-weight:700;color:#a8b2c2;letter-spacing:.03em}
+.fzc.cl:hover::after{color:var(--blue)}
+@media(max-width:640px){.fzc.cl::after{content:"▸"}}
+/* ---------- back to top ---------- */
+#totop{position:fixed;right:16px;bottom:18px;z-index:40;width:42px;height:42px;border-radius:50%;border:1px solid var(--gold);background:var(--navy);color:var(--gold);font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(14,24,48,.35);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .2s,transform .2s}
+#totop.show{opacity:.94;pointer-events:auto;transform:none}
+#totop:hover{opacity:1}
 /* ---------- chips, pills, badges ---------- */
 .tier{display:inline-block;padding:2px 10px;border-radius:11px;font-size:11px;font-weight:700;color:#fff;letter-spacing:.2px}
 .bar{height:9px;border-radius:5px;background:var(--gold)}
@@ -346,8 +363,8 @@ th[data-rk]{min-width:18px}
 details>summary{cursor:pointer;font-size:12px;font-weight:700;color:#2e5496;margin-top:10px}
 th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 </style></head><body>
-<header><h1>⚜ <span class="g">Saints</span> NFL Scouting Dashboard <span class="g">·</span> 2025 baseline → 2026</h1>
-<div class="sub">The league → efficiency & QBs → the Saints → every opponent → the field itself · one story, start at Overview</div></header>
+<header><h1><span style="white-space:nowrap">⚜ <span class="g">Saints</span> NFL Scouting Dashboard</span> <span style="white-space:nowrap"><span class="g">·</span> 2025 baseline → 2026</span></h1>
+<div class="sub">2025 evidence, 2026 plan — from the whole league down to every throw. Start at Overview.</div></header>
 <nav id="nav"></nav>
 <main>
 <section id="overview"></section>
@@ -397,12 +414,11 @@ document.querySelector('#overview').classList.add('on');
 let W={off:40,def:40,st:20};
 // ---------- SHARED PAGE HEADER (kicker + title + lead + interactivity hints) ----------
 const PAGE={
- overview:{k:'Step 1 · Start here',t:'2026 Saints Scouting — Start Here',d:`The story runs left to right: the league as a whole → efficiency and QBs → ourselves → each opponent → the field itself. This page is the executive summary; every claim on it is computed live from the data behind the other tabs.`,h:['Click any slate row to open that opponent']},
- ratings:{k:'Step 2 · The league',t:'Team Ratings — 2025',d:`0–100 efficiency per phase. Drag the weights to re-rank the holistic score live (default 40/40/20). Saints highlighted.`,h:['Drag the weight sliders to re-rank live','Click any column header to sort']},
- epa:{k:'Step 3 · League Stats',t:'League Stats — 2025',d:`Reproduced from the nflverse play-by-play that powers rbsdm.com (all pass + rush plays). Saints highlighted in gold.`,h:['Switch metric with the tabs below','Click any column header to sort','Hover scatter points for detail']},
- tendencies:{k:'Step 5 · Tendencies',t:'Tendencies & Matchups — 2025',d:`Any team, either side of the ball, sliced by situation — efficiency vs the league, field-zone EPA, run direction, routes, personnel and coverage, all recomputing live. Or switch to Matchup to pit any two teams head-to-head with strength/weakness bars and situational mismatch flags. (A league-wide overview is still to come.)`,h:['Team or Matchup mode','Toggle offense / defense','Filter by play type, score & down']},
- opponents:{k:'Step 4 · The slate',t:'Opponent Scouting Packages',d:`Every team — Saints' 2026 opponents up top, the rest of the league below. Matchup scores their units against the Saints' with league ranks and auto-flagged game-plan keys; Offense/Defense carry the full tendency detail plus live situational splits (play-type, score state & down). New-staff teams are proxy-matched to the new play-caller's 2025 unit.`,h:['Pick any team','Switch Matchup / Offense / Defense','Filter by play type, score state & down','Click any column header to sort']},
- field:{k:'Step 5 · The field',t:'Field Charts — Pass & Run',d:`Every pass and run for any team, plotted on the field. Filter by QB or ball carrier and drill into who, where, and the outcome — with success and EPA by field zone right alongside. The zone tear sheet (team tendencies by score state) is here too, under its own toggle.`,h:['Pick a team','Switch Pass / Run / Zone sheet','Tap any dot for the play','Filter by QB, receiver or carrier']},
+ overview:{k:'Step 1 · Start here',t:'2026 Saints Scouting — Start Here',d:`The executive summary — every number below is computed live from the tabs behind it.`,h:['Click any slate row to open that opponent']},
+ ratings:{k:'Step 2 · The league',t:'Team Ratings — 2025',d:`0–100 efficiency per phase; drag the weights to re-rank the holistic score live. Saints highlighted.`,h:['Drag the weight sliders to re-rank live','Click any column header to sort']},
+ epa:{k:'Step 3 · League Stats',t:'League Stats — 2025',d:`Every 2025 pass and rush from the nflverse play-by-play. Saints in gold.`,h:['Switch boards with the tabs below','Click any column header to sort']},
+ opponents:{k:'Step 4 · The slate',t:'Opponent Scouting Packages',d:`One card per team, 2026 opponents first — the matchup verdict, their tendencies, and live situational splits.`,h:['Pick any team','Switch Matchup / Offense / Defense','Filter by play type, score state & down']},
+ field:{k:'Step 5 · The field',t:'Field Charts — Pass & Run',d:`Every throw and carry, plotted on the field — filter by player, lane, zone and down; tap any dot for the play.`,h:['Pick a team','Switch Pass / Run / Zone sheet','Tap any dot for the play']},
  philosophy:{k:'Step 6 · Reference',t:'Coaching Philosophy & Scheme Lineage — 2026',d:`Each team's 2026 staff and the coaching tree its scheme descends from.`,h:['Filter by division']}
 };
 function pageHead(id){const p=PAGE[id];if(!p)return '';
@@ -1080,11 +1096,10 @@ function renderOverview(){
   const[vl,vc]=verdict(x.edge);
   const flags=[x.o.proxy?'proxy O':'',x.o.defNew?'new DC':''].filter(Boolean).join(' · ');
   const key=x.top?`<b>${x.side||x.top.side}:</b> ${x.top.k.lab} ${fmt(x.top.k.v)} <span class="rk" style="color:#667">(${x.top.k.z>0?'+':''}${x.top.k.z.toFixed(1)}σ)</span>`:'—';
-  const d1=x.rTO-rND, d2=x.rTD-rNO;
-  const cell=(d)=>`<td style="color:${d>=6?'#1e7a34':d<=-6?'#a23b3b':'#555'}">${d>0?'+':''}${d}</td>`;
-  return `<tr data-go="${x.o.abbr}" style="cursor:pointer"><td class="tl"><span class="tcell">${teamLogo(x.o.abbr,'sm')}<b>${x.o.name}</b></span>${flags?` <small class="src">⚠ ${flags}</small>`:''}</td><td>${x.h==null?'—':x.h.toFixed(1)}</td><td>${ord(x.rTO)} vs ${ord(rND)}</td>${cell(x.rTO-rND)}<td>${ord(x.rTD)} vs ${ord(rNO)}</td>${cell(x.rTD-rNO)}<td><span class="tier" style="background:${vc}">${vl}</span></td><td class="tl" style="white-space:normal;min-width:240px;font-size:11.5px">${key}</td></tr>`;
+  const cell=(d,ours,theirs)=>`<td style="color:${d>=6?'#1e7a34':d<=-6?'#a23b3b':'#555'};white-space:nowrap"><b>${d>0?'+':''}${d}</b> <small style="color:#98a2b3;font-weight:600">${ord(theirs)} vs ${ord(ours)}</small></td>`;
+  return `<tr data-go="${x.o.abbr}" style="cursor:pointer"><td class="tl"><span class="tcell">${teamLogo(x.o.abbr,'sm')}<b>${x.o.name}</b></span>${flags?` <small class="src">⚠ ${flags}</small>`:''}</td><td><span class="tier" style="background:${vc}">${vl}</span></td><td>${x.h==null?'—':x.h.toFixed(1)}</td>${cell(x.rTO-rND,rND,x.rTO)}${cell(x.rTD-rNO,rNO,x.rTD)}<td class="tl" style="white-space:normal;min-width:240px;font-size:11.5px">${key}</td></tr>`;
  }).join('');
- const slateT=`<div class="scroll"><table><thead><tr><th class="tl">Opponent</th><th>Holistic</th><th>Their O vs our D</th><th>O edge</th><th>Their D vs our O</th><th>D edge</th><th>Verdict</th><th class="tl">Biggest tell</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note">Sorted toughest → most favorable. Edge columns = rank gaps (their unit's league rank minus ours; <b>positive favors the Saints</b>, ±6 ≈ even). Verdict averages both. Tell = the most extreme tendency from the auto game-plan keys. <b>Click any row to open that opponent's full card.</b></p>`;
+ const slateT=`<div class="scroll"><table><thead><tr><th class="tl">Opponent</th><th>Verdict</th><th>Holistic</th><th>O edge · their O vs our D</th><th>D edge · their D vs our O</th><th class="tl">Biggest tell</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note">Sorted toughest → most favorable. Edge = rank gap (their unit's league rank minus ours; <b>positive favors the Saints</b>, ±6 ≈ even). Verdict averages both edges. Tell = the most extreme tendency from the auto game-plan keys. <b>Click any row to open that opponent's full card.</b></p>`;
  const guide=[
   ['1 · Overview','this page — the verdicts. Everything below is the evidence.'],
   ['2 · Team Ratings','the league as a whole: 3-phase 0–100 ratings, adjustable holistic weights, benchmark detail.'],
@@ -1100,7 +1115,24 @@ function renderOverview(){
   '<b>Raw tables hide under disclosures</b> — "View as sortable tables" beneath the passing volume map.',
   '<b>Color language:</b> gold = Saints · blue/orange = above/below league frequency · green/red = good/bad for the unit shown · row tints = a team’s best/worst grouping.'
  ].map(x=>`<li>${x}</li>`).join('');
+ // --- hero strip: the whole situation in one row ---
+ const sh=(window.SHARP2026&&window.SHARP2026.teams.NO)||{};
+ const rkq=r=>{const q=(32-r)/31;return q>=.6?'#1e7a34':q>=.33?'#b07d12':'#a23b3b';};
+ const tally=slate.reduce((a,x)=>{const v=verdict(x.edge)[0];a[v]=(a[v]||0)+1;return a;},{});
+ const tough=(tally['Tough']||0)+(tally['Very tough']||0), fav=(tally['Favorable']||0)+(tally['Clear edge']||0), evn=tally['Even']||0;
+ const ht=(l,v,s,c,go)=>`<div class="htile${go?' go':''}"${go?` data-hgo="${go}"`:''}><span class="hl">${l}</span><span class="hv"${c?` style="color:${c}"`:''}>${v}</span>${s?`<div class="hs">${s}</div>`:''}</div>`;
+ const hero=`<div class="hero">${
+  ht('2025 holistic',hol[hIdx].h.toFixed(1),`${ord(hIdx+1)} of 32 · <b style="color:${tc}">${tn}</b>`,null,'ratings')+
+  ht('Offense',ord(rNO),'EPA/play rank',rkq(rNO),'epa')+
+  ht('Defense',ord(rND),'EPA/play rank',rkq(rND),'epa')+
+  (sh.forecast?ht('2026 win total',sh.forecast.wins,`${ord(sh.forecast.div)} in division (Sharp)`):'')+
+  (sh.sos?ht('Schedule',ord(sh.sos.rank),'easiest in the NFL',rkq(sh.sos.rank)):'')+
+  (sh.rest?ht('Net rest edge',ord(sh.rest.net),'short weeks, negated bye',rkq(sh.rest.net)):'')+
+  (sh.pen?ht('Discipline',sh.pen,'Sharp penalty grade',{'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[sh.pen]):'')+
+  ht('2026 slate',`${tough} tough`,`${evn} even · ${fav} favorable`,tough>=5?'#a23b3b':'#2e5496','opponents')
+ }</div>`;
  s.innerHTML=`${pageHead('overview')}
+ ${hero}
  <div class="card"><div class="sechead">Who we are — 2025 baseline <small class="src" style="color:#dfe6f2">· holistic ${hol[hIdx].h.toFixed(1)}, ${ord(hIdx+1)} overall · <span class="tier" style="background:${tc}">${tn}</span></small></div>
  <div class="grid2"><div><div class="sechead o">Offense</div><ul class="keys">${off.map(x=>`<li>${x}</li>`).join('')}</ul></div>
  <div><div class="sechead d">Defense</div><ul class="keys">${deff.map(x=>`<li>${x}</li>`).join('')}</ul></div></div></div>
@@ -1109,6 +1141,7 @@ function renderOverview(){
  <div class="card"><div class="grid2"><div><div class="sechead">How this dashboard reads</div><ul class="keys">${guide}</ul></div>
  <div><div class="sechead">Don't miss</div><ul class="keys">${hidden}</ul></div></div></div>`;
  s.querySelectorAll('[data-go]').forEach(r=>r.onclick=()=>gotoOpp(r.dataset.go));
+ s.querySelectorAll('[data-hgo]').forEach(t=>t.onclick=()=>goSection(t.dataset.hgo));
 }
 // ----- Shell -----
 let curOpp=null,curOTab='match';
@@ -1181,7 +1214,7 @@ function sharpPanel(ab){
    `<div class="fsub">Scoring efficiency — offense <span class="hint">(rank 1 = best)</span></div>`+grid(t.scoringOff.map(([l,v,r])=>box(l,v,r,false,32)).join(''))+
    `<div class="fsub">Scoring efficiency — defense <span class="hint">(rank 1 = best)</span></div>`+grid(t.scoringDef.map(([l,v,r])=>box(l,v,r,false,32)).join(''))+
    `<div class="fsub">2026 unit rankings <span class="hint">(Sharp / McCrystal, 1–32)</span></div>`+grid(t.units.map(([l,r])=>box(l,null,r,false,32)).join(''))+
-   `<div class="fsub" style="margin-top:10px">Roster churn</div><div class="shros"><div><b>Added</b><ul>${t.roster.add.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><b>Lost</b><ul>${t.roster.lost.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><b>Drafted</b><ul>${t.roster.draft.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>`+
+   `<details class="tblfb" style="margin:10px 0 4px"><summary>Roster churn — ${t.roster.add.length} added · ${t.roster.lost.length} lost · ${t.roster.draft.length} drafted</summary><div class="shros"><div><b>Added</b><ul>${t.roster.add.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><b>Lost</b><ul>${t.roster.lost.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><b>Drafted</b><ul>${t.roster.draft.map(x=>`<li>${x}</li>`).join('')}</ul></div></div></details>`+
    `<div class="fsub">Penalty tendencies <span class="hint">(rank 1 = most-penalized/worst)</span></div>`+grid(`<div class="shtile"><span class="sht-l">Discipline grade</span><span class="sht-row"><span class="sht-v" style="color:${pcol2}">${t.pen}</span></span></div>`+(t.penRanks||[]).map(([l,r])=>box(l,null,r,true,32)).join(''))+
    `<ul class="note" style="margin:0;padding-left:16px">${t.penNotes.map(x=>`<li>${x}</li>`).join('')}</ul>`;
  }
@@ -1571,7 +1604,7 @@ const DEPN2=['Behind LOS','Short (0–9)','Interm. (10–19)','Deep (20+)'], SID
 const RBMETRICS=[['epa','EPA/rush'],['ypc','YPC'],['succ','Success%'],['expl','Explosive%']];
 const smAvg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null, smCap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 function depthBucket(ay){if(ay==null||ay==='')return null;if(ay<0)return 0;if(ay<10)return 1;if(ay<20)return 2;return 3;}
-function segRow(k,cur,opts,style){return `<div class="subnav" style="${style||'margin:0 6px 6px 0'}">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${String(cur)===String(v)?'on':''}">${l}</button>`).join('')}</div>`;}
+function segRow(k,cur,opts,style,cap){const row=`<div class="subnav" style="${style||'margin:0 6px 6px 0'}">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${String(cur)===String(v)?'on':''}">${l}</button>`).join('')}</div>`;return cap?`<div class="subgroup" style="margin:0 6px 6px 0"><span class="subcap">${cap}</span>${row.replace(/style="[^"]*"/,'style="margin:0"')}</div>`:row;}
 // pass plays grouped by keyOf(p) -> {group:{player:raw}}
 function passSplitGroups(who,keyOf){const P=window.PLAYS||{},G={};for(const t in P){for(const p of P[t].pass){const nm=who==='rec'?p[3]:p[2];if(!nm)continue;const k=keyOf(p);if(k==null)continue;const g=G[k]||(G[k]={});const o=g[nm]||(g[nm]={name:nm,tm:{},tgt:0,rec:0,yds:0,td:0,rzRec:0,rzYds:0,rzTd:0,ep:[],cp:[]});o.tgt++;o.tm[t]=(o.tm[t]||0)+1;const rz=p[6]!=null&&p[6]<=20;if(p[12]==='C'){o.rec++;o.yds+=(p[8]||0);if(rz){o.rzRec++;o.rzYds+=(p[8]||0);}}if(p[13]===1){o.td++;if(rz)o.rzTd++;}if(p[10]!=null)o.ep.push(p[10]);if(p[22]!=null)o.cp.push(p[22]);}}return G;}
 function splitPassPlayers(gmap){return Object.values(gmap||{}).map(o=>({name:o.name,team:Object.keys(o.tm).sort((a,b)=>o.tm[b]-o.tm[a])[0],tgt:o.tgt,rec:o.rec,yds:o.yds,td:o.td,rzRec:o.rzRec,rzYds:o.rzYds,rzTd:o.rzTd,epaTgt:o.ep.length?fmean(o.ep):null,cpoe:o.cp.length?fmean(o.cp):null}));}
@@ -1607,7 +1640,7 @@ function renderPassSplits(who,kind){
  const mLab=metrics.find(m=>m[0]===SPLITMETRIC)[1], posLab=who==='rec'?'Receiver':'Quarterback';
  const dec={ec:2,epa:3,cpoe:1,comp:0,yds:0,td:0}[SPLITMETRIC];
  const qNote=`Qualified: <b>${qual.size} ${posLab.toLowerCase()}s</b> with ≥${minVol} ${unit} — 80% of the ${lgVol}-${unitS} league-starter average.`;
- const controls=`<div class="card">${segRow('spm',SPLITMETRIC,metrics)}${segRow('spg',sg,[['all',kind==='route'?'All routes':'All zones']].concat(groupsN.map((nm,i)=>[String(i),nm])),'margin:0 6px 6px 0;flex-wrap:wrap')}<p class="note" style="margin:2px 0 0">${qNote}</p></div>`;
+ const controls=`<div class="card">${segRow('spm',SPLITMETRIC,metrics,null,'Metric')}${segRow('spg',sg,[['all',kind==='route'?'All routes':'All zones']].concat(groupsN.map((nm,i)=>[String(i),nm])),'margin:0 6px 6px 0;flex-wrap:wrap',kind==='route'?'Route — drill into one':'Field zone — drill into one')}<p class="note" style="margin:2px 0 0">${qNote}</p></div>`;
  // per-group leader summary (qualified pool only)
  const summ=groupsN.map((nm,i)=>{const all=splitPassPlayers(G[i]);const tot=all.reduce((s,x)=>s+x.tgt,0);const lgE=smAvg(all.filter(x=>x.epaTgt!=null).map(x=>x.epaTgt));const lgC=smAvg(all.filter(x=>x.cpoe!=null).map(x=>x.cpoe));const ld=rankPass(all.filter(okP),SPLITMETRIC)[0];return {i,nm,tot,lgE,lgC,ld};});
  let body='';
@@ -1638,7 +1671,7 @@ function renderRunSplits(){
  let sg=RBSPLITGROUP; if(sg!=='all'&&(+sg<0||+sg>6))sg='all';
  const mLab=RBMETRICS.find(m=>m[0]===RBSPLITMETRIC)[1];
  const qNote=`Qualified: <b>${qual.size} backs</b> with ≥${minVol} carries — 80% of the ${lgVol}-carry league-starter average.`;
- const controls=`<div class="card">${segRow('rbspm',RBSPLITMETRIC,RBMETRICS)}${segRow('rbspg',sg,[['all','All points of attack']].concat(POAN.map((nm,i)=>[String(i),nm])),'margin:0 6px 6px 0;flex-wrap:wrap')}<p class="note" style="margin:2px 0 0">${qNote}</p></div>`;
+ const controls=`<div class="card">${segRow('rbspm',RBSPLITMETRIC,RBMETRICS,null,'Metric')}${segRow('rbspg',sg,[['all','All points of attack']].concat(POAN.map((nm,i)=>[String(i),nm])),'margin:0 6px 6px 0;flex-wrap:wrap','Point of attack — drill into one')}<p class="note" style="margin:2px 0 0">${qNote}</p></div>`;
  let body='';
  if(sg==='all'){
   const rows=POAN.map((nm,i)=>{const all=splitRunPlayers(G[i]);const tot=all.filter(isRB).reduce((s,x)=>s+x.att,0);const lgY=smAvg(all.filter(x=>isRB(x)&&x.ypc!=null).map(x=>x.ypc));const ld=rankRun(all.filter(okR),RBSPLITMETRIC)[0];return {i,nm,tot,lgY,ld};});
@@ -1663,12 +1696,12 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
  else
  if(id=='off'){const R=zComposite(L.teams.map(t=>({name:t.name,abbr:t.abbr,...t.off,cpoe:(PRO[t.abbr]?PRO[t.abbr].cpoe:null)})),['passEPA','rushEPA','cpoe','succ','edEPA']).sort((a,b)=>(b.comp==null?-99:b.comp)-(a.comp==null?-99:a.comp));box.innerHTML=`<div class="card">${barChart(R.map(t=>({lab:t.abbr,ab:t.abbr,v:t.comp==null?0:+t.comp.toFixed(2),hl:t.abbr=='NO',title:t.name+' — Pass EPA '+t.passEPA.toFixed(3)+' · Rush EPA '+t.rushEPA.toFixed(3)+' · CPOE '+(t.cpoe>0?'+':'')+t.cpoe+' · Succ '+t.succ+'% · ED EPA '+t.edEPA.toFixed(3)})),{avg:0,label:'Offense composite (Pass EPA + Rush EPA + CPOE + Success% + Early-down EPA) — sorted best → worst',dec:2})}</div><div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'comp',lab:'Off composite',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'epa',lab:'EPA/play',fmt:v=>v.toFixed(3),heat:1},{k:'passEPA',lab:'Pass EPA',fmt:v=>v.toFixed(3),heat:1},{k:'rushEPA',lab:'Rush EPA',fmt:v=>v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(1),heat:1},{k:'succ',lab:'Success %',heat:1},{k:'edEPA',lab:'Early-down EPA',fmt:v=>v.toFixed(3),heat:1}],'abbr')}<p class="note"><b>Off composite</b> = average of five standardized inputs — Pass EPA, Rush EPA, CPOE, Success % and early-down EPA — in SDs above/below league average. Blending efficiency (EPA), sustainability (success rate, early downs) and accuracy (CPOE) keeps any single stat from skewing the ranking. Bar chart plots this composite.</p></div>`;}
  else if(id=='def'){const R=L.teams.map(t=>({name:t.name,abbr:t.abbr,...t.deff})).sort((a,b)=>a.epa-b.epa);const e=mm(R,'epa');box.innerHTML=`<div class="card">${barChart(R.map(t=>({lab:t.abbr,ab:t.abbr,v:t.epa,hl:t.abbr=='NO',title:t.name})),{avg:L.lgOff,label:'Defense EPA/play allowed — sorted best → worst (lower is better)',dec:2})}</div><div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'epa',lab:'EPA/play allowed',fmt:v=>v.toFixed(3),heat:[e[1],e[0]]},{k:'succ',lab:'Success % allowed'},{k:'passEPA',lab:'Pass EPA',fmt:v=>v.toFixed(3)},{k:'rushEPA',lab:'Rush EPA',fmt:v=>v.toFixed(3)},{k:'edEPA',lab:'Early-down EPA',fmt:v=>v.toFixed(3)}],'abbr')}<p class="note">Defensive EPA per play allowed; lower = better.</p></div>`;}
- else if(id=='qb'){const qbv=segRow('qbview',QBVIEW,[['value','Value board'],['route','Route tree'],['zone','Field zones']],'margin:0');
+ else if(id=='qb'){const qbv=segRow('qbview',QBVIEW,[['value','Value board'],['route','Route tree'],['zone','Field zones']],'margin:0','View');
   if(QBVIEW!=='value'&&window.PLAYS){box.innerHTML=`<div class="card">${qbv}<p class="note" style="margin:6px 0 0">QB efficiency by ${QBVIEW==='route'?'the route thrown':'area of the field (throw depth × side)'} — pick a metric, then tap any ${QBVIEW==='route'?'route':'zone'} for its top 50.</p></div>`+renderPassSplits('qb',QBVIEW);wireSplitNav(box,'qb');box.querySelectorAll('[data-qbview]').forEach(b=>b.onclick=()=>{QBVIEW=b.dataset.qbview;SPLITGROUP='all';drawEPA('qb');});return;}
   const RM=qbRushMap();const base=L.qbs.map(q=>{const r=RM[q.qb]||{att:0,yds:0,td:0};return {...q,rushYds:r.yds,rushTd:r.td,rushAtt:r.att,rushProd:r.yds+20*r.td};});const R=zComposite(base,[['epa',1.5],['cpoe',0.75],['succ',0.75],['rushProd',0.75,true],['db',0.5]]).sort((a,b)=>b.comp-a.comp);box.innerHTML=`<div class="card">${qbv}</div><div class="card">${barChart(R.map(q=>({lab:q.qb,v:+q.comp.toFixed(2),hl:q.team=='NO',title:q.qb+' ('+q.team+') — EPA/db '+q.epa.toFixed(3)+' · CPOE '+(q.cpoe>0?'+':'')+q.cpoe+' · '+q.db+' dropbacks · '+q.rushYds+' rush yds / '+q.rushTd+' TD'})),{avg:0,label:'QB Value composite (min 200 dropbacks) — sorted best → worst',dec:2,rot:1,b:56,h:280,bw:19})}</div><div class="card">${tbl(R,[{k:'qb',lab:'Quarterback'},{k:'team',lab:'Tm'},{k:'comp',lab:'QB value',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'epa',lab:'EPA/dropback',fmt:v=>v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>(v>0?'+':'')+v.toFixed(1),heat:1},{k:'succ',lab:'Success %',heat:1},{k:'db',lab:'Dropbacks',heat:1},{k:'rushYds',lab:'Rush yds',heat:1},{k:'rushTd',lab:'Rush TD',heat:1}],'team',true)}<p class="note"><b>QB value</b> = <b>weighted</b> blend of standardized inputs — the bottom-line result leads: <b>EPA/dropback</b> (efficiency — the germane QB rate, already counting sacks &amp; scrambles) at ×1.5, then <b>CPOE</b> (accuracy — a supporting input), <b>Success %</b> and <b>rushing production</b> (rush yds + 20×rush TD) at ×0.75, and <b>Dropbacks — usage/volume — at ×0.5</b>. Rushing is <b>bonus-only</b> (it can add value for mobile QBs but never penalizes a pocket passer). So a QB with elite EPA but average CPOE (e.g. high-end results driven differently) still ranks on his production. Bars &amp; values are SDs vs the QB average. Rush from play-by-play (kneels/aborted snaps excluded); passing EPA is per dropback. Min 200 dropbacks.</p></div>`;box.querySelectorAll('[data-qbview]').forEach(b=>b.onclick=()=>{QBVIEW=b.dataset.qbview;SPLITGROUP='all';drawEPA('qb');});}
  else if(id=='rec'){
   if(!window.PLAYS){box.innerHTML='<div class="card banner">Play data not loaded — the receiver board needs data/plays.js.</div>';return;}
-  const rv=segRow('recview',RECVIEW,[['value','Value board'],['route','Route tree'],['zone','Field zones']],'margin:0');
+  const rv=segRow('recview',RECVIEW,[['value','Value board'],['route','Route tree'],['zone','Field zones']],'margin:0','View');
   if(RECVIEW!=='value'){box.innerHTML=`<div class="card">${rv}<p class="note" style="margin:6px 0 0">Receiver production by ${RECVIEW==='route'?'the route run':'area of the field (throw depth × side)'} — pick a metric, then tap any ${RECVIEW==='route'?'route':'zone'} for its top 50.</p></div>`+renderPassSplits('rec',RECVIEW);wireSplitNav(box,'rec');box.querySelectorAll('[data-recview]').forEach(b=>b.onclick=()=>{RECVIEW=b.dataset.recview;SPLITGROUP='all';drawEPA('rec');});return;}
   const wrte=buildReceivers().filter(x=>x.pos==='WR'||x.pos==='TE');
   // league-average starter snaps = mean season snaps of each team's top-4 WR/TE by snaps
@@ -1678,8 +1711,8 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
   let pool=wrte.filter(x=>RECPF==='all'||x.pos===RECPF);
   pool = RECVOL==='q' ? pool.filter(x=>x.snaps>=avgStarter&&x.snaps>0) : pool.filter(x=>x.tgt>=20);
   const R=zComposite(pool,[['epaTgt',1],['yds',1],['cpoe',0.75],['td',0.75],['tgtShare',0.5],['drop',-0.4]]).sort((a,b)=>(b.comp==null?-99:b.comp)-(a.comp==null?-99:a.comp)).slice(0,50);
-  const seg=(k,cur,opts)=>`<div class="subnav" style="margin:0 8px 6px 0">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${cur===v?'on':''}">${l}</button>`).join('')}</div>`;
-  const ctrls=`<div style="display:flex;flex-wrap:wrap;align-items:center;gap:2px 4px">${seg('rpf',RECPF,[['all','WR + TE'],['WR','WR only'],['TE','TE only']])}${seg('rvol',RECVOL,[['q','Snap-qualified'],['o','Overall (efficiency)']])}</div>`;
+  const seg=(k,cur,opts,cap)=>`<div class="subgroup" style="margin:6px 8px 6px 0">${cap?`<span class="subcap">${cap}</span>`:''}<div class="subnav" style="margin:0">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${cur===v?'on':''}">${l}</button>`).join('')}</div></div>`;
+  const ctrls=`<div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:2px 4px">${seg('rpf',RECPF,[['all','WR + TE'],['WR','WR only'],['TE','TE only']],'Position')}${seg('rvol',RECVOL,[['q','Snap-qualified'],['o','Overall (efficiency)']],'Pool')}</div>`;
   const posLab=RECPF==='all'?'WR/TE':RECPF+'s';
   const note=RECVOL==='q'?`Only ${posLab} with at least the <b>league-average starter snap count (${avgStarter} offensive snaps)</b> — filters out small-sample noise. Ranked by the Receiver value composite, top 50.`:`<b>Overall</b> — every ${posLab} with 20+ targets, no snap filter, so highly efficient part-time players show through. Ranked by Receiver value, top 50.`;
   box.innerHTML=`<div class="card">${rv}${ctrls}<p class="note" style="margin:2px 0 0">${note}</p></div><div class="card">${barChart(R.map(x=>({lab:x.name,v:x.comp==null?0:+x.comp.toFixed(2),hl:x.team=='NO',title:x.name+' ('+x.team+', '+x.pos+') — '+x.tgt+' tgt · '+(x.tgtShare==null?'—':x.tgtShare.toFixed(1)+'% tgt share')+' · '+x.yds+' yds · '+x.td+' TD · EPA/tgt '+(x.epaTgt==null?'—':x.epaTgt.toFixed(2))})),{avg:0,label:'Top 50 '+posLab+' — Receiver value composite',dec:2,rot:1,b:64,h:300,bw:14})}</div><div class="card">${tbl(R,[{k:'name',lab:'Receiver'},{k:'team',lab:'Tm'},{k:'pos',lab:'Pos'},{k:'comp',lab:'Rec value',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'snaps',lab:'Snaps'},{k:'tgt',lab:'Tgt'},{k:'tgtShare',lab:'Tgt share',fmt:v=>v==null?'—':v.toFixed(1)+'%',heat:1},{k:'rec',lab:'Rec'},{k:'catch',lab:'Catch%',fmt:v=>v==null?'—':v.toFixed(0)+'%'},{k:'yds',lab:'Yds',heat:1},{k:'td',lab:'TD',heat:1},{k:'drop',lab:'Drop',heat:1},{k:'intc',lab:'INT',heat:1},{k:'epaTgt',lab:'EPA/tgt',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(1),heat:1}],'team',true)}<p class="note"><b>Receiver value</b> = <b>weighted</b> blend of standardized inputs — efficiency &amp; production lead, usage contributes at a lower weight: <b>EPA/target</b> (efficiency) &amp; <b>receiving yards</b> (production) at ×1, <b>CPOE</b> (accuracy/catchability of those throws) &amp; <b>receiving TDs</b> (scoring) at ×0.75, <b>target share — % of his team's targets, usage/role — at ×0.5</b>, and a <b>drops ding (×−0.4)</b>. Drops are already reflected in EPA, so the penalty is deliberately modest (won't outweigh production). SDs vs the shown field. Snaps from participation; position from rosters; INT = picks on throws targeting him; Drop from FTN charting.</p></div>`;
@@ -1688,20 +1721,20 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
   box.querySelectorAll('[data-rvol]').forEach(b=>b.onclick=()=>{RECVOL=b.dataset.rvol;drawEPA('rec');});}
  else if(id=='rb'){
   if(!window.PLAYS){box.innerHTML='<div class="card banner">Play data not loaded — the RB board needs data/plays.js.</div>';return;}
-  const rbv=segRow('rbview',RBVIEW,[['value','Value board'],['poa','Point of attack']],'margin:0');
+  const rbv=segRow('rbview',RBVIEW,[['value','Value board'],['poa','Point of attack']],'margin:0','View');
   if(RBVIEW!=='value'){box.innerHTML=`<div class="card">${rbv}<p class="note" style="margin:6px 0 0">Rushing production by point of attack (gap × direction) — pick a metric, then tap any gap for its top 50 backs.</p></div>`+renderRunSplits();wireSplitNav(box,'rb');box.querySelectorAll('[data-rbview]').forEach(b=>b.onclick=()=>{RBVIEW=b.dataset.rbview;RBSPLITGROUP='all';drawEPA('rb');});return;}
   const minCar=RBVOL==='q'?100:40;
   let pool=buildRB().filter(x=>x.pos==='RB'&&x.att>=minCar);
   pool=zComposite(pool,[['epaRush',1],['yacAtt',0.75],['mtfAtt',0.75],['succ',0.75],['tdVal',0.75],['recEpa',0.6],['touches',0.5],['fum',-0.4]]).sort((a,b)=>(b.comp==null?-99:b.comp)-(a.comp==null?-99:a.comp)).slice(0,50);
-  const seg=(k,cur,opts)=>`<div class="subnav" style="margin:0">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${cur===v?'on':''}">${l}</button>`).join('')}</div>`;
+  const seg=(k,cur,opts,cap)=>`<div class="subgroup" style="margin:6px 0 0">${cap?`<span class="subcap">${cap}</span>`:''}<div class="subnav" style="margin:0">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${cur===v?'on':''}">${l}</button>`).join('')}</div></div>`;
   const rnote=RBVOL==='q'?`Real workload backs (<b>100+ carries</b>) — filters out small-sample committee/backup noise.`:`<b>Overall</b> — all backs with 40+ carries, so efficient part-timers show through.`;
-  box.innerHTML=`<div class="card">${rbv}${seg('rbvol',RBVOL,[['q','Qualified (100+ carries)'],['o','Overall (40+)']])}<p class="note" style="margin:6px 0 0">${rnote} Ranked by the holistic value composite, top 50.</p></div><div class="card">${barChart(pool.map(x=>({lab:x.name,v:x.comp==null?0:+x.comp.toFixed(2),hl:x.team=='NO',title:x.name+' ('+x.team+') — '+x.touches+' touch · '+x.att+' att · '+(x.ypc==null?'—':x.ypc.toFixed(1))+' YPC · '+x.td+' rush TD / '+x.recTd+' rec TD · YACO/att '+(x.yacAtt==null?'—':x.yacAtt.toFixed(2))+' · MTF/att '+(x.mtfAtt==null?'—':x.mtfAtt.toFixed(3))+' · EPA/rush '+(x.epaRush==null?'—':x.epaRush.toFixed(3))})),{avg:0,label:'Top 50 RB — holistic value composite',dec:2,rot:1,b:66,h:300,bw:14})}</div><div class="card">${tbl(pool,[{k:'name',lab:'Running Back'},{k:'team',lab:'Tm'},{k:'comp',lab:'RB value',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'touches',lab:'Touch'},{k:'att',lab:'Att'},{k:'ypc',lab:'YPC',fmt:v=>v==null?'—':v.toFixed(1),heat:1},{k:'expl',lab:'Expl%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'succ',lab:'Succ%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'mtfAtt',lab:'MTF/att',fmt:v=>v==null?'—':v.toFixed(3),heat:1},{k:'yacAtt',lab:'YACO/att',fmt:v=>v==null?'—':v.toFixed(2),heat:1},{k:'ybcAtt',lab:'YBCO/att',fmt:v=>v==null?'—':v.toFixed(2),heat:1},{k:'epaRush',lab:'EPA/rush',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'td',lab:'Rush TD',heat:1},{k:'rec',lab:'Rec'},{k:'recTd',lab:'Rec TD',heat:1},{k:'recEpa',lab:'Rec EPA',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'fum',lab:'Fum',heat:1}],'team',true)}<p class="note"><b>RB value</b> = <b>weighted</b> blend of standardized inputs — efficiency &amp; production lead, usage contributes at a lower weight: EPA/rush (×1), YACO/att, MTF/att, success %, scoring (rush TD + 1.6× rec TD) (×0.75 each), receiving EPA (×0.6), <b>total touches — usage/volume (×0.5)</b>, and a <b>fumbles ding (×−0.4)</b>. Fumbles are already reflected in EPA, so the penalty is deliberately modest (won't outweigh production). YBCO/att (mostly a blocking measure) is shown but kept out of the rating. RB only. YBCO/YACO/MTF from PFR advanced charting; snaps from participation.</p></div>`;
+  box.innerHTML=`<div class="card">${rbv}${seg('rbvol',RBVOL,[['q','Qualified (100+ carries)'],['o','Overall (40+)']],'Pool')}<p class="note" style="margin:6px 0 0">${rnote} Ranked by the holistic value composite, top 50.</p></div><div class="card">${barChart(pool.map(x=>({lab:x.name,v:x.comp==null?0:+x.comp.toFixed(2),hl:x.team=='NO',title:x.name+' ('+x.team+') — '+x.touches+' touch · '+x.att+' att · '+(x.ypc==null?'—':x.ypc.toFixed(1))+' YPC · '+x.td+' rush TD / '+x.recTd+' rec TD · YACO/att '+(x.yacAtt==null?'—':x.yacAtt.toFixed(2))+' · MTF/att '+(x.mtfAtt==null?'—':x.mtfAtt.toFixed(3))+' · EPA/rush '+(x.epaRush==null?'—':x.epaRush.toFixed(3))})),{avg:0,label:'Top 50 RB — holistic value composite',dec:2,rot:1,b:66,h:300,bw:14})}</div><div class="card">${tbl(pool,[{k:'name',lab:'Running Back'},{k:'team',lab:'Tm'},{k:'comp',lab:'RB value',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'touches',lab:'Touch'},{k:'att',lab:'Att'},{k:'ypc',lab:'YPC',fmt:v=>v==null?'—':v.toFixed(1),heat:1},{k:'expl',lab:'Expl%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'succ',lab:'Succ%',fmt:v=>v==null?'—':v.toFixed(0)+'%',heat:1},{k:'mtfAtt',lab:'MTF/att',fmt:v=>v==null?'—':v.toFixed(3),heat:1},{k:'yacAtt',lab:'YACO/att',fmt:v=>v==null?'—':v.toFixed(2),heat:1},{k:'ybcAtt',lab:'YBCO/att',fmt:v=>v==null?'—':v.toFixed(2),heat:1},{k:'epaRush',lab:'EPA/rush',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(3),heat:1},{k:'td',lab:'Rush TD',heat:1},{k:'rec',lab:'Rec'},{k:'recTd',lab:'Rec TD',heat:1},{k:'recEpa',lab:'Rec EPA',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'fum',lab:'Fum',heat:1}],'team',true)}<p class="note"><b>RB value</b> = <b>weighted</b> blend of standardized inputs — efficiency &amp; production lead, usage contributes at a lower weight: EPA/rush (×1), YACO/att, MTF/att, success %, scoring (rush TD + 1.6× rec TD) (×0.75 each), receiving EPA (×0.6), <b>total touches — usage/volume (×0.5)</b>, and a <b>fumbles ding (×−0.4)</b>. Fumbles are already reflected in EPA, so the penalty is deliberately modest (won't outweigh production). YBCO/att (mostly a blocking measure) is shown but kept out of the rating. RB only. YBCO/YACO/MTF from PFR advanced charting; snaps from participation.</p></div>`;
   box.querySelectorAll('[data-rbview]').forEach(b=>b.onclick=()=>{RBVIEW=b.dataset.rbview;RBSPLITGROUP='all';drawEPA('rb');});
   box.querySelectorAll('[data-rbvol]').forEach(b=>b.onclick=()=>{RBVOL=b.dataset.rbvol;drawEPA('rb');});}
  else if(id=='advdef'){
   if(!window.DEFTEAM){box.innerHTML='<div class="card banner">Defense data not loaded — needs data/defense.js &amp; data/defplayers.js.</div>';return;}
-  const seg=(k,cur,opts)=>`<div class="subnav" style="margin:0 8px 6px 0">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${cur===v?'on':''}">${l}</button>`).join('')}</div>`;
-  const sideCtrl=seg('advside',ADVSIDE,[['team','Team defense'],['player','Individual players']]);
+  const seg=(k,cur,opts,cap)=>`<div class="subgroup" style="margin:0 8px 6px 0">${cap?`<span class="subcap">${cap}</span>`:''}<div class="subnav" style="margin:0">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${cur===v?'on':''}">${l}</button>`).join('')}</div></div>`;
+  const sideCtrl=seg('advside',ADVSIDE,[['team','Team defense'],['player','Individual players']],'Level');
   if(ADVSIDE==='team'){
     const TT=window.DEFTEAM;
     const rows=Object.keys(TT).map(ab=>({name:teamName(ab),abbr:ab,...TT[ab]})).sort((a,b)=>b.havocR-a.havocR);
@@ -1716,8 +1749,8 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
     const starterSnaps=[];Object.values(byTm).forEach(a=>{a.sort((m,n)=>n-m);starterSnaps.push(...a.slice(0,11));});
     const lgStarter=starterSnaps.length?Math.round(starterSnaps.reduce((s,v)=>s+v,0)/starterSnaps.length):0;
     const qualMin=Math.round(lgStarter/2), rotMin=Math.round(qualMin/2);
-    const grpCtrl=seg('advgrp',ADVGRP,[['all','All'],['DL','DL'],['LB','LB / Edge'],['DB','DB']]);
-    const volCtrl=seg('advvol',ADVVOL,[['q','Qualified ('+qualMin+'+ snaps)'],['o','Rotational ('+rotMin+'+)']]);
+    const grpCtrl=seg('advgrp',ADVGRP,[['all','All'],['DL','DL'],['LB','LB / Edge'],['DB','DB']],'Position group');
+    const volCtrl=seg('advvol',ADVVOL,[['q','Qualified ('+qualMin+'+ snaps)'],['o','Rotational ('+rotMin+'+)']],'Snap floor');
     const minSnap=ADVVOL==='q'?qualMin:rotMin;
     let pool=P.filter(x=>(ADVGRP==='all'||x.grp===ADVGRP)&&x.snaps>=minSnap);
     const isDB=ADVGRP==='DB';
@@ -1785,4 +1818,8 @@ document.addEventListener('click',e=>{
 });
 scanTables();
 
+// ---------- back to top ----------
+const totop=document.createElement('button');totop.id='totop';totop.title='Back to top (nav & filters)';totop.textContent='↑';
+totop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});document.body.appendChild(totop);
+window.addEventListener('scroll',()=>totop.classList.toggle('show',window.scrollY>700),{passive:true});
 </script></body></html>
