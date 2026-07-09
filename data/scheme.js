@@ -1,0 +1,37 @@
+// Per-team scheme-fingerprint counts - FTN charting x nflverse pbp, 2025 regular season.
+// Offense: db/ru denominators; pa/scr/oop over dropbacks, rpo/mot/nh over all plays, snk over rushes.
+// Defense: db faced; blz = snaps with >=1 blitzer; prr/prN -> avg pass rushers.
+window.SCHEME={season:2025,src:"FTN charting via nflverse",teams:{
+ ARI:{db:788,ru:340,pa:193,scr:65,rpo:28,mot:493,nh:136,oop:131,snk:11,dDb:659,dBlz:156,dPrr:2836,dPrN:657},
+ ATL:{db:614,ru:461,pa:127,scr:52,rpo:51,mot:719,nh:121,oop:69,snk:7,dDb:660,dBlz:235,dPrr:2887,dPrN:660},
+ BAL:{db:531,ru:461,pa:114,scr:36,rpo:56,mot:533,nh:29,oop:132,snk:10,dDb:723,dBlz:211,dPrr:3051,dPrN:720},
+ BUF:{db:612,ru:485,pa:152,scr:58,rpo:78,mot:660,nh:68,oop:163,snk:21,dDb:553,dBlz:174,dPrr:2364,dPrN:550},
+ CAR:{db:618,ru:417,pa:134,scr:39,rpo:101,mot:438,nh:61,oop:151,snk:1,dDb:589,dBlz:167,dPrr:2529,dPrN:589},
+ CHI:{db:677,ru:457,pa:211,scr:62,rpo:52,mot:651,nh:56,oop:205,snk:7,dDb:625,dBlz:186,dPrr:2729,dPrN:625},
+ CIN:{db:722,ru:370,pa:118,scr:46,rpo:101,mot:579,nh:29,oop:102,snk:12,dDb:636,dBlz:134,dPrr:2652,dPrN:634},
+ CLE:{db:679,ru:395,pa:150,scr:57,rpo:40,mot:529,nh:96,oop:138,snk:4,dDb:592,dBlz:169,dPrr:2589,dPrN:592},
+ DAL:{db:734,ru:430,pa:189,scr:39,rpo:60,mot:684,nh:109,oop:139,snk:5,dDb:675,dBlz:183,dPrr:2914,dPrN:675},
+ DEN:{db:705,ru:411,pa:170,scr:78,rpo:96,mot:516,nh:146,oop:187,snk:13,dDb:743,dBlz:224,dPrr:3253,dPrN:743},
+ DET:{db:650,ru:437,pa:163,scr:67,rpo:42,mot:644,nh:66,oop:72,snk:4,dDb:680,dBlz:224,dPrr:2954,dPrN:680},
+ GB:{db:583,ru:445,pa:153,scr:41,rpo:98,mot:569,nh:95,oop:120,snk:6,dDb:650,dBlz:161,dPrr:2760,dPrN:650},
+ HOU:{db:691,ru:447,pa:158,scr:33,rpo:19,mot:609,nh:48,oop:151,snk:14,dDb:658,dBlz:145,dPrr:2818,dPrN:656},
+ IND:{db:634,ru:419,pa:179,scr:35,rpo:95,mot:557,nh:56,oop:84,snk:16,dDb:731,dBlz:226,dPrr:3158,dPrN:730},
+ JAX:{db:683,ru:438,pa:145,scr:54,rpo:52,mot:667,nh:80,oop:134,snk:16,dDb:747,dBlz:235,dPrr:3200,dPrN:747},
+ KC:{db:731,ru:363,pa:109,scr:64,rpo:155,mot:535,nh:28,oop:195,snk:0,dDb:616,dBlz:238,dPrr:2734,dPrN:615},
+ LA:{db:660,ru:445,pa:229,scr:46,rpo:5,mot:712,nh:78,oop:107,snk:2,dDb:692,dBlz:171,dPrr:2878,dPrN:689},
+ LAC:{db:713,ru:412,pa:161,scr:40,rpo:29,mot:589,nh:41,oop:181,snk:17,dDb:623,dBlz:155,dPrr:2457,dPrN:587},
+ LV:{db:632,ru:350,pa:153,scr:51,rpo:39,mot:511,nh:88,oop:102,snk:12,dDb:625,dBlz:144,dPrr:2681,dPrN:625},
+ MIA:{db:555,ru:414,pa:157,scr:63,rpo:54,mot:686,nh:35,oop:105,snk:1,dDb:625,dBlz:233,dPrr:2718,dPrN:623},
+ MIN:{db:604,ru:378,pa:156,scr:53,rpo:46,mot:512,nh:72,oop:116,snk:4,dDb:552,dBlz:283,dPrr:2542,dPrN:551},
+ NE:{db:650,ru:410,pa:155,scr:28,rpo:17,mot:555,nh:24,oop:164,snk:13,dDb:624,dBlz:176,dPrr:2705,dPrN:621},
+ NO:{db:709,ru:399,pa:133,scr:37,rpo:64,mot:683,nh:248,oop:153,snk:10,dDb:593,dBlz:187,dPrr:2541,dPrN:593},
+ NYG:{db:673,ru:464,pa:152,scr:44,rpo:131,mot:431,nh:240,oop:157,snk:9,dDb:667,dBlz:225,dPrr:2895,dPrN:665},
+ NYJ:{db:631,ru:401,pa:113,scr:45,rpo:94,mot:648,nh:99,oop:147,snk:13,dDb:613,dBlz:183,dPrr:2674,dPrN:612},
+ PHI:{db:604,ru:429,pa:134,scr:26,rpo:66,mot:490,nh:199,oop:165,snk:29,dDb:667,dBlz:178,dPrr:2798,dPrN:665},
+ PIT:{db:626,ru:389,pa:119,scr:83,rpo:89,mot:554,nh:117,oop:109,snk:15,dDb:722,dBlz:267,dPrr:3200,dPrN:722},
+ SEA:{db:548,ru:491,pa:139,scr:33,rpo:27,mot:590,nh:76,oop:109,snk:15,dDb:729,dBlz:182,dPrr:3095,dPrN:728},
+ SF:{db:652,ru:443,pa:147,scr:40,rpo:7,mot:753,nh:41,oop:105,snk:20,dDb:664,dBlz:155,dPrr:2828,dPrN:664},
+ TB:{db:684,ru:432,pa:116,scr:71,rpo:89,mot:692,nh:74,oop:150,snk:0,dDb:670,dBlz:251,dPrr:2960,dPrN:670},
+ TEN:{db:686,ru:360,pa:131,scr:76,rpo:114,mot:470,nh:104,oop:142,snk:5,dDb:632,dBlz:159,dPrr:2686,dPrN:632},
+ WAS:{db:613,ru:416,pa:154,scr:49,rpo:82,mot:550,nh:630,oop:152,snk:0,dDb:657,dBlz:182,dPrr:2823,dPrN:657}
+}};

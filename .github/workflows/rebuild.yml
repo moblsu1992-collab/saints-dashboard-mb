@@ -42,6 +42,10 @@ jobs:
         shell: pwsh
         run: ./build_plays.ps1 -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir . -Year ([int]$env:SEASON)
 
+      - name: Rebuild scheme-fingerprint aggregates
+        shell: pwsh
+        run: ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir . -Year ([int]$env:SEASON)
+
       - name: Commit refreshed data
         run: |
           rm -f pbp.csv.gz part.csv ftn.csv
