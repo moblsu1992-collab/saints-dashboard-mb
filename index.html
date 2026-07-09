@@ -1163,6 +1163,62 @@ function renderOpponents(){
  curOpp=DATA.opponents[0];drawOpp();
 }
 // Play-data-derived view for teams not on the curated schedule
+// ---------- Cross-tendency panel: what they do × what hurts them (and us) ----------
+// All from window.PLAYS. Personnel: pass p[14] / rush p[12]; coverage (pass only) p[16]; EPA pass p[10] / rush p[8].
+function _mixOff(T,covOnly){const P=window.PLAYS[T],M={};let n=0;const add=(k,e)=>{if(!k)return;const o=M[k]||(M[k]={n:0,s:0,c:0});o.n++;n++;if(e!=null){o.s+=e;o.c++;}};
+ if(covOnly){P.pass.forEach(p=>add(p[16],p[10]));}else{P.pass.forEach(p=>add(p[14],p[10]));P.rush.forEach(p=>add(p[12],p[8]));}return {M,n};}
+function _mixDef(D,covOnly){const TD=teamDefense(D),M={};let n=0;const add=(k,e)=>{if(!k)return;const o=M[k]||(M[k]={n:0,s:0,c:0});o.n++;n++;if(e!=null){o.s+=e;o.c++;}};
+ if(covOnly){TD.pass.forEach(p=>add(p[16],p[10]));}else{TD.pass.forEach(p=>add(p[14],p[10]));TD.rush.forEach(p=>add(p[12],p[8]));}return {M,n};}
+const _epaOf=o=>o&&o.c?o.s/o.c:null, _fmtE=v=>v==null?'—':(v>0?'+':'')+v.toFixed(2);
+function crossPanel(ab){
+ if(!window.PLAYS||!window.PLAYS[ab]||!window.PLAYS['NO'])return '';
+ const CN={C0:'Cover 0',C1:'Cover 1',C2:'Cover 2',C3:'Cover 3',C4:'Cover 4',C6:'Cover 6',C9:'Cover 9','2M':'2-Man',CMB:'Combo'};
+ const chip=(t,c,ti)=>`<span class="tier" style="background:${c};font-size:10px" title="${ti}">${t}</span>`;
+ const overall=M=>{let s=0,c=0;Object.values(M).forEach(o=>{s+=o.s;c+=o.c;});return c?s/c:null;};
+ // --- their offense (what they run) vs our defense (what we allow per grouping) ---
+ const tOff=_mixOff(ab,false), noDefP=_mixDef('NO',false), noDefBase=overall(noDefP.M);
+ const persRows=Object.keys(tOff.M).filter(g=>tOff.M[g].n>=25&&100*tOff.M[g].n/tOff.n>=6).sort((a,b)=>tOff.M[b].n-tOff.M[a].n).slice(0,5).map(g=>{
+  const share=100*tOff.M[g].n/tOff.n, tE=_epaOf(tOff.M[g]);
+  const our=noDefP.M[g], ourE=our&&our.n>=25?_epaOf(our):null;
+  const d=ourE==null||noDefBase==null?null:ourE-noDefBase;
+  const hit=d!=null&&((share>=10&&Math.abs(d)>=0.05)||Math.abs(d)>=0.10);
+  const v=!hit?'':d>0?chip('stress','#a23b3b','a grouping they use that our defense answers below its own average'):chip('funnel','#1e7a34','a grouping they use that our defense handles better than its average');
+  return `<tr><td class="tl">${g} personnel</td><td>${share.toFixed(0)}%</td><td>${_fmtE(tE)}</td><td>${_fmtE(ourE)}</td><td>${v}</td></tr>`;}).join('');
+ // --- their passing vs coverage (what stops them) × what we actually play ---
+ const tVsCov=_mixOff(ab,true), tPassBase=overall(tVsCov.M);
+ const noCov=_mixDef('NO',true);
+ const covRows1=Object.keys(tVsCov.M).filter(c=>tVsCov.M[c].n>=15).sort((a,b)=>tVsCov.M[b].n-tVsCov.M[a].n).slice(0,5).map(c=>{
+  const tE=_epaOf(tVsCov.M[c]), d=tE==null||tPassBase==null?null:tE-tPassBase;
+  const ourShare=noCov.M[c]?100*noCov.M[c].n/noCov.n:0;
+  const v=d==null?'':d<=-0.07?chip('call it','#1e7a34','they are notably worse vs this family — dial it up'):d>=0.07?chip('avoid','#a23b3b','they feast on this family'):'';
+  return `<tr><td class="tl">${CN[c]||c}</td><td>${_fmtE(tE)}</td><td>${100*tVsCov.M[c].n/tVsCov.n<1?'<1':(100*tVsCov.M[c].n/tVsCov.n).toFixed(0)}%</td><td>${ourShare.toFixed(0)}%</td><td>${v}</td></tr>`;}).join('');
+ // --- attacking them: their coverage mix (what they allow in it) × our offense vs that coverage ---
+ const dCov=_mixDef(ab,true), dCovBase=overall(dCov.M);
+ const noVsCov=_mixOff('NO',true), noPassBase=overall(noVsCov.M);
+ const covRows2=Object.keys(dCov.M).filter(c=>dCov.M[c].n>=20&&100*dCov.M[c].n/dCov.n>=6).sort((a,b)=>dCov.M[b].n-dCov.M[a].n).slice(0,5).map(c=>{
+  const share=100*dCov.M[c].n/dCov.n, aE=_epaOf(dCov.M[c]), dTheir=aE==null||dCovBase==null?null:aE-dCovBase;
+  const ours=noVsCov.M[c], oE=ours&&ours.n>=15?_epaOf(ours):null, dOurs=oE==null||noPassBase==null?null:oE-noPassBase;
+  const v=dTheir!=null&&dTheir>=0.05?chip('leak','#1e7a34','their most-played coverage leaks vs their own average'):dOurs!=null&&dOurs<=-0.07?chip('our weakness','#a23b3b','we are notably worse vs this family — expect a heavy dose'):dOurs!=null&&dOurs>=0.05?chip('we feast','#1e7a34','we beat this family above our own average'):'';
+  return `<tr><td class="tl">${CN[c]||c}</td><td>${share.toFixed(0)}%</td><td>${_fmtE(aE)}</td><td>${_fmtE(oE)}</td><td>${v}</td></tr>`;}).join('');
+ // --- attacking them on the ground/personnel: our groupings × their EPA allowed per grouping ---
+ const noOff=_mixOff('NO',false), dPers=_mixDef(ab,false), dPersBase=overall(dPers.M);
+ const persRows2=Object.keys(noOff.M).filter(g=>noOff.M[g].n>=25&&100*noOff.M[g].n/noOff.n>=6).sort((a,b)=>noOff.M[b].n-noOff.M[a].n).slice(0,5).map(g=>{
+  const share=100*noOff.M[g].n/noOff.n, oE=_epaOf(noOff.M[g]);
+  const their=dPers.M[g], tE=their&&their.n>=25?_epaOf(their):null, d=tE==null||dPersBase==null?null:tE-dPersBase;
+  const hit=d!=null&&((share>=10&&Math.abs(d)>=0.05)||Math.abs(d)>=0.10);
+  const v=!hit?'':d>0?chip('soft spot','#1e7a34','they defend this grouping below their own average'):chip('strength','#a23b3b','they defend this grouping better than their average');
+  return `<tr><td class="tl">${g} personnel</td><td>${share.toFixed(0)}%</td><td>${_fmtE(oE)}</td><td>${_fmtE(tE)}</td><td>${v}</td></tr>`;}).join('');
+ const t=(hdr,rows)=>`<div class="scroll"><table class="frecs"><thead><tr>${hdr.map((h,i)=>`<th class="${i==0?'tl':''}">${h}</th>`).join('')}</tr></thead><tbody>${rows||'<tr><td colspan="5" class="muted">not enough charted snaps</td></tr>'}</tbody></table></div>`;
+ return `<div class="grid2" style="margin-top:18px">
+ <div class="card"><div class="sechead d">Defending ${ab} — what they do × what we allow</div>
+ <div class="fsub">Their staple personnel vs our answers</div>${t(['Grouping','Their use','Their EPA','We allow','Read'],persRows)}
+ <div class="fsub">Their passing vs coverage — and how often we play it</div>${t(['Coverage','Their EPA vs','They see','We play','Read'],covRows1)}
+ <p class="note">EPA/play. <b>stress</b>/<b>funnel</b> = a grouping they use that we answer notably worse/better than our own baseline (±0.05 at ≥10% usage, or an extreme ±0.10 edge at any usage). <b>call it / avoid</b> = coverage they're notably worse/better against (±0.07 vs their average) — "We play" shows our current dose. Floors: 25 snaps (personnel) / 15 (coverage).</p></div>
+ <div class="card"><div class="sechead o">Attacking ${ab} — what they show × what hurts them</div>
+ <div class="fsub">Their coverage mix vs our passing game</div>${t(['Coverage','They play','They allow','Our EPA vs','Read'],covRows2)}
+ <div class="fsub">Our staple personnel vs their answers</div>${t(['Grouping','Our use','Our EPA','They allow','Read'],persRows2)}
+ <p class="note"><b>leak</b> = a coverage they still play that gives up ≥0.05 EPA above their own average · <b>we feast / our weakness</b> = our passing is ±0.05–0.07 vs that family relative to our average · <b>soft spot / strength</b> = how they defend our staple groupings vs their own baseline. Same sample floors.</p></div></div>`;
+}
 function derivedMatchupHTML(ab){
  const offL=allTeamMetricsF('off',ALLF),defL=allTeamMetricsF('def',ALLF);
  const flags=[...flagsFor(offL,defL,ab,'NO'),...flagsFor(offL,defL,'NO',ab)].sort((x,y)=>y.sev-x.sev).slice(0,6);
@@ -1291,7 +1347,7 @@ function drawOppDerived(o,box){
  const tabs=[['match','Matchup vs Saints'],['off','Their Offense'],['def','Their Defense']];
  if(curOTab==='fz')curOTab='match';
  const tb=`<div class="subnav" style="margin-top:10px">${tabs.map(([id,lab])=>`<button class="${id===curOTab?'on':''}" data-ot="${id}">${lab}</button>`).join('')}</div>`;
- const body=curOTab==='match'?derivedMatchupHTML(o.abbr):derivedSideHTML(o.abbr,curOTab==='off'?'off':'def');
+ const body=curOTab==='match'?derivedMatchupHTML(o.abbr)+crossPanel(o.abbr):derivedSideHTML(o.abbr,curOTab==='off'?'off':'def');
  box.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(o.abbr)}"><h2 style="margin-top:0" class="tchip">${teamLogo(o.abbr)}${o.name}</h2>
  <div class="staff">Not on the 2026 Saints schedule — profiled live from 2025 play-by-play (no curated 2026 coaching/scheme intel).</div>
  ${tb}${body}</div>`+sharpPanel(o.abbr);
@@ -1304,7 +1360,7 @@ function drawOpp(){
  const tabs=[['match','Matchup vs Saints'],['off','Their Offense'],['def','Their Defense']];
  const tb=`<div class="subnav" style="margin-top:10px">${tabs.map(([id,lab])=>`<button class="${id===curOTab?'on':''}" data-ot="${id}">${lab}</button>`).join('')}</div>`;
  if(curOTab==='fz')curOTab='match';
- const body=curOTab==='match'?matchupHTML(o):curOTab==='off'?offHTML(o)+sideTendencyPanel(o.abbr,'off',true):defHTML(o)+sideTendencyPanel(o.abbr,'def',true);
+ const body=curOTab==='match'?matchupHTML(o)+crossPanel(o.abbr):curOTab==='off'?offHTML(o)+sideTendencyPanel(o.abbr,'off',true):defHTML(o)+sideTendencyPanel(o.abbr,'def',true);
  box.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(o.abbr)}"><h2 style="margin-top:0" class="tchip">${teamLogo(o.abbr)}${o.name}</h2>
  <div class="staff">2026: HC ${o.hc} · OC ${o.oc} · DC ${o.dc}</div>
  ${o.banner?`<div class="banner">⚠ ${o.banner}</div>`:''}${tb}${body}</div>`+sharpPanel(o.abbr);
