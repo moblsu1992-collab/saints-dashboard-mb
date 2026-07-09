@@ -1512,7 +1512,22 @@ const TEAMCOLORS={ARI:{p:'#97233F',s:'#000000'},ATL:{p:'#A71930',s:'#000000'},BA
 function teamColor(ab){return (TEAMCOLORS[ab]||{p:'#16284a'}).p;}
 function teamColor2(ab){return (TEAMCOLORS[ab]||{s:'#d4bd8a'}).s;}
 function teamLogo(ab,cls){return `<img class="tlogo${cls?' '+cls:''}" src="data/logos/${ab}.png" alt="${ab}" loading="lazy" onerror="this.style.visibility='hidden'">`;}
-function teamCell(ab,label){return `<span class="tcell">${teamLogo(ab,'sm')}${label==null?ab:label}</span>`;}
+// ---------- 2026 roster movers (Sharp churn → badges wherever the player's 2025 stats appear) ----------
+let _movers=null;
+function moversMap(){
+ if(_movers)return _movers;
+ const S=window.SHARP2026,M={};
+ const R=S&&S.teams.NO&&S.teams.NO.roster;
+ if(!R)return _movers=M;
+ const put=(full,rec)=>{full=full.trim();const parts=full.split(/\s+/);M[full]=rec;if(parts.length>1)M[parts[0][0]+'.'+parts.slice(1).join(' ')]=rec;};
+ (R.add||[]).forEach(s=>{const m=s.match(/^([^(]+)\(/);if(m)put(m[1],{t:'in',lab:'→ NO ’26'});});
+ (R.lost||[]).forEach(s=>{if(/re-signed/i.test(s))return;const m=s.match(/^([^(]+)\(([^)]*)\)/);if(!m)return;const dm=m[2].match(/→\s*([A-Z]{2,3})/);put(m[1],{t:'out',lab:dm?'NO → '+dm[1]+' ’26':'left NO ’26'});});
+ return _movers=M;
+}
+// Badge only when the row's 2025 team matches the move direction (departures were on NO; arrivals weren't).
+function moverBadge(nm,ab){const m=moversMap()[nm];if(!m)return '';if(m.t==='out'&&ab!=='NO')return '';if(m.t==='in'&&ab==='NO')return '';
+ return ` <span class="shnew" style="background:${m.t==='in'?'#1e7a34':'#a23b3b'}" title="2026 roster move — Sharp">${m.lab}</span>`;}
+function teamCell(ab,label){return `<span class="tcell">${teamLogo(ab,'sm')}${label==null?ab:label}</span>${label!=null?moverBadge(String(label),ab):''}`;}
 // paint a selector button in its team's colors when active; neutral otherwise
 function paintOppBtn(b,ab,on){if(on){b.style.background=teamColor(ab);b.style.borderColor=teamColor(ab);b.style.color='#fff';b.style.boxShadow='0 2px 8px '+teamColor(ab)+'55';}else{b.style.background='';b.style.borderColor='';b.style.color='';b.style.boxShadow='';}}
 function renderFieldChart(){
