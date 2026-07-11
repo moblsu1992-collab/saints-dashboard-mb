@@ -1139,7 +1139,7 @@ function renderOverview(){
  <div class="grid2"><div><div class="sechead o">Offense</div><ul class="keys">${off.map(x=>`<li>${x}</li>`).join('')}</ul></div>
  <div><div class="sechead d">Defense</div><ul class="keys">${deff.map(x=>`<li>${x}</li>`).join('')}</ul></div></div></div>
  ${schemeCard('NO','off')}
- ${sharpPanel('NO')}
+ ${sharpPanel('NO',{heroAbove:true})}
  <div class="card"><div class="sechead">The 2026 slate — matchup verdicts</div>${slateT}</div>
  <div class="card"><div class="grid2"><div><div class="sechead">How this dashboard reads</div><ul class="keys">${guide}</ul></div>
  <div><div class="sechead">Don't miss</div><ul class="keys">${hidden}</ul></div></div></div>`;
@@ -1308,9 +1308,20 @@ function sideTendencyPanel(ab,side,compact){
  return head+core+extra;
 }
 function derivedSideHTML(ab,side){return sideTendencyPanel(ab,side,false);}
+// One-line 2026 staff strip (names + NEW badges + discipline grade) for the top of opponent cards.
+function staffLine(ab){
+ const S=window.SHARP2026,t=S&&S.teams[ab];if(!t)return '';
+ const pcol={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[t.pen]||'#5a6675';
+ const c=(r,x)=>x&&x[0]?`${r} ${x[0]}${x[1]?' <span class="shnew">NEW</span>':''}`:'';
+ const parts=[c('HC',t.hc),c('OC',t.oc),c('DC',t.dc)].filter(Boolean).join(' · ');
+ return `<div class="staff">2026: ${parts}${t.pen?` · <b style="color:${pcol}">${t.pen}</b> <span class="hint">discipline</span>`:''}</div>`;
+}
 // 2026 forward-looking scouting layer from Warren Sharp's 2026 Preview (coaching changes, penalty grade; Saints get full detail).
-function sharpPanel(ab){
+// opts.coaches=false → the host card already shows the staff strip (staffLine) — omit the coach row here.
+// opts.heroAbove=true → the Overview hero strip already shows win total / SoS / rest / discipline — omit those tiles.
+function sharpPanel(ab,opts){
  const S=window.SHARP2026; if(!S||!S.teams[ab])return '';
+ opts=opts||{};
  const t=S.teams[ab];
  const coachRow=(role,c)=>c&&c[0]?`<div class="shc"><span class="shc-r">${role}</span><span class="shc-n">${c[0]}${c[1]?' <span class="shnew">NEW</span>':''}</span></div>`:'';
  const nu=[]; if(t.oc&&t.oc[1])nu.push('offensive'); if(t.dc&&t.dc[1])nu.push('defensive');
@@ -1329,19 +1340,20 @@ function sharpPanel(ab){
  let rich='';
  if(t.forecast){
   const pcol2={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[t.pen]||'#5a6675';
-  rich=`<div class="fsub" style="margin-top:12px">2026 forecast &amp; schedule</div>`+
+  rich=(opts.heroAbove?`<p class="note" style="margin:8px 0 0">${t.sos.note} ${t.rest.note}</p>`
+   :`<div class="fsub" style="margin-top:12px">2026 forecast &amp; schedule</div>`+
    grid(box('Win total','&nbsp;'+t.forecast.wins,null)+box('Division finish',null,t.forecast.div,false,4)+box('Strength of schedule (easy=good)',null,t.sos.rank,false,32)+box('Net rest edge',null,t.rest.net,false,32))+
-   `<p class="note">${t.sos.note} ${t.rest.note}</p>`+
+   `<p class="note">${t.sos.note} ${t.rest.note}</p>`)+
    `<div class="fsub">Scoring efficiency — offense <span class="hint">(rank 1 = best)</span></div>`+grid(t.scoringOff.map(([l,v,r])=>box(l,v,r,false,32)).join(''))+
    `<div class="fsub">Scoring efficiency — defense <span class="hint">(rank 1 = best)</span></div>`+grid(t.scoringDef.map(([l,v,r])=>box(l,v,r,false,32)).join(''))+
    `<div class="fsub">2026 unit rankings <span class="hint">(Sharp / McCrystal, 1–32)</span></div>`+grid(t.units.map(([l,r])=>box(l,null,r,false,32)).join(''))+
    `<details class="tblfb" style="margin:10px 0 4px"><summary>Roster churn — ${t.roster.add.length} added · ${t.roster.lost.length} lost · ${t.roster.draft.length} drafted</summary><div class="shros"><div><b>Added</b><ul>${t.roster.add.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><b>Lost</b><ul>${t.roster.lost.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><b>Drafted</b><ul>${t.roster.draft.map(x=>`<li>${x}</li>`).join('')}</ul></div></div></details>`+
-   `<div class="fsub">Penalty tendencies <span class="hint">(rank 1 = most-penalized/worst)</span></div>`+grid(`<div class="shtile"><span class="sht-l">Discipline grade</span><span class="sht-row"><span class="sht-v" style="color:${pcol2}">${t.pen}</span></span></div>`+(t.penRanks||[]).map(([l,r])=>box(l,null,r,true,32)).join(''))+
+   `<div class="fsub">Penalty tendencies <span class="hint">(rank 1 = most-penalized/worst)</span></div>`+grid((opts.heroAbove?'':`<div class="shtile"><span class="sht-l">Discipline grade</span><span class="sht-row"><span class="sht-v" style="color:${pcol2}">${t.pen}</span></span></div>`)+(t.penRanks||[]).map(([l,r])=>box(l,null,r,true,32)).join(''))+
    `<ul class="note" style="margin:0;padding-left:16px">${t.penNotes.map(x=>`<li>${x}</li>`).join('')}</ul>`;
  }
+ const coaches=opts.coaches===false?'':`<div class="shcoaches">${coachRow('Head Coach',t.hc)}${coachRow('Off. Coordinator',t.oc)}${coachRow('Def. Coordinator',t.dc)}<div class="shc"><span class="shc-r">Discipline</span><span class="shc-n" style="color:${pcol}">${t.pen} <span class="hint" style="font-weight:400;color:#8a93a3">penalty grade</span></span></div></div>`;
  return `<div class="card shcard"><div class="sechead">📘 2026 Outlook <span class="src" style="color:#9aa6b8">· ${S.src}</span></div>`+
-  `<div class="shcoaches">${coachRow('Head Coach',t.hc)}${coachRow('Off. Coordinator',t.oc)}${coachRow('Def. Coordinator',t.dc)}<div class="shc"><span class="shc-r">Discipline</span><span class="shc-n" style="color:${pcol}">${t.pen} <span class="hint" style="font-weight:400;color:#8a93a3">penalty grade</span></span></div></div>`+
-  `${warn}${rich}${rich?'':'<p class="note" style="margin:4px 0 0">Full 2026 detail (schedule, rest, scoring efficiency, unit rankings, roster) is populated for the Saints so far; rolling out to the rest of the league next.</p>'}</div>`;
+  `${coaches}${warn}${rich}${rich?'':'<p class="note" style="margin:4px 0 0">Full 2026 detail (schedule, rest, scoring efficiency, unit rankings, roster) is populated for the Saints so far; rolling out to the rest of the league next.</p>'}</div>`;
 }
 function drawOppDerived(o,box){
  const tabs=[['match','Matchup vs Saints'],['off','Their Offense'],['def','Their Defense']];
@@ -1349,8 +1361,9 @@ function drawOppDerived(o,box){
  const tb=`<div class="subnav" style="margin-top:10px">${tabs.map(([id,lab])=>`<button class="${id===curOTab?'on':''}" data-ot="${id}">${lab}</button>`).join('')}</div>`;
  const body=curOTab==='match'?derivedMatchupHTML(o.abbr)+crossPanel(o.abbr):derivedSideHTML(o.abbr,curOTab==='off'?'off':'def');
  box.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(o.abbr)}"><h2 style="margin-top:0" class="tchip">${teamLogo(o.abbr)}${o.name}</h2>
- <div class="staff">Not on the 2026 Saints schedule — profiled live from 2025 play-by-play (no curated 2026 coaching/scheme intel).</div>
- ${tb}${body}</div>`+sharpPanel(o.abbr);
+ ${staffLine(o.abbr)}
+ <div class="staff">Not on the 2026 Saints schedule — profiled live from 2025 play-by-play (no curated 2026 scheme intel).</div>
+ ${tb}${body}</div>`+sharpPanel(o.abbr,{coaches:false});
  box.querySelectorAll('[data-ot]').forEach(b=>b.onclick=()=>{curOTab=b.dataset.ot;drawOpp();});
  wireOppFilters(box);
 }
@@ -1362,8 +1375,8 @@ function drawOpp(){
  if(curOTab==='fz')curOTab='match';
  const body=curOTab==='match'?matchupHTML(o)+crossPanel(o.abbr):curOTab==='off'?offHTML(o)+sideTendencyPanel(o.abbr,'off',true):defHTML(o)+sideTendencyPanel(o.abbr,'def',true);
  box.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(o.abbr)}"><h2 style="margin-top:0" class="tchip">${teamLogo(o.abbr)}${o.name}</h2>
- <div class="staff">2026: HC ${o.hc} · OC ${o.oc} · DC ${o.dc}</div>
- ${o.banner?`<div class="banner">⚠ ${o.banner}</div>`:''}${tb}${body}</div>`+sharpPanel(o.abbr);
+ ${staffLine(o.abbr)||`<div class="staff">2026: HC ${o.hc} · OC ${o.oc} · DC ${o.dc}</div>`}
+ ${o.banner?`<div class="banner">⚠ ${o.banner}</div>`:''}${tb}${body}</div>`+sharpPanel(o.abbr,{coaches:false});
  box.querySelectorAll('[data-ot]').forEach(b=>b.onclick=()=>{curOTab=b.dataset.ot;drawOpp();});
  wireOppFilters(box);
 }
@@ -1692,7 +1705,7 @@ function renderEPA(){const s=$('#epa');s.innerHTML=`${pageHead('epa')}<div class
    ['Overview',[['ov','League-Wide']]],
    ['Rankings',[['off','Offense Ranking'],['def','Defense Ranking']]],
    ['Personnel & Advanced Defense',[['qb','Quarterbacks'],['rec','Receivers'],['rb','Running Backs'],['advdef','Advanced Defense']]],
-   ['Additional Advanced Metrics',[['neutral','Neutral Pass Freq'],['proe','Pass Over Expected'],['fourth','Fourth Downs'],['luck','Luck'],['series','Series Success']]]
+   ['Additional Advanced Metrics',[['passid','Pass Identity'],['fourth','Fourth Downs'],['luck','Luck'],['series','Series Success']]]
  ];
  const es=$('#esub');let firstBtn=true;
  groups.forEach(([cap,items])=>{
@@ -1945,8 +1958,7 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
   box.querySelectorAll('[data-advgrp]').forEach(b=>b.onclick=()=>{ADVGRP=b.dataset.advgrp;drawEPA('advdef');});
   box.querySelectorAll('[data-advvol]').forEach(b=>b.onclick=()=>{ADVVOL=b.dataset.advvol;drawEPA('advdef');});
  }
- else if(id=='neutral'){const R=[...L.neutral].sort((a,b)=>b.neutralPass-a.neutralPass);const e=mm(R,'neutralPass');box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'neutralPass',lab:'Neutral pass %',heat:e},{k:'overallPass',lab:'Overall pass %'}],'abbr')}<p class="note">Neutral = 1st/2nd down, win prob 20–80%, outside the final 2:00 — the cleanest pass-vs-run identity.</p></div>`;}
- else if(id=='proe'){const R=[...L.proe].sort((a,b)=>b.proe-a.proe);const e=mm(R,'proe');box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'proe',lab:'PROE',heat:e},{k:'cpoe',lab:'CPOE'}],'abbr')}<p class="note">PROE = pass rate over expected (+ = pass more than the situation dictates). CPOE = completion % over expected.</p></div>`;}
+ else if(id=='passid'){const PM={};L.proe.forEach(x=>PM[x.abbr]=x);const R=L.neutral.map(x=>({...x,proe:PM[x.abbr]?PM[x.abbr].proe:null,cpoe:PM[x.abbr]?PM[x.abbr].cpoe:null})).sort((a,b)=>b.neutralPass-a.neutralPass);const e=mm(R,'neutralPass'),e2=mm(R,'proe');box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'neutralPass',lab:'Neutral pass %',heat:e},{k:'overallPass',lab:'Overall pass %'},{k:'proe',lab:'PROE',heat:e2},{k:'cpoe',lab:'CPOE'}],'abbr')}<p class="note">One pass-identity view: <b>Neutral pass %</b> (1st/2nd down, win prob 20–80%, outside the final 2:00 — the cleanest pass-vs-run identity), overall pass %, <b>PROE</b> (pass rate over expected; + = passes more than the situation dictates) and CPOE (completion % over expected).</p></div>`;}
  else if(id=='fourth'){const R=[...L.fourth].sort((a,b)=>(b.goRate||0)-(a.goRate||0));const e=mm(R,'goRate');box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'dec',lab:'4th-down decisions'},{k:'go',lab:'Go-for-it'},{k:'goRate',lab:'Go rate %',heat:e},{k:'conv',lab:'Conversions'},{k:'convRate',lab:'Convert %'}],'abbr')}<p class="note">Descriptive 4th-down aggressiveness (go rate among go/punt/FG decisions) and conversion rate — not a model-based decision grade.</p></div>`;}
  else if(id=='luck'){const R=L.luck.map(x=>({...x,osrec:x.osW+'-'+x.osL}));box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'osrec',lab:'1-score record'},{k:'fumRec',lab:'Fumble recovery %'},{k:'toMargin',lab:'TO margin / game'}],'abbr')}<p class="note">Luck indicators (approximation of rbsdm's view): one-score game record (≤8 pts), fumble-recovery rate (≈50% neutral), turnover margin per game.</p></div>`;}
  else if(id=='series'){const R=[...L.series].sort((a,b)=>b.off-a.off);const e=mm(R,'off');box.innerHTML=`<div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'off',lab:'Off series success %',heat:e},{k:'deff',lab:'Def series success % allowed'}],'abbr')}<p class="note">Series success = % of down series ending in a first down or TD. Offense higher = better; defense lower = better.</p></div>`;}
