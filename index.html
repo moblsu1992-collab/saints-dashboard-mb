@@ -257,16 +257,36 @@ select:hover{border-color:var(--navy3)}
 @media(max-width:520px){.zband{grid-template-columns:84px 1fr 50px;gap:8px;padding:8px 9px}}
 /* ---------- tendency field map ---------- */
 .tzwrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f2f7f2}
-.tzband{display:grid;grid-template-columns:130px repeat(4,minmax(0,1fr));gap:12px;padding:11px 14px;align-items:start;border-bottom:1px solid #dbe6db}
-.tzband:nth-child(even){background:#e7f0e7}
-.tzband:last-child{border-bottom:none}
 .tz-zn{font-weight:800;font-size:13px;color:#15233f}
-.tz-n{font-size:10px;color:#5a6675;font-weight:600;margin:1px 0 5px}
-.tz-h{font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#7f8b9d;display:block;margin-bottom:3px}
-.tz-big{font-size:14.5px;font-weight:800;color:var(--navy2);line-height:1.1}
-.tz-sub{font-size:10.5px;color:#4c5768;margin-top:2px;line-height:1.45}
+.tz-n{font-size:10px;color:#5a6675;font-weight:600;margin-top:1px}
 .tz-thin{font-size:11px;color:#8a93a3;font-style:italic}
-@media(max-width:820px){.tzband{grid-template-columns:1fr 1fr;gap:8px 14px}.tzband>div:first-child{grid-column:1/-1}}
+.tzrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:10px 14px;border-bottom:1px solid #dbe6db;cursor:pointer;transition:background .12s,opacity .12s}
+.tzrow:nth-child(even){background:#eaf2ea}
+.tzrow:hover{background:#e2ecf5}
+.tzrow.dim{opacity:.45}
+.tzrow .tzlab{flex:0 0 128px}
+.tzrow .tzsplit{flex:0 0 150px}
+.tzrow .tzchips{flex:1 1 260px;min-width:0}
+.tzrow .tzcar{flex:0 0 14px;color:#8a93a3;font-size:12px;font-weight:800;text-align:right}
+.tzc{display:inline-block;font-size:10.5px;font-weight:700;padding:2.5px 9px;border-radius:9px;background:#e6ebf2;color:#3c4757;margin:2px 5px 2px 0;white-space:nowrap}
+.tzc.hi{background:rgba(46,84,150,.17);color:#1f3c72}
+.tzc.lo{background:rgba(214,134,33,.19);color:#84560e}
+.tzopen{background:#fff;border-bottom:1px solid #dbe6db;box-shadow:inset 3px 0 0 var(--gold)}
+.tzopen .tzhd{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 14px 2px;cursor:pointer}
+.tzgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:10px 14px 14px}
+@media(max-width:880px){.tzgrid{grid-template-columns:1fr}}
+.tzsec{background:#f8fafc;border:1px solid #e6ebf2;border-radius:9px;padding:10px 12px;min-width:0}
+.tzsec .tt{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#7f8b9d;margin-bottom:7px;display:block}
+.tzkv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:11.5px;padding:3px 0;border-bottom:1px dashed #e8edf3}
+.tzkv:last-child{border-bottom:none}
+.tzkv .k{color:#5a6675;font-weight:600}
+.tzkv b{font-weight:800;color:var(--ink);white-space:nowrap}
+.tzstat{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px}
+.tzstat>div{background:#fff;border:1px solid #e6ebf2;border-radius:7px;padding:6px 8px;text-align:center}
+.tzstat .v{font-size:14.5px;font-weight:800;line-height:1.05}
+.tzstat .l{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#8a93a3;margin-top:2px}
+.tzsplit.hi .zbar2{box-shadow:0 0 0 2px rgba(46,84,150,.45)}
+.tzsplit.lo .zbar2{box-shadow:0 0 0 2px rgba(214,134,33,.5)}
 .bigcta{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--navy);border:none;border-radius:9px;padding:11px 17px;font-weight:800;font-size:13px;cursor:pointer;margin-top:12px;box-shadow:var(--sh-1)}
 .bigcta:hover{box-shadow:var(--sh-2);transform:translateY(-1px)}
 /* ---------- tendency tracker (team mode) ---------- */
@@ -1487,77 +1507,136 @@ function drawFieldPage(){
      const rb=$('#fretry');if(rb)rb.onclick=()=>{delete PLAYCACHE[curFZTeam];drawFieldPage();};});
 }
 // ---------- TENDENCY FIELD MAP — what they call, by zone × down/distance/score ----------
-// Informational (frequencies), not performance: run/pass, alignment, run direction+gap lean,
-// throw depth, routes, personnel (offense) / shell, coverage family, box (defense).
-let TMAP={side:'off',down:'all',dist:'all',score:'all'};
+// Slim rows = the scan layer: only stats that DEVIATE from this team's own cut-wide baseline get color.
+// Tap a zone to open its dossier: full call detail, down-by-down context, and the results layer.
+let TMAP={side:'off',down:'all',dist:'all',score:'all',zone:null};
 function renderTendMap(){
  const body=$('#fieldbody');if(!body)return;
  const ab=curFZTeam;
  if(TMAP.side==='def'&&!window.PLAYS){TMAP.side='off';}
  const src=TMAP.side==='off'?(PLAYCACHE[ab]||window.PLAYS[ab]):teamDefense(ab);
  // per-row field indices differ between pass and rush rows
- const IX={pass:{dn:7,ytg:21,sd:20,yl:6,form:19,ay:4,loc:5,route:18,pers:14,mz:15,cov:16,box:17},
-           rush:{dn:6,ytg:19,sd:18,yl:5,form:17,gap:3,dir:4,pers:12,mz:13,cov:14,box:15}};
- const keep=(p,I)=>{
-  if(TMAP.down!=='all'&&p[I.dn]!==+TMAP.down)return false;
+ const IX={pass:{dn:7,ytg:21,sd:20,yl:6,form:19,ay:4,loc:5,yg:8,epa:10,succ:11,out:12,td:13,route:18,pers:14,mz:15,cov:16,box:17},
+           rush:{dn:6,ytg:19,sd:18,yl:5,form:17,gap:3,dir:4,yg:7,epa:8,succ:9,td:10,fum:11,pers:12,mz:13,cov:14,box:15}};
+ const keep=(p,I,ignoreDown)=>{
+  if(!ignoreDown&&TMAP.down!=='all'&&p[I.dn]!==+TMAP.down)return false;
   const y=p[I.ytg];if(TMAP.dist==='short'&&!(y!=null&&y<=3))return false;if(TMAP.dist==='med'&&!(y!=null&&y>=4&&y<=7))return false;if(TMAP.dist==='long'&&!(y!=null&&y>=8))return false;
   const sd=p[I.sd];if(TMAP.score==='one'&&!(sd!=null&&Math.abs(sd)<=8))return false;if(TMAP.score==='trail'&&!(sd!=null&&sd<0))return false;if(TMAP.score==='lead'&&!(sd!=null&&sd>0))return false;
   return true;};
  const pass=src.pass.filter(p=>keep(p,IX.pass)), rush=src.rush.filter(p=>keep(p,IX.rush));
+ const passD=src.pass.filter(p=>keep(p,IX.pass,true)), rushD=src.rush.filter(p=>keep(p,IX.rush,true)); // down-agnostic (for the by-down table)
  const zoneRows=['Red','Green','Midfield','Own','Backed Up'];
  const ZLAB={'Red':'Red zone (opp 1–20)','Green':'Green (opp 21–40)','Midfield':'Midfield (41–60)','Own':'Own territory (61–90)','Backed Up':'Backed up (91+)'};
+ const CN={C0:'Cover 0',C1:'Cover 1',C2:'Cover 2',C3:'Cover 3',C4:'Cover 4',C6:'Cover 6',C9:'Cover 9','2M':'2-Man',CMB:'Combo'};
  const pct=(n,d)=>d?Math.round(100*n/d):null, fp=v=>v==null?'—':v+'%';
- const top2=(cnt,tot,fmtK)=>Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,2).map(k=>`${fmtK?fmtK(k):k} <b>${pct(cnt[k],tot)}%</b>`).join(' · ')||'—';
- const bands=zoneRows.map(z=>{
-  const zp=pass.filter(p=>p[IX.pass.yl]!=null&&zoneOf(p[IX.pass.yl])===z), zr=rush.filter(p=>p[IX.rush.yl]!=null&&zoneOf(p[IX.rush.yl])===z);
-  const n=zp.length+zr.length;
-  const label=(extra)=>`<div><div class="tz-zn">${ZLAB[z]}</div><div class="tz-n">${n} snaps</div>${extra||''}</div>`;
-  if(n<8)return `<div class="tzband">${label()}<div class="tz-thin" style="grid-column:2/-1">thin sample in this situation (${n} snaps)</div></div>`;
-  const prBar=`<div class="zbar2" title="${zp.length} dropbacks / ${zr.length} runs"><span class="p" style="width:${pct(zp.length,n)}%"></span><span class="r" style="width:${100-pct(zp.length,n)}%"></span></div><div class="tz-sub"><b>${pct(zp.length,n)}% pass</b> · ${100-pct(zp.length,n)}% run</div>`;
-  if(TMAP.side==='off'){
-   // alignment
-   const forms={};[...zp.map(p=>p[IX.pass.form]),...zr.map(p=>p[IX.rush.form])].forEach(f=>{if(f)forms[f]=(forms[f]||0)+1;});
-   const fTot=(forms.S||0)+(forms.U||0)+(forms.P||0);
-   const call=`<div><span class="tz-h">Alignment</span><div class="tz-big">${fp(pct(forms.S||0,fTot))} gun</div><div class="tz-sub">${fp(pct(forms.U||0,fTot))} under center${forms.P?` · ${fp(pct(forms.P,fTot))} pistol`:''}</div></div>`;
-   // ground: direction + gap lean
-   let g={guard:0,tackle:0,end:0,mid:0},d={L:0,M:0,R:0},gk=0;
-   zr.forEach(p=>{const gp=p[IX.rush.gap],dr=p[IX.rush.dir];if(dr==null||dr==='')return;gk++;
-    if(+dr===0)d.L++;else if(+dr===2)d.R++;else d.M++;
-    if(+dr===1&&(gp==null||gp===''))g.mid++;else if(+gp===0)g.guard++;else if(+gp===1)g.tackle++;else if(+gp===2)g.end++;});
-   const inside=g.guard+g.mid;
-   const leanN={Inside:inside,'Off-tackle':g.tackle,Outside:g.end};
-   const lean=Object.keys(leanN).sort((a,b)=>leanN[b]-leanN[a])[0];
-   const dirLean=gk&&Math.abs(d.L-d.R)>=0.1*gk?(d.L>d.R?' · left-lean':' · right-lean'):'';
-   const ground=`<div><span class="tz-h">Run game (${zr.length})</span><div class="tz-big">${gk?lean+dirLean:'—'}</div><div class="tz-sub">inside ${fp(pct(inside,gk))} · off-T ${fp(pct(g.tackle,gk))} · edge ${fp(pct(g.end,gk))}<br>L ${fp(pct(d.L,gk))} · M ${fp(pct(d.M,gk))} · R ${fp(pct(d.R,gk))}</div></div>`;
-   // air: depth + shots + routes
-   const ays=zp.map(p=>p[IX.pass.ay]).filter(v=>v!=null&&v!=='');
-   const adot=ays.length?(ays.reduce((s,v)=>s+v,0)/ays.length).toFixed(1):null;
-   const shot=pct(ays.filter(v=>v>=20).length,ays.length), los=pct(ays.filter(v=>v<0).length,ays.length);
-   const rts={};zp.forEach(p=>{const r=p[IX.pass.route];if(r!=null)rts[r]=(rts[r]||0)+1;});
-   const rTot=Object.values(rts).reduce((s,v)=>s+v,0);
-   const air=`<div><span class="tz-h">Pass game (${zp.length})</span><div class="tz-big">aDOT ${adot==null?'—':adot}</div><div class="tz-sub">shots 20+ <b>${fp(shot)}</b> · behind LOS ${fp(los)}<br>${top2(rts,rTot,k=>RT13[k])}</div></div>`;
-   // grouping
-   const pers={};[...zp.map(p=>p[IX.pass.pers]),...zr.map(p=>p[IX.rush.pers])].forEach(g2=>{if(g2)pers[g2]=(pers[g2]||0)+1;});
-   const pTot=Object.values(pers).reduce((s,v)=>s+v,0);
-   const grp=`<div><span class="tz-h">Personnel</span><div class="tz-sub" style="font-size:11.5px;margin-top:6px">${top2(pers,pTot)}</div></div>`;
-   return `<div class="tzband">${label(prBar)}${call}${ground}${air}${grp}</div>`;
-  }
-  // defense side: shell, families, box, personnel faced
+ const mean=a=>a.length?a.reduce((s,v)=>s+v,0)/a.length:null;
+ const fmtE=v=>v==null?'—':(v>0?'+':'')+v.toFixed(2);
+ const inv=TMAP.side==='def'; // defense view: negative EPA allowed = good
+ const eCol=v=>v==null?'#8a93a3':((v>0)!==inv?'#1e7a34':'#a23b3b');
+ const topK=(cnt,tot,k,fmtK)=>Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,k).map(key=>`${fmtK?fmtK(key):key} <b>${pct(cnt[key],tot)}%</b>`);
+ // one stat pack per play set — tendency + results
+ const packOf=(zp,zr)=>{
+  const n=zp.length+zr.length,o={n,pN:zp.length,rN:zr.length,passRate:pct(zp.length,n)};
+  const forms={};[...zp.map(p=>p[IX.pass.form]),...zr.map(p=>p[IX.rush.form])].forEach(f=>{if(f)forms[f]=(forms[f]||0)+1;});
+  const fTot=(forms.S||0)+(forms.U||0)+(forms.P||0);
+  o.gun=pct(forms.S||0,fTot);o.uc=pct(forms.U||0,fTot);o.pis=pct(forms.P||0,fTot);
+  let g={guard:0,tackle:0,end:0,mid:0},d={L:0,M:0,R:0},gk=0;
+  zr.forEach(p=>{const gp=p[IX.rush.gap],dr=p[IX.rush.dir];if(dr==null||dr==='')return;gk++;
+   if(+dr===0)d.L++;else if(+dr===2)d.R++;else d.M++;
+   if(+dr===1&&(gp==null||gp===''))g.mid++;else if(+gp===0)g.guard++;else if(+gp===1)g.tackle++;else if(+gp===2)g.end++;});
+  o.gk=gk;o.inside=pct(g.guard+g.mid,gk);o.offT=pct(g.tackle,gk);o.edge=pct(g.end,gk);
+  o.dL=pct(d.L,gk);o.dM=pct(d.M,gk);o.dR=pct(d.R,gk);
+  const leanN={'Inside':g.guard+g.mid,'Off-tackle':g.tackle,'Outside':g.end};
+  o.lean=gk?Object.keys(leanN).sort((a,b)=>leanN[b]-leanN[a])[0]:null;
+  o.dirLean=gk&&Math.abs(d.L-d.R)>=0.1*gk?(d.L>d.R?'left':'right'):null;
+  const ays=zp.map(p=>p[IX.pass.ay]).filter(v=>v!=null&&v!=='');
+  o.adot=ays.length?+mean(ays).toFixed(1):null;o.shot=pct(ays.filter(v=>v>=20).length,ays.length);o.los=pct(ays.filter(v=>v<0).length,ays.length);
+  o.short=pct(ays.filter(v=>v>=0&&v<=9).length,ays.length);o.inter=pct(ays.filter(v=>v>=10&&v<=19).length,ays.length);
+  o.rts={};zp.forEach(p=>{const r=p[IX.pass.route];if(r!=null)o.rts[r]=(o.rts[r]||0)+1;});
+  o.rTot=Object.values(o.rts).reduce((s,v)=>s+v,0);
+  o.pers={};[...zp.map(p=>p[IX.pass.pers]),...zr.map(p=>p[IX.rush.pers])].forEach(x=>{if(x)o.pers[x]=(o.pers[x]||0)+1;});
+  o.pTot=Object.values(o.pers).reduce((s,v)=>s+v,0);
   const mzc={M:0,Z:0};zp.forEach(p=>{const m=p[IX.pass.mz];if(m)mzc[m]=(mzc[m]||0)+1;});
-  const mzTot=mzc.M+mzc.Z;
-  const shell=`<div><span class="tz-h">Shell (vs pass)</span><div class="tz-big">${fp(pct(mzc.Z,mzTot))} zone</div><div class="tz-sub">${fp(pct(mzc.M,mzTot))} man</div></div>`;
-  const covs={};zp.forEach(p=>{const c=p[IX.pass.cov];if(c)covs[c]=(covs[c]||0)+1;});
-  const cTot=Object.values(covs).reduce((s,v)=>s+v,0);
-  const CN={C0:'Cover 0',C1:'Cover 1',C2:'Cover 2',C3:'Cover 3',C4:'Cover 4',C6:'Cover 6',C9:'Cover 9','2M':'2-Man',CMB:'Combo'};
-  const fam=`<div><span class="tz-h">Coverage family</span><div class="tz-sub" style="font-size:11.5px;margin-top:6px">${top2(covs,cTot,k=>CN[k]||k)}</div></div>`;
+  o.zonePct=pct(mzc.Z,mzc.M+mzc.Z);o.manPct=pct(mzc.M,mzc.M+mzc.Z);
+  o.covs={};zp.forEach(p=>{const c=p[IX.pass.cov];if(c)o.covs[c]=(o.covs[c]||0)+1;});
+  o.cTot=Object.values(o.covs).reduce((s,v)=>s+v,0);
   const boxes=[...zp.map(p=>p[IX.pass.box]),...zr.map(p=>p[IX.rush.box])].filter(v=>v!=null&&v!=='');
-  const abox=boxes.length?(boxes.reduce((s,v)=>s+v,0)/boxes.length).toFixed(1):null;
-  const hbox=pct(boxes.filter(v=>v>=8).length,boxes.length);
-  const boxD=`<div><span class="tz-h">Box</span><div class="tz-big">${abox==null?'—':abox} avg</div><div class="tz-sub">8+ in box <b>${fp(hbox)}</b></div></div>`;
-  const persF={};[...zp.map(p=>p[IX.pass.pers]),...zr.map(p=>p[IX.rush.pers])].forEach(g2=>{if(g2)persF[g2]=(persF[g2]||0)+1;});
-  const pfTot=Object.values(persF).reduce((s,v)=>s+v,0);
-  const grpF=`<div><span class="tz-h">Personnel faced</span><div class="tz-sub" style="font-size:11.5px;margin-top:6px">${top2(persF,pfTot)}</div></div>`;
-  return `<div class="tzband">${label(prBar)}${shell}${fam}${boxD}${grpF}</div>`;
+  o.box=boxes.length?+mean(boxes).toFixed(1):null;o.hbox=pct(boxes.filter(v=>v>=8).length,boxes.length);
+  // results
+  const pe=zp.map(p=>p[IX.pass.epa]).filter(v=>v!=null),re=zr.map(p=>p[IX.rush.epa]).filter(v=>v!=null);
+  o.epa=mean([...pe,...re]);o.pEpa=mean(pe);o.rEpa=mean(re);
+  o.succ=pct(zp.filter(p=>p[IX.pass.succ]===1).length+zr.filter(p=>p[IX.rush.succ]===1).length,n);
+  o.expl=pct(zp.filter(p=>(p[IX.pass.yg]||0)>=15).length+zr.filter(p=>(p[IX.rush.yg]||0)>=10).length,n);
+  o.td=zp.filter(p=>p[IX.pass.td]===1).length+zr.filter(p=>p[IX.rush.td]===1).length;
+  o.intc=zp.filter(p=>p[IX.pass.out]==='N').length;o.fum=zr.filter(p=>p[IX.rush.fum]===1).length;
+  o.dirEpa=[0,1,2].map(dr=>mean(zr.filter(p=>+p[IX.rush.dir]===dr).map(p=>p[IX.rush.epa]).filter(v=>v!=null)));
+  o.shortEpa=mean(zp.filter(p=>{const a=p[IX.pass.ay];return a!=null&&a!==''&&a<10;}).map(p=>p[IX.pass.epa]).filter(v=>v!=null));
+  o.deepEpa=mean(zp.filter(p=>{const a=p[IX.pass.ay];return a!=null&&a!==''&&a>=10;}).map(p=>p[IX.pass.epa]).filter(v=>v!=null));
+  return o;};
+ const base=packOf(pass,rush); // cut-wide baseline for deviation highlighting
+ const dev=(v,b,thr)=>v==null||b==null?'':v-b>=thr?' hi':b-v>=thr?' lo':'';
+ const chip=(html,cls,ti)=>`<span class="tzc${cls||''}"${ti?` title="${ti}"`:''}>${html}</span>`;
+ const zoneCut=z=>({zp:pass.filter(p=>p[IX.pass.yl]!=null&&zoneOf(p[IX.pass.yl])===z),zr:rush.filter(p=>p[IX.rush.yl]!=null&&zoneOf(p[IX.rush.yl])===z)});
+ const splitBar=(o,labP,labR)=>`<div class="zbar2" title="${o.pN} ${labP||'dropbacks'} / ${o.rN} ${labR||'runs'}"><span class="p" style="width:${o.passRate}%"></span><span class="r" style="width:${100-o.passRate}%"></span></div><div style="font-size:10px;color:#4c5768;margin-top:2px"><b>${o.passRate}% pass</b> · ${100-o.passRate}% run</div>`;
+ const bands=zoneRows.map(z=>{
+  const {zp,zr}=zoneCut(z);const o=packOf(zp,zr);
+  const lab=`<div class="tzlab"><div class="tz-zn">${ZLAB[z].split(' (')[0]}</div><div class="tz-n">${ZLAB[z].match(/\(([^)]+)\)/)[1]} · ${o.n} snaps</div></div>`;
+  if(o.n<8)return `<div class="tzrow" style="cursor:default"><div class="tzlab"><div class="tz-zn">${ZLAB[z].split(' (')[0]}</div></div><div class="tz-thin">thin sample in this situation (${o.n} snaps)</div></div>`;
+  if(TMAP.zone===z){ // ---- expanded dossier ----
+   let calls;
+   const kv=(k,v)=>`<div class="tzkv"><span class="k">${k}</span><b>${v}</b></div>`;
+   if(TMAP.side==='off'){
+    calls=`<div class="tzsec"><span class="tt">The calls</span>${splitBar(o)}
+     ${kv('Alignment',`${fp(o.gun)} gun · ${fp(o.uc)} UC${o.pis?` · ${fp(o.pis)} pistol`:''}`)}
+     ${kv('Run lean',o.lean?`${o.lean}${o.dirLean?` · ${o.dirLean}-lean`:''}`:'—')}
+     ${kv('Run mix',`inside ${fp(o.inside)} · off-T ${fp(o.offT)} · edge ${fp(o.edge)}`)}
+     ${kv('Run direction',`L ${fp(o.dL)} · M ${fp(o.dM)} · R ${fp(o.dR)}`)}
+     ${kv('Throw depth',`aDOT ${o.adot==null?'—':o.adot} · shots 20+ ${fp(o.shot)}`)}
+     ${kv('Depth mix',`LOS ${fp(o.los)} · short ${fp(o.short)} · int ${fp(o.inter)}`)}
+     ${kv('Top routes',topK(o.rts,o.rTot,3,k=>RT13[k]).join('<br>')||'—')}
+     ${kv('Personnel',topK(o.pers,o.pTot,3).join('<br>')||'—')}</div>`;
+   } else {
+    calls=`<div class="tzsec"><span class="tt">What they show</span>${splitBar(o,'dropbacks faced','runs faced')}
+     ${kv('Shell',`${fp(o.zonePct)} zone · ${fp(o.manPct)} man`)}
+     ${kv('Coverage families',topK(o.covs,o.cTot,4,k=>CN[k]||k).join('<br>')||'—')}
+     ${kv('Box',`${o.box==null?'—':o.box} avg · 8+ box ${fp(o.hbox)}`)}
+     ${kv('Personnel faced',topK(o.pers,o.pTot,3).join('<br>')||'—')}</div>`;
+   }
+   // by-down context (ignores the Down filter; keeps distance/score)
+   const zpD=passD.filter(p=>p[IX.pass.yl]!=null&&zoneOf(p[IX.pass.yl])===z), zrD=rushD.filter(p=>p[IX.rush.yl]!=null&&zoneOf(p[IX.rush.yl])===z);
+   const dnRows=[1,2,3,4].map(dn=>{
+    const dp=zpD.filter(p=>p[IX.pass.dn]===dn), dr=zrD.filter(p=>p[IX.rush.dn]===dn);
+    const dO=packOf(dp,dr);if(dO.n<6)return '';
+    const mid=TMAP.side==='off'?`<td>${fp(dO.gun)}</td><td>${dO.adot==null?'—':dO.adot}</td>`:`<td>${fp(dO.zonePct)}</td><td>${dO.box==null?'—':dO.box}</td>`;
+    return `<tr><td class="tl">${['','1st','2nd','3rd','4th'][dn]}</td><td>${dO.n}</td><td><b>${fp(dO.passRate)}</b></td>${mid}<td style="color:${eCol(dO.epa)};font-weight:800">${fmtE(dO.epa)}</td></tr>`;}).join('');
+   const byDown=`<div class="tzsec"><span class="tt">By down — this zone${TMAP.down!=='all'?' (ignores the Down filter)':''}</span><div class="scroll"><table class="frecs"><thead><tr><th class="tl">Down</th><th>Snaps</th><th>Pass%</th>${TMAP.side==='off'?'<th>Gun%</th><th>aDOT</th>':'<th>Zone%</th><th>Box</th>'}<th>EPA</th></tr></thead><tbody>${dnRows||'<tr><td colspan="6" class="tz-thin">thin samples per down</td></tr>'}</tbody></table></div></div>`;
+   // results
+   const st=(v,l,c)=>`<div><div class="v" style="color:${c||'var(--ink)'}">${v}</div><div class="l">${l}</div></div>`;
+   const results=`<div class="tzsec"><span class="tt">Results here${inv?' (allowed)':''}</span>
+    <div class="tzstat">${st(fmtE(o.epa),'EPA/play',eCol(o.epa))+st(fp(o.succ),'Success%')+st(fp(o.expl),'Explosive%')+st(o.td,'TD'+(inv?' allw':''))}</div>
+    ${kv('Pass vs run EPA',`<span style="color:${eCol(o.pEpa)}">${fmtE(o.pEpa)}</span> / <span style="color:${eCol(o.rEpa)}">${fmtE(o.rEpa)}</span>`)}
+    ${kv('Run EPA by direction',`L <span style="color:${eCol(o.dirEpa[0])}">${fmtE(o.dirEpa[0])}</span> · M <span style="color:${eCol(o.dirEpa[1])}">${fmtE(o.dirEpa[1])}</span> · R <span style="color:${eCol(o.dirEpa[2])}">${fmtE(o.dirEpa[2])}</span>`)}
+    ${kv('Short (<10 air) vs 10+ EPA',`<span style="color:${eCol(o.shortEpa)}">${fmtE(o.shortEpa)}</span> / <span style="color:${eCol(o.deepEpa)}">${fmtE(o.deepEpa)}</span>`)}
+    ${kv(inv?'Takeaway chances':'Ball security',`${o.intc} INT · ${o.fum} fum lost`)}
+    <p class="note" style="margin:7px 0 0">${inv?'Green = stingy for a defense (negative EPA allowed).':'Green = productive for the offense.'} Explosive = 15+ yd pass / 10+ yd run.</p></div>`;
+   return `<div class="tzopen" data-tmz="${z}"><div class="tzhd"><span class="tz-zn" style="font-size:14px">${ZLAB[z]}</span><span class="tz-n">${o.n} snaps in this cut</span><span class="hint" style="margin-left:auto">▾ tap to collapse</span></div><div class="tzgrid">${calls}${byDown}${results}</div></div>`;
+  }
+  // ---- slim scan row ----
+  let chips;
+  if(TMAP.side==='off'){
+   chips=chip(`${fp(o.gun)} gun`,dev(o.gun,base.gun,8),'vs '+fp(base.gun)+' overall in this cut')+
+    (o.lean?chip(`${o.lean.toLowerCase()}${o.dirLean?` · ${o.dirLean}`:''} run lean`):'')+
+    chip(`aDOT ${o.adot==null?'—':o.adot}`,dev(o.adot,base.adot,1.5),'vs '+base.adot+' overall')+
+    chip(`${fp(o.shot)} shots`,dev(o.shot,base.shot,5),'20+ air yards · vs '+fp(base.shot)+' overall')+
+    (o.rTot?chip(`${topK(o.rts,o.rTot,1,k=>RT13[k])[0]}`):'');
+  } else {
+   chips=chip(`${fp(o.zonePct)} zone shell`,dev(o.zonePct,base.zonePct,8),'vs '+fp(base.zonePct)+' overall')+
+    (o.cTot?chip(`${topK(o.covs,o.cTot,1,k=>CN[k]||k)[0]}`):'')+
+    chip(`box ${o.box==null?'—':o.box}`,dev(o.box,base.box,0.4),'vs '+base.box+' overall')+
+    chip(`${fp(o.hbox)} loaded (8+)`,dev(o.hbox,base.hbox,6),'vs '+fp(base.hbox)+' overall');
+  }
+  const devPR=dev(o.passRate,base.passRate,8);
+  return `<div class="tzrow${TMAP.zone&&TMAP.zone!==z?' dim':''}" data-tmz="${z}">${lab}<div class="tzsplit${devPR}" title="overall in this cut: ${fp(base.passRate)} pass">${splitBar(o)}</div><div class="tzchips">${chips}</div><div class="tzcar">▸</div></div>`;
  }).join('');
  // controls
  const seg=(k,cur,opts,cap)=>`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">${cap}</span><div class="subnav" style="margin:0">${opts.map(([v,l])=>`<button data-tm-${k}="${v}" class="${String(cur)===String(v)?'on':''}">${l}</button>`).join('')}</div></div>`;
@@ -1573,13 +1652,14 @@ function renderTendMap(){
  const total=pass.length+rush.length;
  body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(ab)}">
   <h2 style="margin-top:0" class="tchip">${teamLogo(ab)}${teamName(ab)} — tendency map ${TMAP.side==='off'?'(offense)':'(defense)'}</h2>
-  <p class="note" style="margin:0 0 10px">What ${TMAP.side==='off'?'they call':'their defense shows'} at each level of the field, re-cut by down, distance and score state — <b>frequencies, not performance</b> (the efficiency layer comes later). ${total} snaps in this cut.</p>
+  <p class="note" style="margin:0 0 10px">What ${TMAP.side==='off'?'they call':'their defense shows'} at each level of the field, re-cut by down, distance and score state. <b>Colored chips = where this zone breaks from their own tendency in this cut</b> (blue above, orange below). <b>Tap any zone</b> for its dossier — full call detail, down-by-down context and the results. ${total} snaps in this cut.</p>
   ${ctrls}${ident}
   <div class="zfe">▲ ATTACKING (OPP GOAL)</div>
   <div class="tzwrap">${bands}</div>
   <div class="zfe b">OWN GOAL LINE</div>
   <p class="note" style="margin-top:8px">Run direction/gap = closest public proxy for run concept (no play-level concept labels exist in free data — see the scheme fingerprint on each opponent card for the season-level family read). "Runs" include QB scrambles. Routes are the targeted receiver's route. Coverage/personnel from participation charting; snaps without charting are excluded from those splits.</p>
  </div>`;
+ body.querySelectorAll('[data-tmz]').forEach(r=>r.onclick=()=>{TMAP.zone=TMAP.zone===r.dataset.tmz?null:r.dataset.tmz;renderTendMap();});
  body.querySelectorAll('[data-tm-side]').forEach(b=>b.onclick=()=>{TMAP.side=b.dataset.tmSide;renderTendMap();});
  body.querySelectorAll('[data-tm-down]').forEach(b=>b.onclick=()=>{TMAP.down=b.dataset.tmDown;renderTendMap();});
  body.querySelectorAll('[data-tm-dist]').forEach(b=>b.onclick=()=>{TMAP.dist=b.dataset.tmDist;renderTendMap();});
