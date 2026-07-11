@@ -287,6 +287,22 @@ select:hover{border-color:var(--navy3)}
 .tzstat .l{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#8a93a3;margin-top:2px}
 .tzsplit.hi .zbar2{box-shadow:0 0 0 2px rgba(46,84,150,.45)}
 .tzsplit.lo .zbar2{box-shadow:0 0 0 2px rgba(214,134,33,.5)}
+/* dossier "calls" viz: bar + league tick, twin stacked mixes */
+.tqrow{display:grid;grid-template-columns:82px 1fr 96px;gap:8px;align-items:center;padding:3px 0}
+.tqlab{font-size:10px;font-weight:700;color:#5a6675;text-align:right;line-height:1.15}
+.tqtrack{position:relative;height:12px;background:#e8edf4;border-radius:6px}
+.tqtrack>i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,var(--navy2),#3a63a8);min-width:2px}
+.tqtrack .lgtick{position:absolute;top:-3px;bottom:-3px;width:2.5px;background:#a23b3b;border-radius:2px;opacity:.85;transform:translateX(-1px)}
+.tqv{font-size:11px;font-weight:800;color:var(--ink);white-space:nowrap}
+.tqv small{font-weight:600;color:#98a2b3;font-size:9px}
+.tqbar{display:flex;border-radius:5px;overflow:hidden;background:#e8edf4}
+.tqbar span{display:block;height:100%}
+.tqbar+.tqbar{margin-top:2px;opacity:.7}
+.tqleg{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;color:#5a6675;margin:2px 9px 0 0}
+.tqleg i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.tqleg b{font-size:10px}
+.tqleg small{color:#98a2b3}
+.tt2{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#a3adbd;display:block;margin:10px 0 3px;border-top:1px dashed #e6ebf2;padding-top:8px}
 .bigcta{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--navy);border:none;border-radius:9px;padding:11px 17px;font-weight:800;font-size:13px;cursor:pointer;margin-top:12px;box-shadow:var(--sh-1)}
 .bigcta:hover{box-shadow:var(--sh-2);transform:translateY(-1px)}
 /* ---------- tendency tracker (team mode) ---------- */
@@ -1575,6 +1591,28 @@ function renderTendMap(){
   return o;};
  const base=packOf(pass,rush); // cut-wide baseline for deviation highlighting
  const dev=(v,b,thr)=>v==null||b==null?'':v-b>=thr?' hi':b-v>=thr?' lo':'';
+ // league baseline for a drilled zone: all 32 teams, same zone, same situation cut (cached per cut)
+ const lgKey=TMAP.down+'|'+TMAP.dist+'|'+TMAP.score;
+ if(window.PLAYS&&(!window._TMLG||window._TMLG.key!==lgKey)){
+  const P=window.PLAYS;let lp=[],lr=[];
+  for(const t in P){lp=lp.concat(P[t].pass.filter(p=>keep(p,IX.pass)));lr=lr.concat(P[t].rush.filter(p=>keep(p,IX.rush)));}
+  window._TMLG={key:lgKey,lp,lr,packs:{}};
+ }
+ const lgZonePack=z=>{const C=window._TMLG;if(!C)return null;
+  if(!C.packs[z])C.packs[z]=packOf(C.lp.filter(p=>p[IX.pass.yl]!=null&&zoneOf(p[IX.pass.yl])===z),C.lr.filter(p=>p[IX.rush.yl]!=null&&zoneOf(p[IX.rush.yl])===z));
+  return C.packs[z];};
+ // dossier viz: value bar with a red league tick; twin stacked bars (thick=team, thin=league)
+ const dCol=(D,thr)=>D==null||Math.abs(D)<thr?'':D>0?'#2e5496':'#b06a10';
+ const barTick=(lab,v,lg,thr,unit,dom)=>{if(v==null)return '';dom=dom||[0,100];
+  const W=x=>Math.max(0,Math.min(100,100*(x-dom[0])/(dom[1]-dom[0])));
+  const fmtv=x=>unit==='y'?(+x).toFixed(1):Math.round(x)+'%';
+  const c=dCol(lg==null?null:v-lg,thr);
+  return `<div class="tqrow"><span class="tqlab">${lab}</span><span class="tqtrack"><i style="width:${W(v)}%"></i>${lg!=null?`<span class="lgtick" style="left:${W(lg)}%" title="league in this zone: ${fmtv(lg)}"></span>`:''}</span><span class="tqv"${c?` style="color:${c}"`:''}>${fmtv(v)}${lg!=null?` <small>lg ${fmtv(lg)}</small>`:''}</span></div>`;};
+ const twin=(lab,segs)=>{if(segs.every(s=>s.v==null))return '';
+  const hasLg=segs.some(s=>s.g!=null);
+  const bar=(get,h)=>`<div class="tqbar" style="height:${h}px">${segs.map(s=>{const w=get(s);return w?`<span style="width:${w}%;background:${s.c}" title="${s.l} ${w}%"></span>`:'';}).join('')}</div>`;
+  const leg=segs.map(s=>{const c=dCol(s.g==null||s.v==null?null:s.v-s.g,8);return `<span class="tqleg"><i style="background:${s.c}"></i>${s.l} <b${c?` style="color:${c}"`:''}>${s.v==null?'—':s.v+'%'}</b>${s.g!=null?`<small>lg ${Math.round(s.g)}</small>`:''}</span>`;}).join('');
+  return `<div style="margin:5px 0 7px"><span class="tqlab" style="display:block;text-align:left;margin-bottom:3px">${lab}</span>${bar(s=>s.v,12)}${hasLg?bar(s=>s.g,5):''}<div>${leg}</div></div>`;};
  const chip=(html,cls,ti)=>`<span class="tzc${cls||''}"${ti?` title="${ti}"`:''}>${html}</span>`;
  const zoneCut=z=>({zp:pass.filter(p=>p[IX.pass.yl]!=null&&zoneOf(p[IX.pass.yl])===z),zr:rush.filter(p=>p[IX.rush.yl]!=null&&zoneOf(p[IX.rush.yl])===z)});
  const splitBar=(o,labP,labR)=>`<div class="zbar2" title="${o.pN} ${labP||'dropbacks'} / ${o.rN} ${labR||'runs'}"><span class="p" style="width:${o.passRate}%"></span><span class="r" style="width:${100-o.passRate}%"></span></div><div style="font-size:10px;color:#4c5768;margin-top:2px"><b>${o.passRate}% pass</b> · ${100-o.passRate}% run</div>`;
@@ -1585,22 +1623,34 @@ function renderTendMap(){
   if(TMAP.zone===z){ // ---- expanded dossier ----
    let calls;
    const kv=(k,v)=>`<div class="tzkv"><span class="k">${k}</span><b>${v}</b></div>`;
+   const L=lgZonePack(z);
+   const shareRows=(cnt,tot,lgCnt,lgTot,k,fmtK,thr)=>Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,k)
+    .map(key=>barTick(fmtK?fmtK(key):key,pct(cnt[key],tot),lgCnt&&lgTot?pct(lgCnt[key]||0,lgTot):null,thr||5)).join('');
+   const lgNote=L?`<span style="text-transform:none;letter-spacing:0;font-weight:600;color:#a3adbd"> · red tick / thin bar = league avg, this zone &amp; situation</span>`:'';
    if(TMAP.side==='off'){
-    calls=`<div class="tzsec"><span class="tt">The calls</span>${splitBar(o)}
-     ${kv('Alignment',`${fp(o.gun)} gun · ${fp(o.uc)} UC${o.pis?` · ${fp(o.pis)} pistol`:''}`)}
-     ${kv('Run lean',o.lean?`${o.lean}${o.dirLean?` · ${o.dirLean}-lean`:''}`:'—')}
-     ${kv('Run mix',`inside ${fp(o.inside)} · off-T ${fp(o.offT)} · edge ${fp(o.edge)}`)}
-     ${kv('Run direction',`L ${fp(o.dL)} · M ${fp(o.dM)} · R ${fp(o.dR)}`)}
-     ${kv('Throw depth',`aDOT ${o.adot==null?'—':o.adot} · shots 20+ ${fp(o.shot)}`)}
-     ${kv('Depth mix',`LOS ${fp(o.los)} · short ${fp(o.short)} · int ${fp(o.inter)}`)}
-     ${kv('Top routes',topK(o.rts,o.rTot,3,k=>RT13[k]).join('<br>')||'—')}
-     ${kv('Personnel',topK(o.pers,o.pTot,3).join('<br>')||'—')}</div>`;
+    calls=`<div class="tzsec"><span class="tt">The calls${lgNote}</span>
+     ${barTick('Pass rate',o.passRate,L?L.passRate:null,8)}
+     ${barTick('Shotgun',o.gun,L?L.gun:null,8)}
+     ${barTick('Shots 20+',o.shot,L?L.shot:null,5)}
+     ${barTick('aDOT',o.adot,L?L.adot:null,1.5,'y',[0,15])}
+     <span class="tt2">Ground — ${o.rN} runs${o.lean?` · ${o.lean.toLowerCase()}${o.dirLean?`, ${o.dirLean}-lean`:''}`:''}</span>
+     ${o.gk?twin('Run mix',[{l:'inside',v:o.inside,g:L?L.inside:null,c:'#2e5496'},{l:'off-tackle',v:o.offT,g:L?L.offT:null,c:'#b6975a'},{l:'edge',v:o.edge,g:L?L.edge:null,c:'#48702f'}]):'<div class="tz-thin">no direction-charted runs</div>'}
+     ${o.gk?twin('Direction',[{l:'left',v:o.dL,g:L?L.dL:null,c:'#2e5496'},{l:'middle',v:o.dM,g:L?L.dM:null,c:'#b6975a'},{l:'right',v:o.dR,g:L?L.dR:null,c:'#48702f'}]):''}
+     <span class="tt2">Air — ${o.pN} dropbacks</span>
+     ${twin('Throw depth',[{l:'LOS',v:o.los,g:L?L.los:null,c:'#94a3b8'},{l:'short',v:o.short,g:L?L.short:null,c:'#2e5496'},{l:'interm.',v:o.inter,g:L?L.inter:null,c:'#b6975a'},{l:'deep',v:o.shot,g:L?L.shot:null,c:'#48702f'}])}
+     ${shareRows(o.rts,o.rTot,L&&L.rts,L&&L.rTot,3,x=>RT13[x])}
+     <span class="tt2">Personnel</span>
+     ${shareRows(o.pers,o.pTot,L&&L.pers,L&&L.pTot,3,x=>x+' pers',8)}</div>`;
    } else {
-    calls=`<div class="tzsec"><span class="tt">What they show</span>${splitBar(o,'dropbacks faced','runs faced')}
-     ${kv('Shell',`${fp(o.zonePct)} zone · ${fp(o.manPct)} man`)}
-     ${kv('Coverage families',topK(o.covs,o.cTot,4,k=>CN[k]||k).join('<br>')||'—')}
-     ${kv('Box',`${o.box==null?'—':o.box} avg · 8+ box ${fp(o.hbox)}`)}
-     ${kv('Personnel faced',topK(o.pers,o.pTot,3).join('<br>')||'—')}</div>`;
+    calls=`<div class="tzsec"><span class="tt">What they show${lgNote}</span>
+     ${barTick('Pass faced',o.passRate,L?L.passRate:null,8)}
+     ${barTick('Zone shell',o.zonePct,L?L.zonePct:null,8)}
+     ${barTick('8+ box',o.hbox,L?L.hbox:null,6)}
+     ${barTick('Avg box',o.box,L?L.box:null,0.4,'y',[5,8])}
+     <span class="tt2">Coverage family (vs pass)</span>
+     ${shareRows(o.covs,o.cTot,L&&L.covs,L&&L.cTot,4,x=>CN[x]||x)}
+     <span class="tt2">Personnel faced</span>
+     ${shareRows(o.pers,o.pTot,L&&L.pers,L&&L.pTot,3,x=>x+' pers',8)}</div>`;
    }
    // by-down context (ignores the Down filter; keeps distance/score)
    const zpD=passD.filter(p=>p[IX.pass.yl]!=null&&zoneOf(p[IX.pass.yl])===z), zrD=rushD.filter(p=>p[IX.rush.yl]!=null&&zoneOf(p[IX.rush.yl])===z);
