@@ -45,6 +45,7 @@ for($i=0;$i -lt $hdr.Length;$i++){ $ix[$hdr[$i]] = $i }
 function C([string]$n){ $ix[$n] }
 $I_gid=C 'game_id'; $I_pid=C 'play_id'; $I_sd=C 'score_differential'; $I_ytg=C 'ydstogo'
 $I_week=C 'week'; $I_st=C 'season_type'; $I_pos=C 'posteam'; $I_def=C 'defteam'
+$I_qtr=C 'qtr'; $I_fdr=C 'fixed_drive'; $I_top=C 'drive_time_of_possession'
 $I_down=C 'down'; $I_yl=C 'yardline_100'; $I_epa=C 'epa'; $I_succ=C 'success'; $I_yg=C 'yards_gained'
 $I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'; $I_ptype=C 'play_type'; $I_scr=C 'qb_scramble'
 $I_qb=C 'passer_player_name'; $I_rec=C 'receiver_player_name'; $I_ay=C 'air_yards'
@@ -184,6 +185,8 @@ function DGroup($p){ switch -Regex ($p){ '^(DE|DT|NT|DL)$' {return 'DL'} '^(LB|I
 $DEFT=@{}   # defteam -> @{plays;epa;succ;expl;sack;tfl;intc;pd;ff;qbh}
 $PBPD=@{}   # gsis_id -> @{pd;ff;tfl}  (passes defended, forced fumbles, run stuffs — not in PFR)
 $GAMES=@{}  # game_id -> @{ht;at;h;a}  final scores, for points allowed
+$TEMPO=@{}  # team -> @{games;topSec;off;def}  time of possession + scrimmage snap volume
+$DRIVESEEN=@{} # game_id|fixed_drive -> 1  (dedupe drive TOP)
 function AddPBPD($id,$k){ if($id -and $id -ne 'NA'){ if(-not $PBPD.ContainsKey($id)){ $PBPD[$id]=@{pd=0;ff=0;tfl=0} }; $PBPD[$id][$k]++ } }
 $RECPOS=@{}; $RECSNP=@{}; $SEENREC=@{}; $RBDAT=@{}
 
@@ -207,9 +210,25 @@ while(-not $tp.EndOfData){
   $jk=$f[$I_gid]+'|'+$f[$I_pid]; $pj= if($PJOIN.ContainsKey($jk)){ $PJOIN[$jk] } else { ',null,null,null,null,null,null' }
   $sd=NumOrNull $f[$I_sd]; $ytg=NumOrNull $f[$I_ytg]
   $wk=NumOrNull $f[$I_week]; $def=$f[$I_def]; $yl=NumOrNull $f[$I_yl]
+  $qtrv=NumOrNull $f[$I_qtr]
   $epa=NumOrNull $f[$I_epa] 3; $succ= if(IsOne $f[$I_succ]){'1'}else{'0'}; $yg=NumOrNull $f[$I_yg]; $dnv=NumOrNull $dn
   # ---- defense accumulation (team HAVOC family + player pbp events), on every scrimmage snap incl. sacks ----
   $isP=IsOne $f[$I_pass]; $isR=IsOne $f[$I_rush]
+  # ---- team tempo/volume: scrimmage snaps (off/def) + time of possession (per drive, deduped) ----
+  if($isP -or $isR){
+    $gid2=$f[$I_gid]
+    if(-not $TEMPO.ContainsKey($pos)){ $TEMPO[$pos]=@{games=@{};topSec=0;off=0;def=0} }
+    $tpo=$TEMPO[$pos]; $tpo.off++; $tpo.games[$gid2]=1
+    if($def -and $def -ne 'NA'){ if(-not $TEMPO.ContainsKey($def)){ $TEMPO[$def]=@{games=@{};topSec=0;off=0;def=0} }; $tpd=$TEMPO[$def]; $tpd.def++; $tpd.games[$gid2]=1 }
+    $fdr=$f[$I_fdr]
+    if($fdr -and $fdr -ne 'NA' -and $fdr -ne '0'){
+      $dk=$gid2+'|'+$fdr
+      if(-not $DRIVESEEN.ContainsKey($dk)){
+        $DRIVESEEN[$dk]=1; $topStr=[string]$f[$I_top]
+        if($topStr -match '^\d+:\d\d$'){ $tp2=$topStr.Split(':'); $tpo.topSec+=([int]$tp2[0]*60+[int]$tp2[1]) }
+      }
+    }
+  }
   if(($isP -or $isR) -and $def -and $def -ne 'NA'){
     if(-not $DEFT.ContainsKey($def)){ $DEFT[$def]=@{plays=0;epa=0.0;succ=0;expl=0;sack=0;tfl=0;intc=0;pd=0;ff=0;qbh=0} }
     $dt=$DEFT[$def]; $dt.plays++; $dt.epa+=(Num0 $f[$I_epa]); if(IsOne $f[$I_succ]){ $dt.succ++ }
@@ -238,7 +257,7 @@ while(-not $tp.EndOfData){
     $yac=NumOrNull $f[$I_yac]
     $cpoe=NumOrNull $f[$I_cpoe] 1
     $drop= if($DROPS.ContainsKey($jk)){'1'}else{'0'}
-    $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+','+$cpoe+','+$drop+']'
+    $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+','+$cpoe+','+$drop+','+$qtrv+']'
     $tm=Team $pos; $tm.pass.Add($row); $np++
     if($tm.qbs.ContainsKey($qb)){ $tm.qbs[$qb]++ } else { $tm.qbs[$qb]=1 }
   } elseif((IsOne $f[$I_rush]) -or (IsOne $f[$I_scr])){
@@ -255,7 +274,7 @@ while(-not $tp.EndOfData){
     }
     $gap=MapGap $f[$I_rgap]; $dir=MapLoc $f[$I_rloc]
     $td= if(IsOne $f[$I_rtd]){'1'}else{'0'}; $fum= if(IsOne $f[$I_fum]){'1'}else{'0'}
-    $row='['+$wk+','+(Jstr $def)+','+(Jstr $run)+','+$gap+','+$dir+','+$yl+','+$dnv+','+$yg+','+$epa+','+$succ+','+$td+','+$fum+$pj+','+$sd+','+$ytg+']'
+    $row='['+$wk+','+(Jstr $def)+','+(Jstr $run)+','+$gap+','+$dir+','+$yl+','+$dnv+','+$yg+','+$epa+','+$succ+','+$td+','+$fum+$pj+','+$sd+','+$ytg+','+$qtrv+']'
     $tm=Team $pos; $tm.rush.Add($row); $nr++
     if($tm.rbs.ContainsKey($run)){ $tm.rbs[$run]++ } else { $tm.rbs[$run]=1 }
   }
@@ -275,7 +294,7 @@ New-Item -ItemType Directory -Force -Path $playDir | Out-Null
 $allp = [System.Text.StringBuilder]::new(); [void]$allp.Append('window.PLAYS={'); $pfirst=$true
 $idx = [System.Text.StringBuilder]::new()
 [void]$idx.Append('{"season":'+$Year+',"generated":"'+(Get-Date -Format 'yyyy-MM-dd')+'",')
-[void]$idx.Append('"fields":{"pass":["wk","def","qb","rec","ay","loc","yl","dn","yg","yac","epa","succ","out","td","pers","mz","cov","box","route","form","sd","ytg","cpoe","drop"],"rush":["wk","def","run","gap","dir","yl","dn","yg","epa","succ","td","fum","pers","mz","cov","box","route","form","sd","ytg"]},')
+[void]$idx.Append('"fields":{"pass":["wk","def","qb","rec","ay","loc","yl","dn","yg","yac","epa","succ","out","td","pers","mz","cov","box","route","form","sd","ytg","cpoe","drop","qtr"],"rush":["wk","def","run","gap","dir","yl","dn","yg","epa","succ","td","fum","pers","mz","cov","box","route","form","sd","ytg","qtr"]},')
 [void]$idx.Append('"teams":{')
 $first=$true
 foreach($t in ($teams.Keys | Sort-Object)){
@@ -293,6 +312,16 @@ foreach($t in ($teams.Keys | Sort-Object)){
 [System.IO.File]::WriteAllText((Join-Path $dataDir 'plays_index.json'),$idx.ToString())
 [void]$allp.Append('};')
 [System.IO.File]::WriteAllText((Join-Path $dataDir 'plays.js'),$allp.ToString())
+# tempo.js -> window.TEMPO = { "<TM>":{"g":games,"topSec":<sum drive TOP secs>,"off":<off scrimmage snaps>,"def":<def scrimmage snaps>}, ... }
+$tbuf = [System.Text.StringBuilder]::new(); [void]$tbuf.Append('window.TEMPO={'); $tfirst=$true
+foreach($k in ($TEMPO.Keys | Sort-Object)){
+  $tv=$TEMPO[$k]
+  if(-not $tfirst){ [void]$tbuf.Append(',') }; $tfirst=$false
+  [void]$tbuf.Append('"'+$k+'":{"g":'+$tv.games.Count+',"topSec":'+[int]$tv.topSec+',"off":'+$tv.off+',"def":'+$tv.def+'}')
+}
+[void]$tbuf.Append('};')
+[System.IO.File]::WriteAllText((Join-Path $dataDir 'tempo.js'),$tbuf.ToString())
+Write-Host ("tempo teams: {0}" -f $TEMPO.Count)
 # positions.js -> window.RECPOS = { "<receiver name>": "<POS>", ... } for WR/TE tagging
 $posbuf = [System.Text.StringBuilder]::new(); [void]$posbuf.Append('window.RECPOS={'); $rfirst=$true
 foreach($k in ($SEENREC.Keys | Sort-Object)){
