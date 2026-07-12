@@ -1556,7 +1556,7 @@ function drawFieldPage(){
 // ---------- TENDENCY FIELD MAP — what they call, by zone × down/distance/score ----------
 // Slim rows = the scan layer: only stats that DEVIATE from this team's own cut-wide baseline get color.
 // Tap a zone to open its dossier: full call detail, down-by-down context, and the results layer.
-let TMAP={side:'off',down:'all',dist:'all',score:'all',zones:[],pa:'all',series:'all',after:'all',stage:'all',pgroup:'pass',psort:'epa',pdir:1};
+let TMAP={side:'off',down:'all',dist:'all',score:'all',zones:[],ptype:'all',outcome:'all',player:'',pa:'all',series:'all',after:'all',stage:'all',pgroup:'pass',psort:'epa',pdir:1};
 function renderTendMap(){
  const body=$('#fieldbody');if(!body)return;
  const ab=curFZTeam;
@@ -1576,7 +1576,16 @@ function renderTendMap(){
   if(TMAP.after!=='all'){const pt=p[I.prevpt],ps=p[I.prevsucc];if(TMAP.after==='run'&&pt!=='R')return false;if(TMAP.after==='pass'&&pt!=='P')return false;if(TMAP.after==='succ'&&ps!==1)return false;if(TMAP.after==='fail'&&ps!==0)return false;}
   if(TMAP.stage!=='all'){const ds=p[I.dseq];if(ds==null)return false;if(TMAP.stage==='open'&&ds!==1)return false;if(TMAP.stage==='early'&&!(ds>=2&&ds<=4))return false;if(TMAP.stage==='late'&&!(ds>=5))return false;}
   return true;};
- const pass=src.pass.filter(p=>keep(p,IX.pass)), rush=src.rush.filter(p=>keep(p,IX.rush));
+ // play-type + outcome filter (applies to team AND league); player filter (team only)
+ const ptOut=(arr,I,isPass)=>{
+  if(TMAP.ptype==='pass'&&!isPass)return [];if(TMAP.ptype==='run'&&isPass)return [];
+  if(TMAP.outcome==='all')return arr;const th=isPass?15:10;
+  return arr.filter(p=>TMAP.outcome==='succ'?p[I.succ]===1:TMAP.outcome==='expl'?(p[I.yg]||0)>=th:TMAP.outcome==='td'?p[I.td]===1:true);};
+ const poolPass=ptOut(src.pass.filter(p=>keep(p,IX.pass)),IX.pass,true), poolRush=ptOut(src.rush.filter(p=>keep(p,IX.rush)),IX.rush,false);
+ // player dropdown pool (before the player filter)
+ const pcount={};poolPass.forEach(p=>{if(p[2])pcount[p[2]]=(pcount[p[2]]||0)+1;if(p[3])pcount[p[3]]=(pcount[p[3]]||0)+1;});poolRush.forEach(p=>{if(p[2])pcount[p[2]]=(pcount[p[2]]||0)+1;});
+ if(TMAP.player&&!pcount[TMAP.player])TMAP.player='';
+ const pass=TMAP.player?poolPass.filter(p=>p[2]===TMAP.player||p[3]===TMAP.player):poolPass, rush=TMAP.player?poolRush.filter(p=>p[2]===TMAP.player):poolRush;
  const zoneOrder=['Backed Up','Own','Midfield','Green','Red']; // left→right = own goal → opponent goal
  const ZLAB={'Red':'Red zone (opp 1–20)','Green':'Green (opp 21–40)','Midfield':'Midfield (41–60)','Own':'Own territory (61–90)','Backed Up':'Backed up (91+)'};
  const ZSHORT={'Backed Up':'Backed up','Own':'Own terr.','Midfield':'Midfield','Green':'Green','Red':'Red zone'};
@@ -1631,14 +1640,14 @@ function renderTendMap(){
  const o=packOf(pass,rush); // team, current cut
  // league baseline for the SAME cut (all 32 teams) — concatenated pool cached once, filtered per render
  if(window.PLAYS&&!window._TMALL){const P=window.PLAYS;let lp=[],lr=[];for(const t in P){lp=lp.concat(P[t].pass);lr=lr.concat(P[t].rush);}window._TMALL={lp,lr};}
- const L=window._TMALL?packOf(window._TMALL.lp.filter(p=>keep(p,IX.pass)),window._TMALL.lr.filter(p=>keep(p,IX.rush))):packOf([],[]);
+ const L=window._TMALL?packOf(ptOut(window._TMALL.lp.filter(p=>keep(p,IX.pass)),IX.pass,true),ptOut(window._TMALL.lr.filter(p=>keep(p,IX.rush)),IX.rush,false)):packOf([],[]);
  // dossier viz: value bar with a red league tick; twin stacked bars (thick=team, thin=league)
  const dCol=(D,thr)=>D==null||Math.abs(D)<thr?'':D>0?'#2e5496':'#b06a10';
  const barTick=(lab,v,lg,thr,unit,dom)=>{if(v==null)return '';dom=dom||[0,100];
   const W=x=>Math.max(0,Math.min(100,100*(x-dom[0])/(dom[1]-dom[0])));
   const fmtv=x=>unit==='y'?(+x).toFixed(1):Math.round(x)+'%';
   const c=dCol(lg==null?null:v-lg,thr);
-  return `<div class="tqrow"><span class="tqlab">${lab}</span><span class="tqtrack"><i style="width:${W(v)}%"></i>${lg!=null?`<span class="lgtick" style="left:${W(lg)}%" title="league in this zone: ${fmtv(lg)}"></span>`:''}</span><span class="tqv"${c?` style="color:${c}"`:''}>${fmtv(v)}${lg!=null?` <small>lg ${fmtv(lg)}</small>`:''}</span></div>`;};
+  return `<div class="tqrow"><span class="tqlab">${lab}</span><span class="tqtrack"><i style="width:${W(v)}%"></i>${lg!=null?`<span class="lgtick" style="left:${W(lg)}%" title="league in this cut: ${fmtv(lg)}"></span>`:''}</span><span class="tqv"${c?` style="color:${c}"`:''}>${fmtv(v)}${lg!=null?` <small>lg ${fmtv(lg)}</small>`:''}</span></div>`;};
  const twin=(lab,segs)=>{if(segs.every(s=>s.v==null))return '';
   const hasLg=segs.some(s=>s.g!=null);
   const bar=(get,h)=>`<div class="tqbar" style="height:${h}px">${segs.map(s=>{const w=get(s);return w?`<span style="width:${w}%;background:${s.c}" title="${s.l} ${w}%"></span>`:'';}).join('')}</div>`;
@@ -1658,12 +1667,11 @@ function renderTendMap(){
    ${barTick('Play-action',o.paRate,L.paRate,5)}
    ${barTick('Shots 20+',o.shot,L.shot,5)}
    ${barTick('aDOT',o.adot,L.adot,1.5,'y',[0,15])}
-   <span class="tt2">Ground — ${o.rN} runs${o.lean?` · ${o.lean.toLowerCase()}${o.dirLean?`, ${o.dirLean}-lean`:''}`:''}</span>
-   ${o.gk?twin('Run mix',[{l:'inside',v:o.inside,g:L.inside,c:'#2e5496'},{l:'off-tackle',v:o.offT,g:L.offT,c:'#b6975a'},{l:'edge',v:o.edge,g:L.edge,c:'#48702f'}]):'<div class="tz-thin">no direction-charted runs</div>'}
-   ${o.gk?twin('Direction',[{l:'left',v:o.dL,g:L.dL,c:'#2e5496'},{l:'middle',v:o.dM,g:L.dM,c:'#b6975a'},{l:'right',v:o.dR,g:L.dR,c:'#48702f'}]):''}
-   <span class="tt2">Air — ${o.pN} dropbacks</span>
-   ${twin('Throw depth',[{l:'LOS',v:o.los,g:L.los,c:'#94a3b8'},{l:'short',v:o.short,g:L.short,c:'#2e5496'},{l:'interm.',v:o.inter,g:L.inter,c:'#b6975a'},{l:'deep',v:o.shot,g:L.shot,c:'#48702f'}])}
-   ${shareRows(o.rts,o.rTot,L.rts,L.rTot,3,x=>RT13[x])}
+   ${o.rN?`<span class="tt2">Run gap &amp; direction — ${o.rN} runs${o.lean?` · leans ${o.lean.toLowerCase()}${o.dirLean?`, ${o.dirLean}`:''}`:''}</span>
+   ${o.gk?barTick('Inside',o.inside,L.inside,8)+barTick('Off-tackle',o.offT,L.offT,8)+barTick('Edge',o.edge,L.edge,8)+`<div style="height:5px"></div>`+barTick('Left',o.dL,L.dL,8)+barTick('Middle',o.dM,L.dM,8)+barTick('Right',o.dR,L.dR,8):'<div class="tz-thin">no direction-charted runs in this cut</div>'}`:''}
+   ${o.pN?`<span class="tt2">Throw depth — ${o.pN} dropbacks</span>
+   ${barTick('Behind LOS',o.los,L.los,5)+barTick('Short 0–9',o.short,L.short,5)+barTick('Interm. 10–19',o.inter,L.inter,5)+barTick('Deep 20+',o.shot,L.shot,5)}
+   ${shareRows(o.rts,o.rTot,L.rts,L.rTot,3,x=>RT13[x])}`:''}
    <span class="tt2">Personnel</span>
    ${shareRows(o.pers,o.pTot,L.pers,L.pTot,3,x=>x+' pers',8)}</div>`;
  } else {
@@ -1746,6 +1754,12 @@ function renderTendMap(){
   seg('down',TMAP.down,[['all','All'],['1','1st'],['2','2nd'],['3','3rd'],['4','4th']],'Down')}${
   seg('dist',TMAP.dist,[['all','All'],['short','Short (≤3)'],['med','Medium (4–7)'],['long','Long (8+)']],'Distance')}${
   seg('score',TMAP.score,[['all','All'],['one','One-score'],['trail','Trailing'],['lead','Leading']],'Score')}<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Quarter</span>${qtrBar()}</div></div>`;
+ const players=Object.keys(pcount).sort((a,b)=>pcount[b]-pcount[a]);
+ const playerSel=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Player</span><select id="tmplayer" style="margin:0;min-height:34px;max-width:200px">${['<option value="">All players</option>'].concat(players.map(nm=>`<option value="${nm}"${nm===TMAP.player?' selected':''}>${nm} (${pcount[nm]})</option>`)).join('')}</select></div>`;
+ const rowB=`<div style="display:flex;flex-wrap:wrap;align-items:flex-end">${
+  seg('ptype',TMAP.ptype,[['all','All plays'],['pass','Pass'],['run','Run']],'Play type')}${
+  seg('outcome',TMAP.outcome,[['all','All'],['succ','Successful'],['expl','Explosive'],['td','TD']],'Outcome')}${
+  playerSel}</div>`;
  const row2=`<div style="display:flex;flex-wrap:wrap;align-items:flex-end">${
   TMAP.side==='off'?seg('pa',TMAP.pa,[['all','All'],['pa','Play-action'],['no','No PA']],'Play-action'):''}${
   seg('series',TMAP.series,[['all','All'],['first','1st of series'],['later','Later downs']],'Series')}${
@@ -1759,11 +1773,12 @@ function renderTendMap(){
   ident=`<p class="note" style="margin:0 0 8px"><b>Season identity:</b> <b style="color:var(--navy2)">${f.fam}</b> — ${f.why}.</p>`;}}
  const summary=`<div class="tzstat" style="grid-template-columns:repeat(5,1fr);margin:8px 0 12px">${
   st(o.n,'Snaps')+st(fp(o.passRate),'Pass rate',null,'lg '+fp(L.passRate))+st(fmtE(o.epa),inv?'EPA allowed':'EPA/play',eCol(o.epa),'lg '+fmtE(L.epa))+st(fp(o.succ),'Success%',null,'lg '+fp(L.succ))+st(fp(o.expl),'Explosive%',null,'lg '+fp(L.expl))}</div>`;
- const activeCut=[qtrNote(),TMAP.zones.length?TMAP.zones.map(z=>ZSHORT[z]).join(' + '):'',TMAP.pa!=='all'?(TMAP.pa==='pa'?'play-action':'no PA'):'',TMAP.series!=='all'?(TMAP.series==='first'?'1st of series':'later downs'):'',TMAP.after!=='all'?('after '+({run:'run',pass:'pass',succ:'success',fail:'failure'}[TMAP.after])):'',TMAP.stage!=='all'?({open:'opening play',early:'early in drive',late:'late in drive'}[TMAP.stage]):''].filter(Boolean).join(' · ');
+ const activeCut=[TMAP.ptype!=='all'?({pass:'passes',run:'runs'}[TMAP.ptype]):'',TMAP.outcome!=='all'?({succ:'successful',expl:'explosive',td:'TD'}[TMAP.outcome]):'',TMAP.player?TMAP.player:'',qtrNote(),TMAP.zones.length?TMAP.zones.map(z=>ZSHORT[z]).join(' + '):'',TMAP.pa!=='all'?(TMAP.pa==='pa'?'play-action':'no PA'):'',TMAP.series!=='all'?(TMAP.series==='first'?'1st of series':'later downs'):'',TMAP.after!=='all'?('after '+({run:'run',pass:'pass',succ:'success',fail:'failure'}[TMAP.after])):'',TMAP.stage!=='all'?({open:'opening play',early:'early in drive',late:'late in drive'}[TMAP.stage]):''].filter(Boolean).join(' · ');
  body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(ab)}">
   <h2 style="margin-top:0" class="tchip">${teamLogo(ab)}${teamName(ab)} — tendency explorer ${TMAP.side==='off'?'(offense)':'(defense)'}</h2>
   <p class="note" style="margin:0 0 10px">Everything ${TMAP.side==='off'?'they call':'their defense shows'} for the situation you pick — <b>no clicking to expand</b>. Stack any filters below (field zone, quarter, down &amp; distance, play-action, series, previous play, drive stage); the calls, results, splits and player tables all recut live${activeCut?`. <b>Now showing:</b> ${activeCut}`:'.'}</p>
   ${row1}
+  ${rowB}
   <span class="subcap" style="display:block;margin:2px 0 3px">Field zone <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0;color:#98a2b3">own goal → opponent goal · filter to one or more (none = whole field)</span></span>
   ${zoneSel}
   ${row2}
@@ -1777,7 +1792,8 @@ function renderTendMap(){
  </div>`;
  body.querySelectorAll('[data-tzsel]').forEach(b=>b.onclick=()=>{const z=b.dataset.tzsel,i=TMAP.zones.indexOf(z);if(i<0)TMAP.zones.push(z);else TMAP.zones.splice(i,1);renderTendMap();});
  bindQtrChips(body,renderTendMap);
- ['side','down','dist','score','pa','series','after','stage','pgroup'].forEach(k=>{const dk='data-tm-'+k;body.querySelectorAll('['+dk+']').forEach(b=>b.onclick=()=>{TMAP[k==='side'?'side':k]=b.getAttribute(dk);if(k==='side'){TMAP.zones=TMAP.zones;}renderTendMap();});});
+ ['side','down','dist','score','ptype','outcome','pa','series','after','stage','pgroup'].forEach(k=>{const dk='data-tm-'+k;body.querySelectorAll('['+dk+']').forEach(b=>b.onclick=()=>{TMAP[k]=b.getAttribute(dk);renderTendMap();});});
+ const psel=body.querySelector('#tmplayer');if(psel)psel.onchange=e=>{TMAP.player=e.target.value;renderTendMap();};
  body.querySelectorAll('[data-tm-psort]').forEach(th=>th.onclick=()=>{const k=th.dataset.tmPsort;if(TMAP.psort===k)TMAP.pdir=-TMAP.pdir;else{TMAP.psort=k;TMAP.pdir=1;}renderTendMap();});
 }
 function drawFZPage(){
