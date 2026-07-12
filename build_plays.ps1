@@ -45,7 +45,7 @@ for($i=0;$i -lt $hdr.Length;$i++){ $ix[$hdr[$i]] = $i }
 function C([string]$n){ $ix[$n] }
 $I_gid=C 'game_id'; $I_pid=C 'play_id'; $I_sd=C 'score_differential'; $I_ytg=C 'ydstogo'
 $I_week=C 'week'; $I_st=C 'season_type'; $I_pos=C 'posteam'; $I_def=C 'defteam'
-$I_qtr=C 'qtr'; $I_fdr=C 'fixed_drive'; $I_top=C 'drive_time_of_possession'
+$I_qtr=C 'qtr'; $I_fdr=C 'fixed_drive'; $I_top=C 'drive_time_of_possession'; $I_series=C 'series'
 $I_down=C 'down'; $I_yl=C 'yardline_100'; $I_epa=C 'epa'; $I_succ=C 'success'; $I_yg=C 'yards_gained'
 $I_pass=C 'pass'; $I_rush=C 'rush'; $I_2pt=C 'two_point_attempt'; $I_ptype=C 'play_type'; $I_scr=C 'qb_scramble'
 $I_qb=C 'passer_player_name'; $I_rec=C 'receiver_player_name'; $I_ay=C 'air_yards'
@@ -113,19 +113,22 @@ if(Test-Path $Part){
   Write-Host "participation rows: $pc | joined keys: $($PJOIN.Count) | snap ids: $($SNAPCT.Count)"
 }
 # FTN charting -> drops, keyed game_id|play_id (is_drop = TRUE/FALSE)
-$DROPS=@{}
+$DROPS=@{}   # game_id|play_id -> 1 (charted drop)
+$PAMAP=@{}   # game_id|play_id -> 1 (play-action pass)
 if(Test-Path $Ftn){
   $ffs=New-Object Microsoft.VisualBasic.FileIO.TextFieldParser($Ftn)
   $ffs.SetDelimiters(@(",")); $ffs.HasFieldsEnclosedInQuotes=$true
   $fh=$ffs.ReadFields(); $fix=@{}; for($i=0;$i -lt $fh.Length;$i++){ $fix[$fh[$i]]=$i }
-  $F_gid=$fix['nflverse_game_id']; $F_pid=$fix['nflverse_play_id']; $F_drop=$fix['is_drop']
-  $fc=0; $dc=0
+  $F_gid=$fix['nflverse_game_id']; $F_pid=$fix['nflverse_play_id']; $F_drop=$fix['is_drop']; $F_pa=$fix['is_play_action']
+  $fc=0; $dc=0; $pac=0
   while(-not $ffs.EndOfData){
     $g=$ffs.ReadFields(); $fc++
-    if($g[$F_drop] -eq 'TRUE' -or $g[$F_drop] -eq 'true' -or $g[$F_drop] -eq '1'){ $DROPS[$g[$F_gid]+'|'+$g[$F_pid]]=1; $dc++ }
+    $k=$g[$F_gid]+'|'+$g[$F_pid]
+    if($g[$F_drop] -eq 'TRUE' -or $g[$F_drop] -eq 'true' -or $g[$F_drop] -eq '1'){ $DROPS[$k]=1; $dc++ }
+    if($null -ne $F_pa -and ($g[$F_pa] -eq 'TRUE' -or $g[$F_pa] -eq 'true' -or $g[$F_pa] -eq '1')){ $PAMAP[$k]=1; $pac++ }
   }
   $ffs.Close()
-  Write-Host "FTN rows: $fc | drops: $dc"
+  Write-Host "FTN rows: $fc | drops: $dc | play-action: $pac"
 }
 # Weekly rosters -> gsis_id => position + gsis_id => pfr_id crosswalk
 # NOTE: hashtable is $RPOS (not $POS) — $pos is the posteam string in the main loop and PS vars are case-insensitive.
@@ -187,6 +190,8 @@ $PBPD=@{}   # gsis_id -> @{pd;ff;tfl}  (passes defended, forced fumbles, run stu
 $GAMES=@{}  # game_id -> @{ht;at;h;a}  final scores, for points allowed
 $TEMPO=@{}  # team -> @{games;topSec;off;def}  time of possession + scrimmage snap volume
 $DRIVESEEN=@{} # game_id|fixed_drive -> 1  (dedupe drive TOP)
+# drive/series sequencing state (stream is in play order) -> dseq, sfirst, prev play type/success
+$curDriveKey=''; $curSeriesKey=''; $driveSeq=0; $lastType=''; $lastSucc=''
 function AddPBPD($id,$k){ if($id -and $id -ne 'NA'){ if(-not $PBPD.ContainsKey($id)){ $PBPD[$id]=@{pd=0;ff=0;tfl=0} }; $PBPD[$id][$k]++ } }
 $RECPOS=@{}; $RECSNP=@{}; $SEENREC=@{}; $RBDAT=@{}
 
@@ -229,6 +234,19 @@ while(-not $tp.EndOfData){
       }
     }
   }
+  # ---- drive/series sequencing: play# in drive, 1st-of-series, previous play type/success ----
+  $paFlag='0'; $ctxTail=',null,null,null,null'
+  if($isP -or $isR){
+    $dkey=$f[$I_gid]+'|'+[string]$f[$I_fdr]; $skey=$f[$I_gid]+'|'+[string]$f[$I_series]
+    if($dkey -ne $curDriveKey){ $curDriveKey=$dkey; $driveSeq=0; $lastType=''; $lastSucc='' }
+    $driveSeq++
+    if($skey -ne $curSeriesKey){ $curSeriesKey=$skey; $sf='1' } else { $sf='0' }
+    $ppt= if($lastType){ '"'+$lastType+'"' } else { 'null' }
+    $pps= if($lastSucc -ne ''){ $lastSucc } else { 'null' }
+    $ctxTail=','+$driveSeq+','+$sf+','+$ppt+','+$pps
+    if($PAMAP.ContainsKey($jk)){ $paFlag='1' }
+    $lastType= if($isP){'P'}else{'R'}; $lastSucc=$succ
+  }
   if(($isP -or $isR) -and $def -and $def -ne 'NA'){
     if(-not $DEFT.ContainsKey($def)){ $DEFT[$def]=@{plays=0;epa=0.0;succ=0;expl=0;sack=0;tfl=0;intc=0;pd=0;ff=0;qbh=0} }
     $dt=$DEFT[$def]; $dt.plays++; $dt.epa+=(Num0 $f[$I_epa]); if(IsOne $f[$I_succ]){ $dt.succ++ }
@@ -257,7 +275,7 @@ while(-not $tp.EndOfData){
     $yac=NumOrNull $f[$I_yac]
     $cpoe=NumOrNull $f[$I_cpoe] 1
     $drop= if($DROPS.ContainsKey($jk)){'1'}else{'0'}
-    $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+','+$cpoe+','+$drop+','+$qtrv+']'
+    $row='['+$wk+','+(Jstr $def)+','+(Jstr $qb)+','+(Jstr $rec)+','+(NumOrNull $ay)+','+$loc+','+$yl+','+$dnv+','+$yg+','+$yac+','+$epa+','+$succ+','+$out+','+$td+$pj+','+$sd+','+$ytg+','+$cpoe+','+$drop+','+$qtrv+','+$paFlag+$ctxTail+']'
     $tm=Team $pos; $tm.pass.Add($row); $np++
     if($tm.qbs.ContainsKey($qb)){ $tm.qbs[$qb]++ } else { $tm.qbs[$qb]=1 }
   } elseif((IsOne $f[$I_rush]) -or (IsOne $f[$I_scr])){
@@ -274,7 +292,7 @@ while(-not $tp.EndOfData){
     }
     $gap=MapGap $f[$I_rgap]; $dir=MapLoc $f[$I_rloc]
     $td= if(IsOne $f[$I_rtd]){'1'}else{'0'}; $fum= if(IsOne $f[$I_fum]){'1'}else{'0'}
-    $row='['+$wk+','+(Jstr $def)+','+(Jstr $run)+','+$gap+','+$dir+','+$yl+','+$dnv+','+$yg+','+$epa+','+$succ+','+$td+','+$fum+$pj+','+$sd+','+$ytg+','+$qtrv+']'
+    $row='['+$wk+','+(Jstr $def)+','+(Jstr $run)+','+$gap+','+$dir+','+$yl+','+$dnv+','+$yg+','+$epa+','+$succ+','+$td+','+$fum+$pj+','+$sd+','+$ytg+','+$qtrv+$ctxTail+']'
     $tm=Team $pos; $tm.rush.Add($row); $nr++
     if($tm.rbs.ContainsKey($run)){ $tm.rbs[$run]++ } else { $tm.rbs[$run]=1 }
   }
@@ -294,7 +312,7 @@ New-Item -ItemType Directory -Force -Path $playDir | Out-Null
 $allp = [System.Text.StringBuilder]::new(); [void]$allp.Append('window.PLAYS={'); $pfirst=$true
 $idx = [System.Text.StringBuilder]::new()
 [void]$idx.Append('{"season":'+$Year+',"generated":"'+(Get-Date -Format 'yyyy-MM-dd')+'",')
-[void]$idx.Append('"fields":{"pass":["wk","def","qb","rec","ay","loc","yl","dn","yg","yac","epa","succ","out","td","pers","mz","cov","box","route","form","sd","ytg","cpoe","drop","qtr"],"rush":["wk","def","run","gap","dir","yl","dn","yg","epa","succ","td","fum","pers","mz","cov","box","route","form","sd","ytg","qtr"]},')
+[void]$idx.Append('"fields":{"pass":["wk","def","qb","rec","ay","loc","yl","dn","yg","yac","epa","succ","out","td","pers","mz","cov","box","route","form","sd","ytg","cpoe","drop","qtr","pa","dseq","sfirst","prevpt","prevsucc"],"rush":["wk","def","run","gap","dir","yl","dn","yg","epa","succ","td","fum","pers","mz","cov","box","route","form","sd","ytg","qtr","dseq","sfirst","prevpt","prevsucc"]},')
 [void]$idx.Append('"teams":{')
 $first=$true
 foreach($t in ($teams.Keys | Sort-Object)){
