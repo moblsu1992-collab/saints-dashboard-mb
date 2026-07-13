@@ -482,7 +482,7 @@ document.querySelector('#overview').classList.add('on');
 let W={off:40,def:40,st:20};
 // ---------- SHARED PAGE HEADER (kicker + title + lead + interactivity hints) ----------
 const PAGE={
- overview:{k:'Step 1 · Start here',t:'2026 Saints Scouting — Start Here',d:`The executive summary — every number below is computed live from the tabs behind it.`,h:['Click any slate row to open that opponent']},
+ overview:{k:'Step 1 · Start here',t:'2026 Scouting — Start Here',d:`The executive summary — pick any team to load its profile; the Saints also get the full 2026 matchup slate. Every number is computed live from the tabs behind it.`,h:['Pick a team to refresh the page','Click any slate row to open that opponent']},
  ratings:{k:'Step 2 · The league',t:'Team Ratings — 2025',d:`0–100 efficiency per phase; drag the weights to re-rank the holistic score live. Saints highlighted.`,h:['Drag the weight sliders to re-rank live','Click any column header to sort']},
  epa:{k:'Step 3 · League Stats',t:'League Stats — 2025',d:`Every 2025 pass and rush from the nflverse play-by-play. Saints in gold.`,h:['Switch boards with the tabs below','Click any column header to sort']},
  opponents:{k:'Step 4 · The slate',t:'Opponent Scouting Packages',d:`One card per team, 2026 opponents first — the matchup verdict, their tendencies, and live situational splits.`,h:['Pick any team','Switch Matchup / Offense / Defense','Filter by play type, score state & down']},
@@ -1121,101 +1121,123 @@ function rtViz(ab,side,lev){
 function goSection(id){const idx=SECTIONS.findIndex(x=>x[0]===id);const btn=document.querySelectorAll('#nav button')[idx];if(btn)show(id,btn);}
 function gotoOpp(ab){goSection('opponents');const b=[...document.querySelectorAll('#obtns button')].find(x=>x.textContent===ab);if(b)b.onclick();}
 function gotoField(ab){curFZTeam=ab;renderField();goSection('field');}
-function ovSaintsBullets(){
- const ne=ET['NO'];
+function ovBullets(ab){
+ const te=ET[ab];
  const offE=DATA.leagueEPA.teams.map(t=>t.off.epa),defE=DATA.leagueEPA.teams.map(t=>t.deff.epa);
- const rNO=rankOf(offE,ne.off.epa,true),rND=rankOf(defE,ne.deff.epa,false);
- const rPassD=rankOf(DATA.leagueEPA.teams.map(t=>t.deff.passEPA),ne.deff.passEPA,false);
- const rRushD=rankOf(DATA.leagueEPA.teams.map(t=>t.deff.rushEPA),ne.deff.rushEPA,false);
+ const rO=rankOf(offE,te.off.epa,true),rD=rankOf(defE,te.deff.epa,false);
+ const rPassD=rankOf(DATA.leagueEPA.teams.map(t=>t.deff.passEPA),te.deff.passEPA,false);
+ const rRushD=rankOf(DATA.leagueEPA.teams.map(t=>t.deff.rushEPA),te.deff.rushEPA,false);
+ const isNO=ab==='NO';
  const off=[],deff=[];
- off.push(`<b>${ord(rNO)} offense</b> by EPA/play (${ne.off.epa.toFixed(3)}) — every 2026 matchup starts from the premise that our offense needs schematic help.`);
- const ps=DATA.persSplits.teams['NO'];
+ off.push(`<b>${ord(rO)} offense</b> by EPA/play (${te.off.epa.toFixed(3)})${isNO?' — every 2026 matchup starts from the premise that our offense needs schematic help.':'.'}`);
+ const S=schemeProfiles();
+ if(S&&S.T[ab]){const x=S.T[ab],st=S.st,z=k=>x[k]==null?0:(x[k]-st[k].m)/st[k].sd;const f=schemeFamily(z);
+  off.push(`Scheme fingerprint: <b>${f.fam}</b> — ${f.why}.`);}
+ const ps=DATA.persSplits.teams[ab];
  if(ps&&ps.off){const ent=Object.entries(ps.off).filter(([g])=>g!=='Oth');
   if(ent.length>1){const s=[...ent].sort((a,b)=>b[1][3]-a[1][3]);const bg=s[0],wg=s[s.length-1];
-   off.push(`Personnel tell: our best football is in <b>${bg[0]} personnel</b> (${bg[1][3].toFixed(2)} EPA, ${bg[1][1]}% usage); <b>${wg[0]}</b> is the weak spot (${wg[1][3].toFixed(2)}).`);}}
- const cv=DATA.coverage.teams['NO'];
+   off.push(`Personnel tell: best in <b>${bg[0]} personnel</b> (${bg[1][3].toFixed(2)} EPA, ${bg[1][1]}% usage); <b>${wg[0]}</b> is the weak spot (${wg[1][3].toFixed(2)}).`);}}
+ const cv=DATA.coverage.teams[ab];
  if(cv&&cv.off&&Object.keys(cv.off.fam).length>1){const fe=Object.entries(cv.off.fam);
   const fs=[...fe].sort((a,b)=>b[1][2]-a[1][2]);const fb=fs[0],fw=fs[fs.length-1];
-  off.push(`vs coverage: handle <b>${CVFAM[fb[0]]}</b> best (${fb[1][2].toFixed(2)} EPA), struggle most against <b>${CVFAM[fw[0]]}</b> (${fw[1][2].toFixed(2)} on ${fw[1][0]} dropbacks) — expect heavy doses of it until we prove otherwise.`);}
+  off.push(`vs coverage: handles <b>${CVFAM[fb[0]]}</b> best (${fb[1][2].toFixed(2)} EPA), struggles most against <b>${CVFAM[fw[0]]}</b> (${fw[1][2].toFixed(2)} on ${fw[1][0]} dropbacks).`);}
  if(cv&&cv.off&&cv.off.pr){const[rate,ep,ec]=cv.off.pr;const lp=DATA.coverage.league.pr;
-  off.push(`Pressure allowed <b>${rate}%</b> (lg ${lp[0]}%); EPA goes from ${ec.toFixed(2)} clean to <b>${ep.toFixed(2)}</b> pressured — protection plans are weekly priority one.`);}
- deff.push(`<b>${ord(rND)} defense</b> by EPA allowed (${ne.deff.epa.toFixed(3)}) — the unit that keeps us in games. Pass D ranks ${ord(rPassD)}, run D ${ord(rRushD)}.`);
+  off.push(`Pressure allowed <b>${rate}%</b> (lg ${lp[0]}%); EPA falls from ${ec.toFixed(2)} clean to <b>${ep.toFixed(2)}</b> pressured.`);}
+ deff.push(`<b>${ord(rD)} defense</b> by EPA allowed (${te.deff.epa.toFixed(3)})${isNO?' — the unit that keeps us in games.':'.'} Pass D ${ord(rPassD)}, run D ${ord(rRushD)}.`);
+ if(S&&S.T[ab]&&S.T[ab].blz!=null){const pr=S.T[ab].prr;deff.push(`Pressure identity: blitzes on <b>${S.T[ab].blz.toFixed(0)}%</b> of dropbacks${pr?`, ${pr.toFixed(2)} pass rushers on average`:''}.`);}
  if(cv&&cv.def&&Object.keys(cv.def.fam).length>1){const fe=Object.entries(cv.def.fam);
   const fs=[...fe].sort((a,b)=>a[1][2]-b[1][2]);const fb=fs[0],fw=fs[fs.length-1];
   deff.push(`Best call: <b>${CVFAM[fb[0]]}</b> (${fb[1][2].toFixed(2)} EPA allowed, ${fb[1][1]}% usage); most vulnerable in <b>${CVFAM[fw[0]]}</b> (${fw[1][2].toFixed(2)}).`);}
  if(cv&&cv.def&&cv.def.pr){const[rate,ep,ec]=cv.def.pr;
-  deff.push(`We generate pressure on <b>${rate}%</b> of dropbacks (lg ${DATA.coverage.league.pr[0]}%); when we get home, offenses fall to ${ep.toFixed(2)} EPA — when we don't, they sit at ${ec.toFixed(2)}.`);}
- const lk=LCK['NO'];
- deff.push(`Context: <b>${lk.osW}-${lk.osL}</b> in one-score games, ${lk.toMargin>0?'+':''}${lk.toMargin} turnover margin/game, ${lk.fumRec}% fumble-recovery luck — read the record accordingly.`);
- return {off,deff,rNO,rND};
+  deff.push(`Generates pressure on <b>${rate}%</b> of dropbacks (lg ${DATA.coverage.league.pr[0]}%); when home, offenses fall to ${ep.toFixed(2)} EPA vs ${ec.toFixed(2)} when not.`);}
+ const lk=LCK[ab];
+ if(lk)deff.push(`Context: <b>${lk.osW}-${lk.osL}</b> in one-score games, ${lk.toMargin>0?'+':''}${lk.toMargin} turnover margin/game, ${lk.fumRec}% fumble-recovery luck.`);
+ return {off,deff,rO,rD};
 }
+let ovTeam='NO';
 function renderOverview(){
  const s=$('#overview');
- const ne=ET['NO'];
+ const ab=ovTeam, isNO=ab==='NO';
+ const te=ET[ab];
  const offE=DATA.leagueEPA.teams.map(t=>t.off.epa),defE=DATA.leagueEPA.teams.map(t=>t.deff.epa);
- const {off,deff,rNO,rND}=ovSaintsBullets();
- const hol=holisticList();const hIdx=hol.findIndex(t=>t.abbr==='NO');
+ const {off,deff,rO,rD}=ovBullets(ab);
+ const hol=holisticList();const hIdx=hol.findIndex(t=>t.abbr===ab);
  const [tn,tc]=tier(hol[hIdx].h);
- // --- slate verdicts ---
- const slate=DATA.opponents.map(o=>{
-  const oe=ET[o.src]||ET[o.abbr],te=ET[o.abbr];
-  const rTO=rankOf(offE,oe.off.epa,true),rTD=rankOf(defE,te.deff.epa,false);
-  const edge=((rTO-rND)+(rTD-rNO))/2;
-  const [offK,defK]=buildKeys(o);
-  const top=[...offK.map(k=>({k,side:'Their O'})),...defK.map(k=>({k,side:'Their D'}))].sort((a,b)=>Math.abs(b.k.z)-Math.abs(a.k.z))[0];
-  const ho=hol.find(t=>t.abbr===o.abbr);
-  return {o,rTO,rTD,edge,top,h:ho?ho.h:null};
- }).sort((a,b)=>a.edge-b.edge);
+ const rST=rankOf(hol.map(t=>t.st),hol[hIdx].st,true);
  const verdict=e=>e>=14?['Clear edge','#1e7a34']:e>=6?['Favorable','#2e7d4f']:e>-6?['Even','#6b7280']:e>-14?['Tough','#b3661a']:['Very tough','#a23b3b'];
- const rows=slate.map(x=>{
-  const[vl,vc]=verdict(x.edge);
-  const flags=[x.o.proxy?'proxy O':'',x.o.defNew?'new DC':''].filter(Boolean).join(' · ');
-  const key=x.top?`<b>${x.side||x.top.side}:</b> ${x.top.k.lab} ${fmt(x.top.k.v)} <span class="rk" style="color:#667">(${x.top.k.z>0?'+':''}${x.top.k.z.toFixed(1)}σ)</span>`:'—';
-  const cell=(d,ours,theirs)=>`<td style="color:${d>=6?'#1e7a34':d<=-6?'#a23b3b':'#555'};white-space:nowrap"><b>${d>0?'+':''}${d}</b> <small style="color:#98a2b3;font-weight:600">${ord(theirs)} vs ${ord(ours)}</small></td>`;
-  return `<tr data-go="${x.o.abbr}" style="cursor:pointer"><td class="tl"><span class="tcell">${teamLogo(x.o.abbr,'sm')}<b>${x.o.name}</b></span>${flags?` <small class="src">⚠ ${flags}</small>`:''}</td><td><span class="tier" style="background:${vc}">${vl}</span></td><td>${x.h==null?'—':x.h.toFixed(1)}</td>${cell(x.rTO-rND,rND,x.rTO)}${cell(x.rTD-rNO,rNO,x.rTD)}<td class="tl" style="white-space:normal;min-width:240px;font-size:11.5px">${key}</td></tr>`;
- }).join('');
- const slateT=`<div class="scroll"><table><thead><tr><th class="tl">Opponent</th><th>Verdict</th><th>Holistic</th><th>O edge · their O vs our D</th><th>D edge · their D vs our O</th><th class="tl">Biggest tell</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note">Sorted toughest → most favorable. Edge = rank gap (their unit's league rank minus ours; <b>positive favors the Saints</b>, ±6 ≈ even). Verdict averages both edges. Tell = the most extreme tendency from the auto game-plan keys. <b>Click any row to open that opponent's full card.</b></p>`;
+ const rkq=r=>{const q=(32-r)/31;return q>=.6?'#1e7a34':q>=.33?'#b07d12':'#a23b3b';};
+ // --- slate verdicts (Saints only — computed vs the Saints' units & schedule) ---
+ let slateCard='', slateTile='';
+ if(isNO){
+  const rNO=rO,rND=rD;
+  const slate=DATA.opponents.map(o=>{
+   const oe=ET[o.src]||ET[o.abbr],te2=ET[o.abbr];
+   const rTO=rankOf(offE,oe.off.epa,true),rTD=rankOf(defE,te2.deff.epa,false);
+   const edge=((rTO-rND)+(rTD-rNO))/2;
+   const [offK,defK]=buildKeys(o);
+   const top=[...offK.map(k=>({k,side:'Their O'})),...defK.map(k=>({k,side:'Their D'}))].sort((a,b)=>Math.abs(b.k.z)-Math.abs(a.k.z))[0];
+   const ho=hol.find(t=>t.abbr===o.abbr);
+   return {o,rTO,rTD,edge,top,h:ho?ho.h:null};
+  }).sort((a,b)=>a.edge-b.edge);
+  const rows=slate.map(x=>{
+   const[vl,vc]=verdict(x.edge);
+   const flags=[x.o.proxy?'proxy O':'',x.o.defNew?'new DC':''].filter(Boolean).join(' · ');
+   const key=x.top?`<b>${x.side||x.top.side}:</b> ${x.top.k.lab} ${fmt(x.top.k.v)} <span class="rk" style="color:#667">(${x.top.k.z>0?'+':''}${x.top.k.z.toFixed(1)}σ)</span>`:'—';
+   const cell=(d,ours,theirs)=>`<td style="color:${d>=6?'#1e7a34':d<=-6?'#a23b3b':'#555'};white-space:nowrap"><b>${d>0?'+':''}${d}</b> <small style="color:#98a2b3;font-weight:600">${ord(theirs)} vs ${ord(ours)}</small></td>`;
+   return `<tr data-go="${x.o.abbr}" style="cursor:pointer"><td class="tl"><span class="tcell">${teamLogo(x.o.abbr,'sm')}<b>${x.o.name}</b></span>${flags?` <small class="src">⚠ ${flags}</small>`:''}</td><td><span class="tier" style="background:${vc}">${vl}</span></td><td>${x.h==null?'—':x.h.toFixed(1)}</td>${cell(x.rTO-rND,rND,x.rTO)}${cell(x.rTD-rNO,rNO,x.rTD)}<td class="tl" style="white-space:normal;min-width:240px;font-size:11.5px">${key}</td></tr>`;
+  }).join('');
+  slateCard=`<div class="card"><div class="sechead">The 2026 slate — matchup verdicts</div><div class="scroll"><table><thead><tr><th class="tl">Opponent</th><th>Verdict</th><th>Holistic</th><th>O edge · their O vs our D</th><th>D edge · their D vs our O</th><th class="tl">Biggest tell</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note">Sorted toughest → most favorable. Edge = rank gap (their unit's league rank minus ours; <b>positive favors the Saints</b>, ±6 ≈ even). Verdict averages both edges. Tell = the most extreme tendency from the auto game-plan keys. <b>Click any row to open that opponent's full card.</b></p></div>`;
+  const tally=slate.reduce((a,x)=>{const v=verdict(x.edge)[0];a[v]=(a[v]||0)+1;return a;},{});
+  const tough=(tally['Tough']||0)+(tally['Very tough']||0), fav=(tally['Favorable']||0)+(tally['Clear edge']||0), evn=tally['Even']||0;
+  slateTile=`<div class="htile go" data-hgo="opponents"><span class="hl">2026 slate</span><span class="hv" style="color:${tough>=5?'#a23b3b':'#2e5496'}">${tough} tough</span><div class="hs">${evn} even · ${fav} favorable</div></div>`;
+ }
  const guide=[
-  ['1 · Overview','this page — the verdicts. Everything below is the evidence.'],
-  ['2 · Team Ratings','the league as a whole: 3-phase 0–100 ratings, adjustable holistic weights, benchmark detail.'],
+  ['1 · Overview','this page — pick any team for its profile; the Saints get the full 2026 matchup slate.'],
+  ['2 · Team Ratings','the league as a whole: 3-phase 0–100 ratings, adjustable holistic weights, pace & volume.'],
   ['3 · League Stats','league-wide stats — the two-axis EPA map, offense / defense rankings, QB / receiver / RB / defense boards, pass identity, 4th downs, luck.'],
-  ['4 · Opponents','one card per team (all 32): Matchup (the verdict + game-plan keys), Their Offense, Their Defense — each with live situational splits by play-type, score state & down.'],
-  ['5 · Field Position','interactive field charts: every throw and carry plotted, by QB / ball-carrier, with the zone tear sheet.'],
+  ['4 · Opponents','one card per team (all 32): Matchup (the verdict + game-plan keys), Their Offense, Their Defense — each with live situational splits.'],
+  ['5 · Field Position','interactive field charts + the situational tendency explorer, for any team.'],
   ['6 · Philosophy','reference: every staff, scheme and coaching lineage.']
  ].map(([a,b])=>`<li><b>${a}</b> — ${b}</li>`).join('');
  const hidden=[
   '<b>Every table sorts</b> — click a column header (click again to flip); the # column re-ranks live.',
-  '<b>Filters re-cut everything</b> — play-type, score state & down on any Opponent (and score-state on Field Position) recompute every visual live.',
+  '<b>Filters re-cut everything</b> — play-type, score state & down on any Opponent (and the Tendency explorer) recompute every visual live.',
   '<b>Hover for exact numbers</b> — chart bars, heat cells, volume maps and delta chips all carry tooltips.',
-  '<b>Raw tables hide under disclosures</b> — "View as sortable tables" beneath the passing volume map.',
-  '<b>Color language:</b> gold = Saints · blue/orange = above/below league frequency · green/red = good/bad for the unit shown · row tints = a team’s best/worst grouping.'
+  '<b>Team colors throughout</b> — logos, dumbbell bars and the tendency explorer theme to the selected team.',
+  '<b>Color language:</b> blue/orange = above/below league frequency · green/red = good/bad for the unit shown · red tick = league average.'
  ].map(x=>`<li>${x}</li>`).join('');
- // --- hero strip: the whole situation in one row ---
- const sh=(window.SHARP2026&&window.SHARP2026.teams.NO)||{};
- const rkq=r=>{const q=(32-r)/31;return q>=.6?'#1e7a34':q>=.33?'#b07d12':'#a23b3b';};
- const tally=slate.reduce((a,x)=>{const v=verdict(x.edge)[0];a[v]=(a[v]||0)+1;return a;},{});
- const tough=(tally['Tough']||0)+(tally['Very tough']||0), fav=(tally['Favorable']||0)+(tally['Clear edge']||0), evn=tally['Even']||0;
- const ht=(l,v,s,c,go)=>`<div class="htile${go?' go':''}"${go?` data-hgo="${go}"`:''}><span class="hl">${l}</span><span class="hv"${c?` style="color:${c}"`:''}>${v}</span>${s?`<div class="hs">${s}</div>`:''}</div>`;
+ // --- hero strip ---
+ const sh=(window.SHARP2026&&window.SHARP2026.teams[ab])||{};
+ const disc={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[sh.pen];
+ const ht=(l,v,sub,c,go)=>`<div class="htile${go?' go':''}"${go?` data-hgo="${go}"`:''}><span class="hl">${l}</span><span class="hv"${c?` style="color:${c}"`:''}>${v}</span>${sub?`<div class="hs">${sub}</div>`:''}</div>`;
  const hero=`<div class="hero">${
   ht('2025 holistic',hol[hIdx].h.toFixed(1),`${ord(hIdx+1)} of 32 · <b style="color:${tc}">${tn}</b>`,null,'ratings')+
-  ht('Offense',ord(rNO),'EPA/play rank',rkq(rNO),'epa')+
-  ht('Defense',ord(rND),'EPA/play rank',rkq(rND),'epa')+
+  ht('Offense',ord(rO),'EPA/play rank',rkq(rO),'epa')+
+  ht('Defense',ord(rD),'EPA/play rank',rkq(rD),'epa')+
+  ht('Special teams',ord(rST),'rating rank',rkq(rST),'ratings')+
   (sh.forecast?ht('2026 win total',sh.forecast.wins,`${ord(sh.forecast.div)} in division (Sharp)`):'')+
   (sh.sos?ht('Schedule',ord(sh.sos.rank),'easiest in the NFL',rkq(sh.sos.rank)):'')+
   (sh.rest?ht('Net rest edge',ord(sh.rest.net),'short weeks, negated bye',rkq(sh.rest.net)):'')+
-  (sh.pen?ht('Discipline',sh.pen,'Sharp penalty grade',{'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[sh.pen]):'')+
-  ht('2026 slate',`${tough} tough`,`${evn} even · ${fav} favorable`,tough>=5?'#a23b3b':'#2e5496','opponents')
+  (sh.pen?ht('Discipline',sh.pen,'Sharp penalty grade',disc):'')+
+  slateTile
  }</div>`;
+ // --- team selector ---
+ const teams=['NO',...Object.keys(NFLNAMES).filter(a=>a!=='NO').sort()];
+ const sel=`<div class="oppbtns" id="ovteams"><div class="oblab">Pick a team — the whole page refreshes</div>${teams.map(a=>`<button data-ovt="${a}" title="${teamName(a)}"${a===ab?' class="on"':''}>${teamLogo(a)}<span>${a}</span></button>`).join('')}</div>`;
+ const whoHead=isNO?'Who we are — 2025 baseline':`<span class="tcell">${teamLogo(ab,'sm')}${teamName(ab)}</span> — 2025 baseline`;
  s.innerHTML=`${pageHead('overview')}
+ ${sel}
  ${hero}
- <div class="card"><div class="sechead">Who we are — 2025 baseline <small class="src" style="color:#dfe6f2">· holistic ${hol[hIdx].h.toFixed(1)}, ${ord(hIdx+1)} overall · <span class="tier" style="background:${tc}">${tn}</span></small></div>
+ <div class="card"><div class="sechead">${whoHead} <small class="src" style="color:#dfe6f2">· holistic ${hol[hIdx].h.toFixed(1)}, ${ord(hIdx+1)} overall · <span class="tier" style="background:${tc}">${tn}</span></small></div>
  <div class="grid2"><div><div class="sechead o">Offense</div><ul class="keys">${off.map(x=>`<li>${x}</li>`).join('')}</ul></div>
  <div><div class="sechead d">Defense</div><ul class="keys">${deff.map(x=>`<li>${x}</li>`).join('')}</ul></div></div></div>
- ${schemeCard('NO','off')}
- ${sharpPanel('NO',{heroAbove:true})}
- <div class="card"><div class="sechead">The 2026 slate — matchup verdicts</div>${slateT}</div>
+ ${schemeCard(ab,'off')}
+ ${sharpPanel(ab,{heroAbove:true})}
+ ${slateCard}
  <div class="card"><div class="grid2"><div><div class="sechead">How this dashboard reads</div><ul class="keys">${guide}</ul></div>
  <div><div class="sechead">Don't miss</div><ul class="keys">${hidden}</ul></div></div></div>`;
+ s.querySelectorAll('[data-ovt]').forEach(b=>b.onclick=()=>{ovTeam=b.dataset.ovt;renderOverview();window.scrollTo(0,0);});
+ const onb=s.querySelector('#ovteams button.on');if(onb)paintOppBtn(onb,ab,true);
  s.querySelectorAll('[data-go]').forEach(r=>r.onclick=()=>gotoOpp(r.dataset.go));
  s.querySelectorAll('[data-hgo]').forEach(t=>t.onclick=()=>goSection(t.dataset.hgo));
 }
