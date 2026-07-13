@@ -299,7 +299,7 @@ select:hover{border-color:var(--navy3)}
 .tzsel{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 12px}
 .tzsel .zchip{flex:1 1 0;min-width:96px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;cursor:pointer;text-align:center;transition:border-color .12s,box-shadow .12s,background .12s}
 .tzsel .zchip:hover{border-color:var(--navy3)}
-.tzsel .zchip.on{background:var(--navy2);border-color:var(--navy2)}
+.tzsel .zchip.on{background:var(--tmac,var(--navy2));border-color:var(--tmac,var(--navy2))}
 .tzsel .zchip.on .zt,.tzsel .zchip.on .zn{color:#fff}
 .tzsel .zchip .zt{font-size:11.5px;font-weight:800;color:var(--navy2);line-height:1.15;display:block}
 .tzsel .zchip .zn{font-size:9px;font-weight:600;color:#8a93a3;margin-top:1px;display:block}
@@ -309,7 +309,7 @@ select:hover{border-color:var(--navy3)}
 .tqrow{display:grid;grid-template-columns:82px 1fr 96px;gap:8px;align-items:center;padding:3px 0}
 .tqlab{font-size:10px;font-weight:700;color:#5a6675;text-align:right;line-height:1.15}
 .tqtrack{position:relative;height:12px;background:#e8edf4;border-radius:6px}
-.tqtrack>i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,var(--navy2),#3a63a8);min-width:2px}
+.tqtrack>i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--tmac,var(--navy2));min-width:2px;opacity:.9}
 .tqtrack .lgtick{position:absolute;top:-3px;bottom:-3px;width:2.5px;background:#a23b3b;border-radius:2px;opacity:.85;transform:translateX(-1px)}
 .tqv{font-size:11px;font-weight:800;color:var(--ink);white-space:nowrap}
 .tqv small{font-weight:600;color:#98a2b3;font-size:9px}
@@ -1556,7 +1556,7 @@ function drawFieldPage(){
 // ---------- TENDENCY FIELD MAP — what they call, by zone × down/distance/score ----------
 // Slim rows = the scan layer: only stats that DEVIATE from this team's own cut-wide baseline get color.
 // Tap a zone to open its dossier: full call detail, down-by-down context, and the results layer.
-let TMAP={side:'off',down:'all',dist:'all',score:'all',zones:[],ptype:'all',outcome:'all',player:'',pa:'all',series:'all',after:'all',stage:'all',pgroup:'pass',psort:'epa',pdir:1};
+let TMAP={side:'off',down:'all',dist:'all',score:'all',zones:[],ptype:'all',outcome:'all',player:'',pa:'all',series:'all',prevtype:'all',prevresult:'all',stage:'all',pgroup:'pass',psort:'epa',pdir:1};
 function renderTendMap(){
  const body=$('#fieldbody');if(!body)return;
  const ab=curFZTeam;
@@ -1573,7 +1573,8 @@ function renderTendMap(){
   if(!ignoreZone&&TMAP.zones.length){const yl=p[I.yl];if(yl==null||!TMAP.zones.includes(zoneOf(yl)))return false;}
   if(TMAP.pa!=='all'){if(I.pa==null){if(TMAP.pa==='pa')return false;}else{if(TMAP.pa==='pa'&&p[I.pa]!==1)return false;if(TMAP.pa==='no'&&p[I.pa]===1)return false;}}
   if(TMAP.series==='first'&&p[I.sfirst]!==1)return false;if(TMAP.series==='later'&&p[I.sfirst]===1)return false;
-  if(TMAP.after!=='all'){const pt=p[I.prevpt],ps=p[I.prevsucc];if(TMAP.after==='run'&&pt!=='R')return false;if(TMAP.after==='pass'&&pt!=='P')return false;if(TMAP.after==='succ'&&ps!==1)return false;if(TMAP.after==='fail'&&ps!==0)return false;}
+  if(TMAP.prevtype!=='all'){const pt=p[I.prevpt];if(TMAP.prevtype==='run'&&pt!=='R')return false;if(TMAP.prevtype==='pass'&&pt!=='P')return false;}
+  if(TMAP.prevresult!=='all'){const ps=p[I.prevsucc];if(TMAP.prevresult==='succ'&&ps!==1)return false;if(TMAP.prevresult==='fail'&&ps!==0)return false;}
   if(TMAP.stage!=='all'){const ds=p[I.dseq];if(ds==null)return false;if(TMAP.stage==='open'&&ds!==1)return false;if(TMAP.stage==='early'&&!(ds>=2&&ds<=4))return false;if(TMAP.stage==='late'&&!(ds>=5))return false;}
   return true;};
  // play-type + outcome filter (applies to team AND league); player filter (team only)
@@ -1671,9 +1672,7 @@ function renderTendMap(){
    ${o.gk?barTick('Inside',o.inside,L.inside,8)+barTick('Off-tackle',o.offT,L.offT,8)+barTick('Edge',o.edge,L.edge,8)+`<div style="height:5px"></div>`+barTick('Left',o.dL,L.dL,8)+barTick('Middle',o.dM,L.dM,8)+barTick('Right',o.dR,L.dR,8):'<div class="tz-thin">no direction-charted runs in this cut</div>'}`:''}
    ${o.pN?`<span class="tt2">Throw depth — ${o.pN} dropbacks</span>
    ${barTick('Behind LOS',o.los,L.los,5)+barTick('Short 0–9',o.short,L.short,5)+barTick('Interm. 10–19',o.inter,L.inter,5)+barTick('Deep 20+',o.shot,L.shot,5)}
-   ${shareRows(o.rts,o.rTot,L.rts,L.rTot,3,x=>RT13[x])}`:''}
-   <span class="tt2">Personnel</span>
-   ${shareRows(o.pers,o.pTot,L.pers,L.pTot,3,x=>x+' pers',8)}</div>`;
+   ${shareRows(o.rts,o.rTot,L.rts,L.rTot,3,x=>RT13[x])}`:''}</div>`;
  } else {
   calls=`<div class="tzsec"><span class="tt">What they show${lgNote}</span>
    ${barTick('Pass faced',o.passRate,L.passRate,8)}
@@ -1681,10 +1680,10 @@ function renderTendMap(){
    ${barTick('8+ box',o.hbox,L.hbox,6)}
    ${barTick('Avg box',o.box,L.box,0.4,'y',[5,8])}
    <span class="tt2">Coverage family (vs pass)</span>
-   ${shareRows(o.covs,o.cTot,L.covs,L.cTot,4,x=>CN[x]||x)}
-   <span class="tt2">Personnel faced</span>
-   ${shareRows(o.pers,o.pTot,L.pers,L.pTot,3,x=>x+' pers',8)}</div>`;
+   ${shareRows(o.covs,o.cTot,L.covs,L.cTot,4,x=>CN[x]||x)}</div>`;
  }
+ // personnel block (moved to fill the space under Results)
+ const personnelBlock=`<div class="tzsec"><span class="tt">Personnel${inv?' faced':''}${lgNote}</span>${shareRows(o.pers,o.pTot,L.pers,L.pTot,5,x=>x+' personnel',8)||'<div class="tz-thin">no personnel charting in this cut</div>'}</div>`;
  // ---- RESULTS (always expanded) ----
  const results=`<div class="tzsec"><span class="tt">Results${inv?' allowed':''}</span>
   <div class="tzstat">${st(fmtE(o.epa),'EPA/play',eCol(o.epa),'lg '+fmtE(L.epa))+st(fp(o.succ),'Success%',null,'lg '+fp(L.succ))+st(fp(o.expl),'Explosive%',null,'lg '+fp(L.expl))+st(o.td,'TD'+(inv?' allw':''))}</div>
@@ -1705,11 +1704,11 @@ function renderTendMap(){
    {lab:'1st play of series',zp:pass.filter(p=>p[P_sf]===1),zr:rush.filter(p=>p[R_sf]===1)},
    {lab:'After 1st down (later)',zp:pass.filter(p=>p[P_sf]!==1),zr:rush.filter(p=>p[R_sf]!==1)}]);
  const prevTbl=splitTable('By previous play (same drive)',[
-   {lab:'After a run',zp:pass.filter(p=>p[P_pt]==='R'),zr:rush.filter(p=>p[R_pt]==='R')},
-   {lab:'After a pass',zp:pass.filter(p=>p[P_pt]==='P'),zr:rush.filter(p=>p[R_pt]==='P')},
-   {lab:'After a success',zp:pass.filter(p=>p[P_ps]===1),zr:rush.filter(p=>p[R_ps]===1)},
-   {lab:'After a failure',zp:pass.filter(p=>p[P_ps]===0),zr:rush.filter(p=>p[R_ps]===0)}],
-   'Rows overlap (a play can be both “after a run” and “after a success”). Drive-opening plays are excluded.');
+   {lab:'After successful run',zp:pass.filter(p=>p[P_pt]==='R'&&p[P_ps]===1),zr:rush.filter(p=>p[R_pt]==='R'&&p[R_ps]===1)},
+   {lab:'After failed run',zp:pass.filter(p=>p[P_pt]==='R'&&p[P_ps]===0),zr:rush.filter(p=>p[R_pt]==='R'&&p[R_ps]===0)},
+   {lab:'After successful pass',zp:pass.filter(p=>p[P_pt]==='P'&&p[P_ps]===1),zr:rush.filter(p=>p[R_pt]==='P'&&p[R_ps]===1)},
+   {lab:'After failed pass',zp:pass.filter(p=>p[P_pt]==='P'&&p[P_ps]===0),zr:rush.filter(p=>p[R_pt]==='P'&&p[R_ps]===0)}],
+   'Mutually exclusive; drive-opening plays are excluded. Use the Prev play / Prev result filters above to drill into any one.');
  const stageTbl=splitTable('By drive stage',[
    {lab:'Opening play',zp:pass.filter(p=>p[P_ds]===1),zr:rush.filter(p=>p[R_ds]===1)},
    {lab:'Early (2–4)',zp:pass.filter(p=>p[P_ds]>=2&&p[P_ds]<=4),zr:rush.filter(p=>p[R_ds]>=2&&p[R_ds]<=4)},
@@ -1763,7 +1762,8 @@ function renderTendMap(){
  const row2=`<div style="display:flex;flex-wrap:wrap;align-items:flex-end">${
   TMAP.side==='off'?seg('pa',TMAP.pa,[['all','All'],['pa','Play-action'],['no','No PA']],'Play-action'):''}${
   seg('series',TMAP.series,[['all','All'],['first','1st of series'],['later','Later downs']],'Series')}${
-  seg('after',TMAP.after,[['all','All'],['run','After run'],['pass','After pass'],['succ','After success'],['fail','After failure']],'Previous play')}${
+  seg('prevtype',TMAP.prevtype,[['all','All'],['run','After run'],['pass','After pass']],'Prev play')}${
+  seg('prevresult',TMAP.prevresult,[['all','All'],['succ','After success'],['fail','After failure']],'Prev result')}${
   seg('stage',TMAP.stage,[['all','All'],['open','Opening'],['early','Early (2–4)'],['late','Late (5+)']],'Drive stage')}</div>`;
  // horizontal, left-to-right zone FILTER (multi-select); counts are zone-agnostic within the cut
  const passNZ=src.pass.filter(p=>keep(p,IX.pass,false,true)), rushNZ=src.rush.filter(p=>keep(p,IX.rush,false,true));
@@ -1773,8 +1773,8 @@ function renderTendMap(){
   ident=`<p class="note" style="margin:0 0 8px"><b>Season identity:</b> <b style="color:var(--navy2)">${f.fam}</b> — ${f.why}.</p>`;}}
  const summary=`<div class="tzstat" style="grid-template-columns:repeat(5,1fr);margin:8px 0 12px">${
   st(o.n,'Snaps')+st(fp(o.passRate),'Pass rate',null,'lg '+fp(L.passRate))+st(fmtE(o.epa),inv?'EPA allowed':'EPA/play',eCol(o.epa),'lg '+fmtE(L.epa))+st(fp(o.succ),'Success%',null,'lg '+fp(L.succ))+st(fp(o.expl),'Explosive%',null,'lg '+fp(L.expl))}</div>`;
- const activeCut=[TMAP.ptype!=='all'?({pass:'passes',run:'runs'}[TMAP.ptype]):'',TMAP.outcome!=='all'?({succ:'successful',expl:'explosive',td:'TD'}[TMAP.outcome]):'',TMAP.player?TMAP.player:'',qtrNote(),TMAP.zones.length?TMAP.zones.map(z=>ZSHORT[z]).join(' + '):'',TMAP.pa!=='all'?(TMAP.pa==='pa'?'play-action':'no PA'):'',TMAP.series!=='all'?(TMAP.series==='first'?'1st of series':'later downs'):'',TMAP.after!=='all'?('after '+({run:'run',pass:'pass',succ:'success',fail:'failure'}[TMAP.after])):'',TMAP.stage!=='all'?({open:'opening play',early:'early in drive',late:'late in drive'}[TMAP.stage]):''].filter(Boolean).join(' · ');
- body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(ab)}">
+ const activeCut=[TMAP.ptype!=='all'?({pass:'passes',run:'runs'}[TMAP.ptype]):'',TMAP.outcome!=='all'?({succ:'successful',expl:'explosive',td:'TD'}[TMAP.outcome]):'',TMAP.player?TMAP.player:'',qtrNote(),TMAP.zones.length?TMAP.zones.map(z=>ZSHORT[z]).join(' + '):'',TMAP.pa!=='all'?(TMAP.pa==='pa'?'play-action':'no PA'):'',TMAP.series!=='all'?(TMAP.series==='first'?'1st of series':'later downs'):'',(TMAP.prevtype!=='all'||TMAP.prevresult!=='all')?('after '+[{succ:'successful',fail:'failed'}[TMAP.prevresult]||'',{run:'run',pass:'pass'}[TMAP.prevtype]||(TMAP.prevresult!=='all'?'play':'')].filter(Boolean).join(' ')):'',TMAP.stage!=='all'?({open:'opening play',early:'early in drive',late:'late in drive'}[TMAP.stage]):''].filter(Boolean).join(' · ');
+ body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(ab)};--tmac:${teamColor(ab)}">
   <h2 style="margin-top:0" class="tchip">${teamLogo(ab)}${teamName(ab)} — tendency explorer ${TMAP.side==='off'?'(offense)':'(defense)'}</h2>
   <p class="note" style="margin:0 0 10px">Everything ${TMAP.side==='off'?'they call':'their defense shows'} for the situation you pick — <b>no clicking to expand</b>. Stack any filters below (field zone, quarter, down &amp; distance, play-action, series, previous play, drive stage); the calls, results, splits and player tables all recut live${activeCut?`. <b>Now showing:</b> ${activeCut}`:'.'}</p>
   ${row1}
@@ -1784,7 +1784,7 @@ function renderTendMap(){
   ${row2}
   ${ident}
   ${summary}
-  <div class="grid2">${calls}${results}</div>
+  <div class="grid2">${calls}<div style="display:flex;flex-direction:column;gap:12px">${results}${personnelBlock}</div></div>
   <div class="fsub" style="margin-top:10px">Situational splits <span class="hint">how the calls &amp; results shift, within the current cut</span></div>
   ${splitsHtml}
   <div style="margin-top:12px">${playersHtml}</div>
@@ -1792,7 +1792,7 @@ function renderTendMap(){
  </div>`;
  body.querySelectorAll('[data-tzsel]').forEach(b=>b.onclick=()=>{const z=b.dataset.tzsel,i=TMAP.zones.indexOf(z);if(i<0)TMAP.zones.push(z);else TMAP.zones.splice(i,1);renderTendMap();});
  bindQtrChips(body,renderTendMap);
- ['side','down','dist','score','ptype','outcome','pa','series','after','stage','pgroup'].forEach(k=>{const dk='data-tm-'+k;body.querySelectorAll('['+dk+']').forEach(b=>b.onclick=()=>{TMAP[k]=b.getAttribute(dk);renderTendMap();});});
+ ['side','down','dist','score','ptype','outcome','pa','series','prevtype','prevresult','stage','pgroup'].forEach(k=>{const dk='data-tm-'+k;body.querySelectorAll('['+dk+']').forEach(b=>b.onclick=()=>{TMAP[k]=b.getAttribute(dk);renderTendMap();});});
  const psel=body.querySelector('#tmplayer');if(psel)psel.onchange=e=>{TMAP.player=e.target.value;renderTendMap();};
  body.querySelectorAll('[data-tm-psort]').forEach(th=>th.onclick=()=>{const k=th.dataset.tmPsort;if(TMAP.psort===k)TMAP.pdir=-TMAP.pdir;else{TMAP.psort=k;TMAP.pdir=1;}renderTendMap();});
 }
