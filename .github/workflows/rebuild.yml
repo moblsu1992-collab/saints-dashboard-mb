@@ -46,6 +46,10 @@ jobs:
         shell: pwsh
         run: ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir . -Year ([int]$env:SEASON)
 
+      - name: Rebuild special-teams dataset
+        shell: pwsh
+        run: ./build_st.ps1 -Gz pbp.csv.gz -OutDir . -Year ([int]$env:SEASON)
+
       - name: Commit refreshed data
         run: |
           rm -f pbp.csv.gz part.csv ftn.csv
