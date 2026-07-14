@@ -1511,7 +1511,9 @@ function drawOpp(){
 
 // ---------- FIELD POSITION (zone tear sheets) ----------
 let curFZTeam='NO', FIELDMODE='pass';
-const FFILT={qb:'ALL',rec:'ALL',run:'ALL',zone:'ALL',gap:'ALL',dir:'ALL',lane:'ALL',form:'ALL',route:'ALL',outcome:'ALL',down:'ALL',depth:'ALL',qtrs:[],vis:{C:1,I:1,N:1},sel:null};
+const FFILT={qb:'ALL',rec:'ALL',run:'ALL',zone:'ALL',gap:'ALL',dir:'ALL',lane:'ALL',form:'ALL',route:'ALL',outcome:'ALL',down:'ALL',depth:'ALL',pers:'ALL',qtrs:[],vis:{C:1,I:1,N:1},sel:null};
+// Personnel code -> friendly option label, e.g. "11 · 1RB 1TE 3WR" (WR = 5 - backs - TE).
+function persTag(c){const b=+c[0],te=+c[1],wr=Math.max(0,5-b-te);return c+' · '+b+'RB '+te+'TE '+wr+'WR';}
 // quarter multi-select (shared across Field Position modes). qtrs=[] means all quarters.
 const QTRLAB={1:'Q1',2:'Q2',3:'Q3',4:'Q4',5:'OT'};
 function fqtrKeep(arr,ix){return FFILT.qtrs.length?arr.filter(p=>FFILT.qtrs.includes(p[ix])):arr;}
@@ -1522,13 +1524,13 @@ function qtrNote(){return FFILT.qtrs.length?FFILT.qtrs.slice().sort().map(q=>QTR
 let RUNBRK='poa'; // rush-tendency breakdown dimension: poa|zone|form|down
 let PASSBRK='route'; // pass-tendency breakdown dimension: route|depth|zone|form|down
 const PLAYCACHE={}; let CURPLAYS=null;
-function resetFieldFilters(){FFILT.qb='ALL';FFILT.rec='ALL';FFILT.run='ALL';FFILT.zone='ALL';FFILT.gap='ALL';FFILT.dir='ALL';FFILT.lane='ALL';FFILT.form='ALL';FFILT.route='ALL';FFILT.outcome='ALL';FFILT.down='ALL';FFILT.depth='ALL';FFILT.sel=null;}
+function resetFieldFilters(){FFILT.qb='ALL';FFILT.rec='ALL';FFILT.run='ALL';FFILT.zone='ALL';FFILT.gap='ALL';FFILT.dir='ALL';FFILT.lane='ALL';FFILT.form='ALL';FFILT.route='ALL';FFILT.outcome='ALL';FFILT.down='ALL';FFILT.depth='ALL';FFILT.pers='ALL';FFILT.sel=null;}
 const DEPTHLAB={b:'behind LOS',s:'short',i:'intermediate',d:'deep'};
 const ORD4=['','1st','2nd','3rd','4th'];
 // Toggle one or more filters at once (fk/fv may be '+'/'|'-joined for combined cells like zone+dir).
 function applyChipFilter(fk,fv){const keys=String(fk).split('+'),vals=String(fv).split('|');const same=keys.every((k,i)=>String(FFILT[k])===vals[i]);keys.forEach((k,i)=>{FFILT[k]=same?'ALL':vals[i];});FFILT.sel=null;renderFieldChart();}
 function runOutcomeMatch(p,oc){return oc==='td'?p[10]===1:oc==='fum'?p[11]===1:oc==='expl'?p[7]>=10:oc==='succ'?p[9]===1:true;}
-function activeFilterBar(mode){const parts=[];if(FFILT.qtrs.length)parts.push(qtrNote());if(FFILT.zone!=='ALL')parts.push(FFILT.zone+' zone');if(FFILT.down!=='ALL')parts.push(ORD4[+FFILT.down]+' down');
+function activeFilterBar(mode){const parts=[];if(FFILT.qtrs.length)parts.push(qtrNote());if(FFILT.pers!=='ALL')parts.push(FFILT.pers+' personnel');if(FFILT.zone!=='ALL')parts.push(FFILT.zone+' zone');if(FFILT.down!=='ALL')parts.push(ORD4[+FFILT.down]+' down');
  if(mode==='run'){if(FFILT.run!=='ALL')parts.push(FFILT.run);if(FFILT.dir!=='ALL')parts.push(DIRN[+FFILT.dir]);if(FFILT.gap!=='ALL')parts.push(GAPN[+FFILT.gap]+' gap');if(FFILT.form!=='ALL')parts.push({S:'shotgun',U:'under center',P:'pistol'}[FFILT.form]);if(FFILT.outcome!=='ALL')parts.push({td:'TDs only',fum:'fumbles only',expl:'10+ yd only',succ:'successful only'}[FFILT.outcome]);}
  else{if(FFILT.qb!=='ALL')parts.push(FFILT.qb);if(FFILT.rec!=='ALL')parts.push('→ '+FFILT.rec);if(FFILT.lane!=='ALL')parts.push(['left','middle','right'][+FFILT.lane]+' lane');if(FFILT.depth!=='ALL')parts.push(DEPTHLAB[FFILT.depth]);if(FFILT.form!=='ALL')parts.push({S:'shotgun',U:'under center',P:'pistol'}[FFILT.form]);if(FFILT.route!=='ALL')parts.push(RT13[+FFILT.route]);if(FFILT.outcome!=='ALL')parts.push({td:'TDs only',int:'INTs only',comp:'completions only',succ:'successful only',expl:'15+ gains only',drop:'drops only'}[FFILT.outcome]);}
  if(!parts.length)return '';
@@ -1968,7 +1970,11 @@ function renderFieldChart(){
  const recCount={};byQb.forEach(p=>{if(p[3])recCount[p[3]]=(recCount[p[3]]||0)+1;});
  const recs=Object.keys(recCount).sort((a,b)=>recCount[b]-recCount[a]);
  if(FFILT.rec!=='ALL'&&!recCount[FFILT.rec])FFILT.rec='ALL';
+ const persCount={};all.forEach(p=>{const c=p[14];if(c!=null)persCount[c]=(persCount[c]||0)+1;});
+ const persList=Object.keys(persCount).sort((a,b)=>persCount[b]-persCount[a]);
+ if(FFILT.pers!=='ALL'&&!persCount[FFILT.pers])FFILT.pers='ALL';
  let sel=FFILT.rec==='ALL'?byQb:byQb.filter(p=>p[3]===FFILT.rec);
+ if(FFILT.pers!=='ALL')sel=sel.filter(p=>String(p[14])===FFILT.pers);
  if(FFILT.zone!=='ALL')sel=sel.filter(p=>zoneOf(p[6])===FFILT.zone);
  if(FFILT.lane!=='ALL')sel=sel.filter(p=>String(p[5])===FFILT.lane);
  if(FFILT.route!=='ALL')sel=sel.filter(p=>String(p[18])===FFILT.route);
@@ -1985,6 +1991,7 @@ function renderFieldChart(){
  const zoneSel=`<div class="fc-group"><label>Field zone</label><select id="fzone"><option value="ALL">All zones</option>${ZN.map(z=>`<option value="${z}"${z===FFILT.zone?' selected':''}>${z}</option>`).join('')}</select></div>`;
  const laneSel=`<div class="fc-group"><label>Lane</label><select id="flane"><option value="ALL">All lanes</option>${['left','middle','right'].map((d,i)=>`<option value="${i}"${String(i)===FFILT.lane?' selected':''}>${d}</option>`).join('')}</select></div>`;
  const downSel=`<div class="fc-group"><label>Down</label><select id="fdown"><option value="ALL">All downs</option>${[1,2,3,4].map(dn=>`<option value="${dn}"${String(dn)===FFILT.down?' selected':''}>${ORD4[dn]}</option>`).join('')}</select></div>`;
+ const persSel=`<div class="fc-group"><label>Personnel</label><select id="fpers"><option value="ALL">All personnel</option>${persList.map(c=>`<option value="${c}"${c===FFILT.pers?' selected':''}>${persTag(c)} (${persCount[c]})</option>`).join('')}</select></div>`;
  const legend=`<div class="flegend">${Object.entries(OUT).map(([k,v])=>`<span class="lgchip${FFILT.vis[k]?'':' off'}" data-vis="${k}"><span class="lgdot" style="background:${v.c}"></span>${v.lab}</span>`).join('')}<span class="lgchip" style="cursor:default"><span class="lgdot" style="background:#fff;box-shadow:0 0 0 1.3px #caa84e inset"></span>TD</span></div>`;
  const detail=`<div class="fdetail" id="fdetail">${FFILT.sel!=null&&CUR_SEL[FFILT.sel]?passDetail(CUR_SEL[FFILT.sel]):'<span class="muted">Tap any throw to see the play detail.</span>'}</div>`;
  // aggregates over sel (all outcomes)
@@ -2025,7 +2032,7 @@ function renderFieldChart(){
  const routeRows=rKeys.map(r=>{const use=100*rt[r].n/rtot,e=fmean(rt[r].ep),w=100*rt[r].n/rMax,on=String(FFILT.route)===String(r),td=rt[r].td;return `<div class="rtrow clk${on?' on':''}" data-fk="route" data-fv="${r}" title="${rt[r].n} targets · ${td} TD — tap to filter the map to ${RT13[r]}"><span class="rn">${RT13[r]}</span><span class="rb"><i style="width:${w.toFixed(0)}%"></i></span><span class="rv" style="color:${e==null?'#888':(e>=0?'#1e7a34':'#b23b3b')}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="rtd${td?'':' z'}">${td} TD</span><span class="rk">${use.toFixed(0)}%</span></div>`;}).join('');
  const routePanel=rtot?`<div class="fsub" style="margin-top:14px">Route distribution <span class="hint">usage · EPA · TDs · tap a route to filter · of ${rtot} charted targets</span></div>${routeRows}`:'';
  const agg=`<div class="fsub">${teamName(curFZTeam)} passing — 2025</div>${activeFilterBar('pass')}<div class="fstatrow">${tiles}</div>${sub2}${breakdown}<div class="fsub" style="margin-top:14px">EPA / play by field zone <span class="hint">tap to filter</span></div>${zoneBars}<div class="fsub" style="margin-top:14px">Top targets <span class="hint">tap a row to filter</span></div>${recTable}${routePanel}`;
- body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — passing</h3><div class="fieldwrap"><div><div class="fctrls">${qbSel}${recSel}${laneSel}${zoneSel}${downSel}${qtrChips()}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a throw, placed at its <b>target's field position</b> (line of scrimmage − air yards) and passing lane (jittered L/M/R). Colored by outcome; gold ring = touchdown. Tap a throw for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
+ body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — passing</h3><div class="fieldwrap"><div><div class="fctrls">${qbSel}${recSel}${persSel}${laneSel}${zoneSel}${downSel}${qtrChips()}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a throw, placed at its <b>target's field position</b> (line of scrimmage − air yards) and passing lane (jittered L/M/R). Colored by outcome; gold ring = touchdown. Tap a throw for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
  bindFieldChart();
 }
 function passDetail(p){return `<div class="big">${p[2]} → ${p[3]||'—'} <span style="color:${OUT[p[12]].c}">●</span></div><div>${OUT[p[12]].lab}${p[13]?' · TD':''} · ${p[4]} air yds (${DIRN[p[5]]||'—'}) · ${p[8]} yds gained${p[9]!=null?' ('+p[9]+' YAC)':''}</div><div class="muted">Wk ${p[0]} vs ${p[1]} · from ${fieldDesc(p[6])} · ${p[7]!=null?p[7]+(['','st','nd','rd','th'][p[7]]||'th')+' down · ':''}EPA ${p[10]==null?'—':(p[10]>0?'+':'')+p[10]}</div>`;}
@@ -2035,8 +2042,12 @@ function renderRunChart(){
  const rc={};all.forEach(p=>{rc[p[2]]=(rc[p[2]]||0)+1;});
  const runs=Object.keys(rc).sort((a,b)=>rc[b]-rc[a]);
  if(FFILT.run!=='ALL'&&!rc[FFILT.run])FFILT.run='ALL';
+ const persCount={};all.forEach(p=>{const c=p[12];if(c!=null)persCount[c]=(persCount[c]||0)+1;});
+ const persList=Object.keys(persCount).sort((a,b)=>persCount[b]-persCount[a]);
+ if(FFILT.pers!=='ALL'&&!persCount[FFILT.pers])FFILT.pers='ALL';
  // base = all run-chart filters EXCEPT gap/dir (feeds the run-gap fan so it always shows all 7 gaps); sel adds gap/dir.
  let base=FFILT.run==='ALL'?all:all.filter(p=>p[2]===FFILT.run);
+ if(FFILT.pers!=='ALL')base=base.filter(p=>String(p[12])===FFILT.pers);
  if(FFILT.zone!=='ALL')base=base.filter(p=>zoneOf(p[5])===FFILT.zone);
  if(FFILT.form!=='ALL')base=base.filter(p=>p[17]===FFILT.form);
  if(FFILT.down!=='ALL')base=base.filter(p=>String(p[6])===FFILT.down);
@@ -2052,6 +2063,7 @@ function renderRunChart(){
  const gapSel=`<div class="fc-group"><label>Gap</label><select id="fgap"><option value="ALL">All gaps</option>${GAPN.map((g,i)=>`<option value="${i}"${String(i)===FFILT.gap?' selected':''}>${g}</option>`).join('')}</select></div>`;
  const dirSel=`<div class="fc-group"><label>Direction</label><select id="fdir"><option value="ALL">All</option>${DIRN.map((d,i)=>`<option value="${i}"${String(i)===FFILT.dir?' selected':''}>${d}</option>`).join('')}</select></div>`;
  const zoneSel=`<div class="fc-group"><label>Field zone</label><select id="fzone"><option value="ALL">All zones</option>${ZN.map(z=>`<option value="${z}"${z===FFILT.zone?' selected':''}>${z}</option>`).join('')}</select></div>`;
+ const persSel=`<div class="fc-group"><label>Personnel</label><select id="fpers"><option value="ALL">All personnel</option>${persList.map(c=>`<option value="${c}"${c===FFILT.pers?' selected':''}>${persTag(c)} (${persCount[c]})</option>`).join('')}</select></div>`;
  const legend=`<div class="flegend"><span class="lgchip" style="cursor:default"><span class="lgdot" style="background:${epaColor(-0.6)}"></span>worse play (− EPA)</span><span class="lgchip" style="cursor:default"><span class="lgdot" style="background:${epaColor(0.6)}"></span>better play (+ EPA)</span><span class="lgchip" style="cursor:default"><span class="lgdot" style="background:#fff;box-shadow:0 0 0 1.3px #caa84e inset"></span>TD</span></div>`;
  const detail=`<div class="fdetail" id="fdetail">${FFILT.sel!=null&&CUR_SEL[FFILT.sel]?runDetail(CUR_SEL[FFILT.sel]):'<span class="muted">Tap any carry to see the play detail.</span>'}</div>`;
  const n=sel.length,td=sel.filter(p=>p[10]===1).length,fum=sel.filter(p=>p[11]===1).length;
@@ -2079,7 +2091,7 @@ function renderRunChart(){
  const crows=Object.entries(cg).sort((a,b)=>b[1].c-a[1].c).slice(0,8).map(([run,t])=>{const e=fmean(t.ep);return `<tr data-fk="run" data-fv="${run}" class="${FFILT.run===run?'sel':''}"><td>${run}</td><td>${t.c}</td><td>${(t.y/t.c).toFixed(1)}</td><td>${t.td}</td><td>${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</td></tr>`;}).join('');
  const carTable=`<table class="frecs"><thead><tr><th>Carrier</th><th>Att</th><th>Y/C</th><th>TD</th><th>EPA</th></tr></thead><tbody>${crows||'<tr><td colspan="5" class="muted">no carries</td></tr>'}</tbody></table>`;
  const agg=`<div class="fsub">${teamName(curFZTeam)} rushing — 2025</div>${activeFilterBar('run')}<div class="fstatrow">${tiles}</div>${oboxNote}${breakdown}<div class="fsub" style="margin-top:14px">EPA / play by field zone <span class="hint">tap to filter</span></div>${zoneBars}<div class="fsub" style="margin-top:14px">Top carriers <span class="hint">tap a row to filter</span></div>${carTable}`;
- body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — rushing</h3><div class="fieldwrap"><div><div class="fctrls">${runSel}${gapSel}${dirSel}${zoneSel}${downSel}${qtrChips()}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a carry at its line of scrimmage, by run direction (jittered L/M/R). Colored by EPA (red = lost value, green = gained); gold ring = touchdown. Tap a carry for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
+ body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(curFZTeam)}"><h3 class="tchip" style="margin:0 0 10px;font-size:15px">${teamLogo(curFZTeam)}${teamName(curFZTeam)} — rushing</h3><div class="fieldwrap"><div><div class="fctrls">${runSel}${persSel}${gapSel}${dirSel}${zoneSel}${downSel}${qtrChips()}</div><div class="fsvgwrap">${svg}</div>${legend}${detail}</div><div class="fagg">${agg}</div></div><p class="note">Each dot is a carry at its line of scrimmage, by run direction (jittered L/M/R). Colored by EPA (red = lost value, green = gained); gold ring = touchdown. Tap a carry for detail. ${teamName(curFZTeam)} · 2025.</p></div>`;
  bindFieldChart();
 }
 function runDetail(p){return `<div class="big">${p[2]} <span style="color:${epaColor(p[8])}">●</span></div><div>${GAPN[p[3]]!=null?'off '+(DIRN[p[4]]||'')+' '+GAPN[p[3]]:(DIRN[p[4]]||'')+' side'} · ${p[7]} yds${p[10]?' · TD':''}${p[11]?' · FUMBLE LOST':''}</div><div class="muted">Wk ${p[0]} vs ${p[1]} · from ${fieldDesc(p[5])} · ${p[6]!=null?p[6]+(['','st','nd','rd','th'][p[6]]||'th')+' down · ':''}EPA ${p[8]==null?'—':(p[8]>0?'+':'')+p[8]}</div>`;}
@@ -2093,6 +2105,7 @@ function bindFieldChart(){
  const fd=$('#fdir');if(fd)fd.onchange=e=>{FFILT.dir=e.target.value;FFILT.sel=null;renderFieldChart();};
  const fl=$('#flane');if(fl)fl.onchange=e=>{FFILT.lane=e.target.value;FFILT.sel=null;renderFieldChart();};
  const fdn=$('#fdown');if(fdn)fdn.onchange=e=>{FFILT.down=e.target.value;FFILT.sel=null;renderFieldChart();};
+ const fp=$('#fpers');if(fp)fp.onchange=e=>{FFILT.pers=e.target.value;FFILT.sel=null;renderFieldChart();};
  body.querySelectorAll('[data-brk]').forEach(b=>b.onclick=()=>{if(FIELDMODE==='run')RUNBRK=b.dataset.brk;else PASSBRK=b.dataset.brk;renderFieldChart();});
  body.querySelectorAll('.lgchip[data-vis]').forEach(c=>c.onclick=()=>{FFILT.vis[c.dataset.vis]=!FFILT.vis[c.dataset.vis];renderFieldChart();});
  body.querySelectorAll('[data-fk]').forEach(el=>el.onclick=()=>applyChipFilter(el.dataset.fk,el.dataset.fv));
