@@ -36,7 +36,8 @@ jobs:
           curl -sSL --retry 3 -o roster.csv  "$base/weekly_rosters/roster_weekly_${SEASON}.csv"
           curl -sSL --retry 3 -o pfrrush.csv "$base/pfr_advstats/advstats_week_rush_${SEASON}.csv"
           curl -sSL --retry 3 -o pfrdef.csv  "$base/pfr_advstats/advstats_week_def_${SEASON}.csv"
-          ls -lh pbp.csv.gz part.csv ftn.csv roster.csv pfrrush.csv pfrdef.csv
+          curl -sSL --retry 3 -o games.csv   "$base/schedules/games.csv"
+          ls -lh pbp.csv.gz part.csv ftn.csv roster.csv pfrrush.csv pfrdef.csv games.csv
 
       - name: Rebuild play-level data
         shell: pwsh
@@ -49,6 +50,12 @@ jobs:
       - name: Rebuild special-teams dataset
         shell: pwsh
         run: ./build_st.ps1 -Gz pbp.csv.gz -OutDir . -Year ([int]$env:SEASON)
+
+      # Schedule for the UPCOMING season (matchups + rest for the fantasy start/sit + week board),
+      # which is one year ahead of the play-data SEASON until that season kicks off.
+      - name: Rebuild schedule
+        shell: pwsh
+        run: ./build_sched.ps1 -Games games.csv -OutDir . -Year ([int]$env:SEASON + 1)
 
       - name: Commit refreshed data
         run: |
