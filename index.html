@@ -2854,6 +2854,59 @@ function drawFanBoard(){
  box.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>{BOARD.pos=b.dataset.bp;drawFanBoard();});
  box.querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>{const v=b.dataset.bg;BOARD.game=(BOARD.game===v)?'':v;drawFanBoard();});
 }
+// ---- the selected player's own 2025 snaps, from our play-by-play ----
+const COVN={C0:'Cover 0',C1:'Cover 1',C2:'Cover 2',C3:'Cover 3',C4:'Cover 4',C6:'Cover 6',C9:'Cover 9','2M':'2-Man',CMB:'Combo'};
+const BOXN={light:'Light box (≤6)',neutral:'Neutral box (7)',heavy:'Heavy box (8+)'};
+function playerPlays(pl,pos){
+ const O=(window.PLAYS||{})[pl.team];if(!O)return [];
+ const nm=shortOf(pl.name);
+ return pos==='RB'?O.rush.filter(p=>p[2]===nm):pos==='QB'?O.pass.filter(p=>p[2]===nm):O.pass.filter(p=>p[3]===nm);
+}
+// Top-line production: our own EPA/success from the pbp, plus the PFF charting extras.
+function playerTopline(pl,pos){
+ const P=playerPlays(pl,pos),n=P.length;
+ if(!n)return null;
+ if(pos==='RB'){
+  const O=window.PLAYS[pl.team],nm=shortOf(pl.name),rec=O.pass.filter(p=>p[3]===nm);
+  return {n,lab:'Carries',yds:P.reduce((s,p)=>s+(p[RI.yg]||0),0),td:P.filter(p=>p[RI.td]===1).length,
+   epa:fmean(P.map(p=>p[RI.epa])),succ:fmean(P.map(p=>p[RI.succ])),expl:P.filter(p=>p[RI.yg]>=10).length,
+   rec:rec.filter(p=>p[12]==='C').length,recEpa:rec.length?fmean(rec.map(p=>p[PI.epa])):null,recN:rec.length};
+ }
+ if(pos==='QB'){
+  return {n,lab:'Dropbacks',yds:P.reduce((s,p)=>s+(p[PI.yg]||0),0),td:P.filter(p=>p[PI.td]===1).length,
+   epa:fmean(P.map(p=>p[PI.epa])),succ:fmean(P.map(p=>p[PI.succ])),expl:P.filter(p=>p[PI.yg]>=15).length,
+   comp:100*P.filter(p=>p[PI.out]==='C').length/n,intc:P.filter(p=>p[PI.out]==='N').length,
+   cpoe:fmean(P.map(p=>p[PI.cpoe]).filter(x=>x!=null))};
+ }
+ return {n,lab:'Targets',yds:P.filter(p=>p[PI.out]==='C').reduce((s,p)=>s+(p[PI.yg]||0),0),td:P.filter(p=>p[PI.td]===1).length,
+  epa:fmean(P.map(p=>p[PI.epa])),succ:fmean(P.map(p=>p[PI.succ])),expl:P.filter(p=>p[PI.yg]>=15).length,
+  rec:P.filter(p=>p[PI.out]==='C').length,adot:fmean(P.map(p=>p[PI.ay])),
+  cpoe:fmean(P.map(p=>p[PI.cpoe]).filter(x=>x!=null))};
+}
+// Scheme fit: his EPA against each look, weighted by how often THIS defence actually shows it,
+// alongside what that defence gives up in the same look. Coverage for QB/WR/TE, box count for RB.
+function schemeFit(pl,pos,T){
+ const useBox=pos==='RB', IXp=useBox?RI:PI;
+ const bucket=p=>{
+  if(useBox){const b=p[RI.box];return b==null?null:(b<=6?'light':b>=8?'heavy':'neutral');}
+  return p[PI.cov]||null;
+ };
+ const D=teamDefense(T), dPlays=useBox?D.rush:D.pass;
+ const dg={};dPlays.forEach(p=>{const k=useBox?(p[RI.box]==null?null:(p[RI.box]<=6?'light':p[RI.box]>=8?'heavy':'neutral')):(p[PI.cov]||null);
+  if(!k)return;(dg[k]=dg[k]||{n:0,ep:[]});dg[k].n++;const e=p[useBox?RI.epa:PI.epa];if(e!=null)dg[k].ep.push(e);});
+ const dTot=Object.values(dg).reduce((s,o)=>s+o.n,0);
+ const dBase=fmean(dPlays.map(p=>p[useBox?RI.epa:PI.epa]).filter(x=>x!=null));
+ const mine=playerPlays(pl,pos), mg={};
+ mine.forEach(p=>{const k=bucket(p);if(!k)return;(mg[k]=mg[k]||{n:0,ep:[],sc:[]});mg[k].n++;
+  const e=p[IXp.epa];if(e!=null)mg[k].ep.push(e);mg[k].sc.push(p[IXp.succ]);});
+ const base=mine.length?fmean(mine.map(p=>p[IXp.epa])):null;
+ const rows=Object.keys(dg).filter(k=>dg[k].n>=10).map(k=>({k,
+   share:100*dg[k].n/dTot, defN:dg[k].n, defEpa:dg[k].ep.length?fmean(dg[k].ep):null,
+   myN:mg[k]?mg[k].n:0, myEpa:(mg[k]&&mg[k].ep.length)?fmean(mg[k].ep):null,
+   mySucc:(mg[k]&&mg[k].sc.length)?100*fmean(mg[k].sc):null})).sort((a,b)=>b.share-a.share);
+ let w=0,acc=0;rows.forEach(r=>{if(r.myEpa!=null&&r.myN>=5){acc+=r.share*r.myEpa;w+=r.share;}});
+ return {rows,base,dBase,proj:w?acc/w:null,cov:w,useBox,n:mine.length};
+}
 // shared so the "no players match" branch keeps working controls too
 function wireFanControls(box){
  box.querySelectorAll('[data-fanpos]').forEach(b=>b.onclick=()=>{FAN.pos=b.dataset.fanpos;FAN.player='';drawFantasy();});
@@ -2895,6 +2948,44 @@ function drawFantasy(){
  const wkOpp=oppFor(pl.team,wk);
  const T=byWeek?(wkOpp||FAN.def):FAN.def;
  const M=fanMatchup(pl,FAN.pos,T), ff=ffFor(pl), PF=persFit(pl.team,T), hist=playerVsDef(pl,FAN.pos,T);
+ const st=(v2,l,c,sub)=>`<div><div class="v" style="color:${c||'var(--ink)'}">${v2}</div><div class="l">${l}</div>${sub?`<div style="font-size:8.5px;color:#98a2b3;margin-top:1px">${sub}</div>`:''}</div>`;
+ const TL=playerTopline(pl,FAN.pos), SF=schemeFit(pl,FAN.pos,T);
+ const e3=v=>v==null?'—':(v>0?'+':'')+v.toFixed(3), e2=v=>v==null?'—':(v>0?'+':'')+v.toFixed(2), pc=v=>v==null?'—':v.toFixed(0)+'%';
+ // top line: our own pbp production for this player, plus the PFF charting extras
+ const tlTiles=!TL?'':(FAN.pos==='QB'
+   ? st(TL.n,'Dropbacks')+st(pc(TL.comp),'Comp %')+st(TL.yds,'Yards')+st(TL.td+' / '+TL.intc,'TD / INT')
+     +st(e3(TL.epa),'EPA/dropback',TL.epa>=0?'#1e7a34':'#a23b3b')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
+     +st(TL.cpoe==null?'—':(TL.cpoe>0?'+':'')+TL.cpoe.toFixed(1),'CPOE')+st(TL.expl,'15+ gains')
+   : FAN.pos==='RB'
+   ? st(TL.n,'Carries')+st(TL.yds,'Yards')+st(TL.n?(TL.yds/TL.n).toFixed(1):'—','YPC')+st(TL.td,'Rush TD')
+     +st(e3(TL.epa),'EPA/rush',TL.epa>=0?'#1e7a34':'#a23b3b')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
+     +st(TL.expl,'10+ runs')+st(TL.rec+' / '+TL.recN,'Rec / Tgt')
+   : st(TL.n,'Targets')+st(TL.rec,'Rec')+st(TL.yds,'Yards')+st(TL.td,'TD')
+     +st(e3(TL.epa),'EPA/target',TL.epa>=0?'#1e7a34':'#a23b3b')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
+     +st(TL.adot==null?'—':TL.adot.toFixed(1),'aDOT')+st(TL.expl,'15+ gains'));
+ const tlCard=TL?`<div class="card"><div class="sechead o">${teamLogo(pl.team)}${pl.name} — 2025 top line <span class="hint" style="font-weight:600">${TL.n} ${TL.lab.toLowerCase()} · from the play-by-play</span></div>
+   <div class="tzstat" style="grid-template-columns:repeat(4,1fr);margin:8px 0 4px">${tlTiles}</div>
+   <p class="note">EPA and success rate are computed from this dashboard's own nflverse play-by-play — the same engine behind every other tab. The charting extras below (YPRR, elusiveness, man/zone) are PFF-derived.</p></div>`:'';
+ // scheme fit: his EPA per look, weighted by how often this defence shows it
+ const sfLab=SF.useBox?'box count':'coverage';
+ const sfRows=SF.rows.length?SF.rows.map(r=>{
+   const nm=SF.useBox?BOXN[r.k]:(COVN[r.k]||r.k);
+   const thin=r.myN<5, edge=(!thin&&r.myEpa!=null&&SF.base!=null&&r.defEpa!=null&&SF.dBase!=null)
+     ? ((r.myEpa>SF.base&&r.defEpa>SF.dBase)?['edge','#1e7a34']:(r.myEpa<SF.base&&r.defEpa<SF.dBase)?['tough','#a23b3b']:['neutral','#8a93a3'])
+     : ['—','#c2c8d2'];
+   const col=r.myEpa==null?'#8a93a3':(r.myEpa>=0?'#1e7a34':'#b23b3b');
+   const w=Math.min(46,Math.abs(r.share)/Math.max(...SF.rows.map(x=>x.share))*46);
+   return `<div class="fanpf"><span class="el">${nm}</span><span class="es">${r.share.toFixed(0)}% of snaps</span>`+
+    `<span class="eb"><i style="left:0;width:${w.toFixed(1)}%;background:#8c96a3"></i></span>`+
+    `<span class="ev" style="color:${col}">${thin?'—':e2(r.myEpa)}</span>`+
+    `<span class="en">${thin?`only ${r.myN} of his snaps vs this look — too thin to read`:`<b>${e2(r.myEpa)}</b> EPA on his ${r.myN} snaps vs it (his avg ${e2(SF.base)}) · ${T} allows <b>${e2(r.defEpa)}</b> here (their avg ${e2(SF.dBase)}) · <b style="color:${edge[1]}">${edge[0]}</b>`}</span></div>`;
+ }).join(''):'<p class="note">Not enough charted snaps for this pairing.</p>';
+ const projDelta=(SF.proj!=null&&SF.base!=null)?SF.proj-SF.base:null;
+ const sfCard=`<div class="card"><div class="sechead d">${pl.name} vs ${T}'s ${sfLab} diet</div>
+  <p class="note" style="margin:2px 0 8px">What <b>${teamName(T)}</b> actually shows, how <b>he</b> has performed against each look, and what <b>they</b> give up in it. Bar = how often they show it.</p>
+  ${sfRows}
+  ${SF.proj!=null?`<p class="note" style="margin-top:8px"><b>Weighted read:</b> against ${T}'s ${sfLab} mix he projects <b style="color:${projDelta>=0?'#1e7a34':'#b23b3b'}">${e3(SF.proj)}</b> EPA vs his <b>${e3(SF.base)}</b> season average — <b style="color:${projDelta>=0?'#1e7a34':'#b23b3b'}">${projDelta>=0?'+':''}${projDelta.toFixed(3)}</b>. Covers ${SF.cov.toFixed(0)}% of their snaps (looks where he has 5+ of his own).</p>`:'<p class="note" style="margin-top:8px">Too few of his snaps overlap their common looks to project a weighted read.</p>'}
+  <p class="note"><b>On the data:</b> nflverse charts the <b>offense's</b> personnel per snap, not the defense's — so the defensive scheme signal here is ${SF.useBox?'<b>box count</b> (the closest public proxy for their front/package)':'<b>coverage family</b>'}, not their personnel grouping. Their <i>offensive</i>-personnel exposure is the panel below.</p></div>`;
  const plSel=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Player <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0">${pool.length} in this set</span></span><select id="fanpl" style="margin:0;min-height:36px;max-width:280px">${pool.map(p=>`<option value="${p.k}"${p.k===FAN.player?' selected':''}>${p.name} (${p.team}${byWeek&&oppFor(p.team,wk)?' vs '+oppFor(p.team,wk):''}) · ER ${p.eff==null?'—':p.eff}</option>`).join('')}</select></div>`;
  const matchSeg=modeSeg+(byWeek?wkSel:dfSel)+gmSel+tmSel;
  const byeNote=byWeek&&byes.length?`<p class="note" style="margin:2px 0 0"><b>On bye in week ${wk}:</b> ${byes.join(', ')} — their players drop out of the set.</p>`:'';
@@ -2908,7 +2999,6 @@ function drawFantasy(){
  const evRows=M?M.ev.map(e=>{const w=Math.min(46,Math.abs(e.c)/mx*46),pos=e.c>=0,left=pos?50:50-w,col=pos?'#1e7a34':'#b23b3b';
    return `<div class="fanev"><span class="el">${e.lab}</span><span class="eb"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="en">${e.note}</span></div>`;}).join(''):'';
  const ffCard=ff?`<div class="idrow"><span class="pill">FF Rating <b>${ff.ffr}</b></span><span class="pill">Dynasty rank <b>#${ff.rank}</b></span><span class="pill">Age <b>${ff.age}</b></span><span class="pill">Andy ${ff.andy} · Jason ${ff.jason} · Mike ${ff.mike}</span>${ff.spread!=null&&ff.spread>=15?`<span class="pill" style="background:#fdf3dc;border-color:#e6c877;color:#7a5406">⚠ analysts split by ${ff.spread}</span>`:''}</div>`:'<p class="note">Not on the Fantasy Footballers dynasty board.</p>';
- const st=(v2,l,c,sub)=>`<div><div class="v" style="color:${c||'var(--ink)'}">${v2}</div><div class="l">${l}</div>${sub?`<div style="font-size:8.5px;color:#98a2b3;margin-top:1px">${sub}</div>`:''}</div>`;
  const prof=FAN.pos==='QB'?st(pl.btt==null?'—':pl.btt+'%','Big-time throw%')+st(pl.twp==null?'—':pl.twp+'%','Turnover-worthy%')+st(pl.acc==null?'—':pl.acc+'%','Accuracy%')+st(pl.ypa==null?'—':pl.ypa,'YPA')
   :FAN.pos==='RB'?st(pl.elu==null?'—':pl.elu,'Elusiveness')+st(pl.yco==null?'—':pl.yco,'Yds after contact/att')+st(pl.brk==null?'—':pl.brk+'%','Breakaway%')+st(pl.ypa==null?'—':pl.ypa,'YPC')
   :st(pl.yprr==null?'—':pl.yprr,'Yds/route run')+st(pl.manY==null?'—':pl.manY,'YPRR vs man')+st(pl.zoneY==null?'—':pl.zoneY,'YPRR vs zone')+st(pl.cc==null?'—':pl.cc+'%','Contested catch%');
@@ -2926,6 +3016,8 @@ function drawFantasy(){
   <div class="idrow" style="margin-top:8px">${histNote}</div>
   <p class="note">Score = 50 + 15 × the weighted average of these standardized factors, clamped 1–99. 50 = a neutral matchup. <b>Rest isn't a factor</b> — the play data carries no game dates, so it can't be computed; nothing here fakes it.</p>
  </div>
+ ${tlCard}
+ ${sfCard}
  <div class="card"><div class="sechead o">Personnel fit — ${pl.team}'s grouping mix vs ${teamName(T)}</div>
   <p class="note" style="margin:2px 0 8px">The groupings ${pl.team}'s offense actually lives in, and how much EPA ${T} gives up in each <b>relative to its own baseline</b>. Green = ${T} leaks against a grouping ${pl.team} uses a lot — that's the exploitable overlap.</p>
   ${pfRows}
