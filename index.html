@@ -2629,8 +2629,14 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
      : (r.g[g]?100*r.g[g].n/r.n:0);
    const shMS={};cols.forEach(g=>{const v=rows.map(r=>shareOf(r,g));const m=v.reduce((a,b)=>a+b,0)/v.length;
      shMS[g]={m,sd:Math.sqrt(v.reduce((a,b)=>a+(b-m)*(b-m),0)/v.length)||1};});
-   // green = notably more than the league uses it, red = notably less (|z| >= 1). Usage isn't good/bad - it's direction.
-   const shPct=(r,g)=>{const sh=shareOf(r,g),z=(sh-shMS[g].m)/shMS[g].sd;
+   // green = notably more than the league uses it, red = notably less. Usage isn't good/bad - it's direction.
+   const shZ=(r,g)=>(shareOf(r,g)-shMS[g].m)/shMS[g].sd;
+   // cell tint: the gradient scan (from |z|>=0.9, intensity by distance) - green/red to match the share text,
+   // rather than the usual blue/orange, so one number isn't encoded in two different colour languages.
+   const shBg=(r,g)=>{const z=shZ(r,g);if(!isFinite(z)||Math.abs(z)<0.9)return '';
+     const a=Math.min(1,(Math.abs(z)-0.9)/1.6), o=(0.10+0.34*a).toFixed(2);
+     return `background:rgba(${z>0?'30,122,52':'178,59,59'},${o})`;};
+   const shPct=(r,g)=>{const sh=shareOf(r,g),z=shZ(r,g);
      const col=z>=1?'#1e7a34':z<=-1?'#b23b3b':'#9aa3b0';
      return `<div style="font-size:8.5px;font-weight:800;color:${col};display:block;line-height:1.1;margin-top:1px" title="league avg ${shMS[g].m.toFixed(0)}%">${sh.toFixed(0)}%</div>`;};
    const head=`<tr><th class="tl">Team</th><th>Total</th>${main.map(g=>`<th>${g}</th>`).join('')}<th>Other</th></tr>`;
@@ -2638,10 +2644,10 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
      const other=Object.entries(r.g).filter(([k])=>main.indexOf(k)<0).reduce((s,[,v])=>s+v.n,0);
      return `<tr class="${r.t==='NO'?'no':''}"><td class="tl">${teamCell(r.t,teamName(r.t))}</td><td><b>${r.n.toLocaleString()}</b></td>${
       main.map(g=>{const c=r.g[g]?r.g[g].n:0;
-        return `<td>${c?c.toLocaleString():'—'}${shPct(r,g)}</td>`;}).join('')
-     }<td>${other?other.toLocaleString():'—'}${shPct(r,'__other')}</td></tr>`;}).join('');
+        return `<td style="${shBg(r,g)}">${c?c.toLocaleString():'—'}${shPct(r,g)}</td>`;}).join('')
+     }<td style="${shBg(r,'__other')}">${other?other.toLocaleString():'—'}${shPct(r,'__other')}</td></tr>`;}).join('');
    box.innerHTML=ctrls+`<div class="card"><div class="scroll"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>
-    <p class="note">Snap counts, with each grouping's share of that team's charted snaps underneath. The share turns <b style="color:#1e7a34">green</b> / <b style="color:#b23b3b">red</b> when a team is an outlier — a full standard deviation above / below how much the league uses that grouping (hover any share for the league average). Columns are the six most-used groupings league-wide; everything rarer folds into <b>Other</b>. <b>Pick a grouping above</b> for the leaderboard in it.</p></div>`;
+    <p class="note">Snap counts, with each grouping's share of that team's charted snaps underneath. Cells shade <b style="color:#1e7a34">green</b> when a team uses that grouping more than the league does and <b style="color:#b23b3b">red</b> when they use it less — deeper = further from average; the share itself turns bold green/red once they're a full standard deviation out (hover any share for the league average). It's direction, not quality — heavy 12 personnel isn't "good", it's just a tell. Columns are the six most-used groupings league-wide; everything rarer folds into <b>Other</b>. <b>Pick a grouping above</b> for the leaderboard in it.</p></div>`;
   } else {
    const L=Object.keys(U).map(t=>{const o=U[t].g[PERSG];const e=o&&o.ep.length?fmean(o.ep):null;
      return {abbr:t,name:teamName(t),snaps:o?o.n:0,share:U[t].n?100*(o?o.n:0)/U[t].n:0,epa:e,passRate:o&&o.n?100*o.np/o.n:null};})
