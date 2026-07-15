@@ -2622,16 +2622,26 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
    <p class="note" style="margin:2px 0 0">Raw snap counts by offensive personnel grouping, all 32 teams — <b>${DEF?'what each defense faced':'what each offense lined up in'}</b>. ${lgTot.toLocaleString()} charted snaps league-wide. Personnel is the <b>offense's</b> grouping on every snap (nflverse charts the offense, not the defense) — so the Defense side reads "who saw the most of this look".</p></div>`;
   if(PERSG==='ALL'){
    const rows=Object.keys(U).sort((a,b)=>U[b].n-U[a].n).map(t=>({t,n:U[t].n,g:U[t].g}));
-   const shares={};main.forEach(g=>{shares[g]=rows.map(r=>r.g[g]?100*r.g[g].n/r.n:0);});
-   const head=`<tr><th class="tl">Team</th><th>Total</th>${main.map(g=>`<th>${g}<div class="hint" style="font-weight:600;text-transform:none;display:block;line-height:1.15">${persDesc(g)}</div></th>`).join('')}<th>Other</th></tr>`;
+   // share of each team's snaps per grouping, + its league mean/sd so we can flag the outliers
+   const cols=main.concat(['__other']);
+   const shareOf=(r,g)=>g==='__other'
+     ? (r.n?100*Object.entries(r.g).filter(([k])=>main.indexOf(k)<0).reduce((s,[,v])=>s+v.n,0)/r.n:0)
+     : (r.g[g]?100*r.g[g].n/r.n:0);
+   const shMS={};cols.forEach(g=>{const v=rows.map(r=>shareOf(r,g));const m=v.reduce((a,b)=>a+b,0)/v.length;
+     shMS[g]={m,sd:Math.sqrt(v.reduce((a,b)=>a+(b-m)*(b-m),0)/v.length)||1};});
+   // green = notably more than the league uses it, red = notably less (|z| >= 1). Usage isn't good/bad - it's direction.
+   const shPct=(r,g)=>{const sh=shareOf(r,g),z=(sh-shMS[g].m)/shMS[g].sd;
+     const col=z>=1?'#1e7a34':z<=-1?'#b23b3b':'#9aa3b0';
+     return `<div style="font-size:8.5px;font-weight:800;color:${col};display:block;line-height:1.1;margin-top:1px" title="league avg ${shMS[g].m.toFixed(0)}%">${sh.toFixed(0)}%</div>`;};
+   const head=`<tr><th class="tl">Team</th><th>Total</th>${main.map(g=>`<th>${g}</th>`).join('')}<th>Other</th></tr>`;
    const body=rows.map(r=>{
      const other=Object.entries(r.g).filter(([k])=>main.indexOf(k)<0).reduce((s,[,v])=>s+v.n,0);
      return `<tr class="${r.t==='NO'?'no':''}"><td class="tl">${teamCell(r.t,teamName(r.t))}</td><td><b>${r.n.toLocaleString()}</b></td>${
-      main.map(g=>{const c=r.g[g]?r.g[g].n:0,sh=r.n?100*c/r.n:0;
-        return `<td style="${condStyle(sh,shares[g])}">${c?c.toLocaleString():'—'}<div class="hint" style="font-weight:700;display:block;line-height:1.15">${sh.toFixed(0)}%</div></td>`;}).join('')
-     }<td>${other?other.toLocaleString():'—'}<div class="hint" style="font-weight:700;display:block;line-height:1.15">${r.n?(100*other/r.n).toFixed(0):0}%</div></td></tr>`;}).join('');
+      main.map(g=>{const c=r.g[g]?r.g[g].n:0;
+        return `<td>${c?c.toLocaleString():'—'}${shPct(r,g)}</td>`;}).join('')
+     }<td>${other?other.toLocaleString():'—'}${shPct(r,'__other')}</td></tr>`;}).join('');
    box.innerHTML=ctrls+`<div class="card"><div class="scroll"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>
-    <p class="note">Snap counts with each grouping's share of that team's charted snaps underneath. Cells shade by share vs the league. Columns are the six most-used groupings league-wide; everything rarer folds into <b>Other</b>. <b>Pick a grouping above</b> for the leaderboard in it.</p></div>`;
+    <p class="note">Snap counts, with each grouping's share of that team's charted snaps underneath. The share turns <b style="color:#1e7a34">green</b> / <b style="color:#b23b3b">red</b> when a team is an outlier — a full standard deviation above / below how much the league uses that grouping (hover any share for the league average). Columns are the six most-used groupings league-wide; everything rarer folds into <b>Other</b>. <b>Pick a grouping above</b> for the leaderboard in it.</p></div>`;
   } else {
    const L=Object.keys(U).map(t=>{const o=U[t].g[PERSG];const e=o&&o.ep.length?fmean(o.ep):null;
      return {abbr:t,name:teamName(t),snaps:o?o.n:0,share:U[t].n?100*(o?o.n:0)/U[t].n:0,epa:e,passRate:o&&o.n?100*o.np/o.n:null};})
