@@ -2640,7 +2640,7 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
 // ---------- FANTASY — start/sit matchup tool ----------
 // Fuses three sources: Efficiency Rating (PFF-derived composite), FF Rating (Fantasy Footballers
 // dynasty board) and this dashboard's own nflverse play-by-play (EPA allowed, man/zone rate).
-let FAN={pos:'WR',player:'',def:'ATL',mode:'week',week:1};
+let FAN={pos:'WR',player:'',def:'ATL',mode:'week',week:1,game:'',team:'ALL'};
 // ---- schedule, reconstructed from the play data (every row carries week + opponent) ----
 // NOTE: this is the 2025 slate. There is no 2026 schedule in the dashboard yet - drop one in and
 // point schedule() at it and everything below (analysis + week board) follows automatically.
@@ -2854,23 +2854,50 @@ function drawFanBoard(){
  box.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>{BOARD.pos=b.dataset.bp;drawFanBoard();});
  box.querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>{const v=b.dataset.bg;BOARD.game=(BOARD.game===v)?'':v;drawFanBoard();});
 }
+// shared so the "no players match" branch keeps working controls too
+function wireFanControls(box){
+ box.querySelectorAll('[data-fanpos]').forEach(b=>b.onclick=()=>{FAN.pos=b.dataset.fanpos;FAN.player='';drawFantasy();});
+ box.querySelectorAll('[data-fanmode]').forEach(b=>b.onclick=()=>{FAN.mode=b.dataset.fanmode;FAN.game='';drawFantasy();});
+ box.querySelectorAll('[data-fanwk]').forEach(b=>b.onclick=()=>{FAN.week=+b.dataset.fanwk;FAN.game='';drawFantasy();});
+ box.querySelectorAll('[data-fangm]').forEach(b=>b.onclick=()=>{const v=b.dataset.fangm;FAN.game=(FAN.game===v)?'':v;FAN.team='ALL';drawFantasy();});
+ const tm=$('#fantm');if(tm)tm.onchange=e=>{FAN.team=e.target.value;drawFantasy();};
+ const ps=$('#fanpl');if(ps)ps.onchange=e=>{FAN.player=e.target.value;drawFantasy();};
+ const ds=$('#fandef');if(ds)ds.onchange=e=>{FAN.def=e.target.value;drawFantasy();};
+}
 function drawFantasy(){
  const box=$('#fanbody');if(!box)return;
- const pool=fanPool(FAN.pos).slice().sort((a,b)=>(b.eff==null?-99:b.eff)-(a.eff==null?-99:a.eff));
- if(!pool.length){box.innerHTML='<div class="card banner">No players for this position.</div>';return;}
+ const wk=FAN.week, byWeek=FAN.mode==='week';
+ const games=byWeek?weekGames(wk):[];
+ if(FAN.game&&!games.find(g=>g.a+'|'+g.b===FAN.game))FAN.game='';   // week moved out from under the pick
+ const G=FAN.game?FAN.game.split('|'):null;
+ // cascade: week -> game -> team -> position -> player. Each step narrows the one below it.
+ let base=fanPool(FAN.pos).slice();
+ if(byWeek)base=base.filter(p=>oppFor(p.team,wk));                  // drop bye teams
+ if(G)base=base.filter(p=>p.team===G[0]||p.team===G[1]);
+ const teamOpts=[...new Set(base.map(p=>p.team))].sort();
+ if(FAN.team!=='ALL'&&!teamOpts.includes(FAN.team))FAN.team='ALL';
+ const pool=(FAN.team==='ALL'?base:base.filter(p=>p.team===FAN.team)).sort((a,b)=>(b.eff==null?-99:b.eff)-(a.eff==null?-99:a.eff));
+ const byes=byWeek?Object.keys(NFLNAMES).filter(t=>!oppFor(t,wk)):[];
+ const posSeg=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Position</span><div class="subnav" style="margin:0">${['QB','RB','WR','TE'].map(p=>`<button data-fanpos="${p}" class="${FAN.pos===p?'on':''}">${p}</button>`).join('')}</div></div>`;
+ const modeSeg=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Matchup</span><div class="subnav" style="margin:0">${[['week','By week'],['manual','Any defense']].map(([v,l])=>`<button data-fanmode="${v}" class="${FAN.mode===v?'on':''}">${l}</button>`).join('')}</div></div>`;
+ const wkSel=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Week</span><div class="subnav" style="margin:0;flex-wrap:wrap">${schedule().weeks.map(x=>`<button data-fanwk="${x}" class="${x===wk?'on':''}">${x}</button>`).join('')}</div></div>`;
+ const gmSel=byWeek?`<div class="subgroup${FAN.game?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">Game <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0">narrows to one matchup</span></span><div class="gmbar" style="max-width:none">${games.map(g=>{const k=g.a+'|'+g.b,on=FAN.game===k;return `<button class="gmchip${on?' on':''}" data-fangm="${k}">${teamLogo(g.a,'gm')}<span>${g.a}</span><span style="opacity:.55">@</span>${teamLogo(g.b,'gm')}<span>${g.b}</span></button>`;}).join('')}${FAN.game?'<button class="gmchip clr" data-fangm="">✕ all</button>':''}</div></div>`:'';
+ const tmSel=`<div class="subgroup${FAN.team!=='ALL'?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">Team</span><select id="fantm" style="margin:0;min-height:36px;max-width:190px"><option value="ALL">All teams (${teamOpts.length})</option>${teamOpts.map(t=>`<option value="${t}"${t===FAN.team?' selected':''}>${teamName(t)}</option>`).join('')}</select></div>`;
+ const dfSel=`<div class="subgroup filton" style="margin:0 10px 8px 0"><span class="subcap">Opposing defense</span><select id="fandef" style="margin:0;min-height:36px;max-width:220px">${Object.keys(NFLNAMES).sort().map(t=>`<option value="${t}"${t===FAN.def?' selected':''}>${teamName(t)}</option>`).join('')}</select></div>`;
+ if(!pool.length){
+  box.innerHTML=`<div class="card"><div style="display:flex;flex-wrap:wrap;align-items:flex-end">${modeSeg}${byWeek?wkSel:dfSel}${gmSel}${tmSel}${posSeg}</div>
+   <div class="banner" style="margin-top:8px">No ${FAN.pos}s match these filters${G?` in ${G[0]} @ ${G[1]}`:''}${FAN.team!=='ALL'?` for ${FAN.team}`:''} — widen the filters above.</div></div>`;
+  wireFanControls(box);return;
+ }
  if(!FAN.player||!pool.find(p=>p.k===FAN.player))FAN.player=pool[0].k;
  const pl=pool.find(p=>p.k===FAN.player);
- // matchup toggle: pull the opponent off the slate for a given week, or pick any defence by hand
- const wkOpp=oppFor(pl.team,FAN.week);
- const T=(FAN.mode==='week')?(wkOpp||FAN.def):FAN.def;
+ // matchup: pull the opponent off the slate for this week, or pick any defence by hand
+ const wkOpp=oppFor(pl.team,wk);
+ const T=byWeek?(wkOpp||FAN.def):FAN.def;
  const M=fanMatchup(pl,FAN.pos,T), ff=ffFor(pl), PF=persFit(pl.team,T), hist=playerVsDef(pl,FAN.pos,T);
- const posSeg=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Position</span><div class="subnav" style="margin:0">${['QB','RB','WR','TE'].map(p=>`<button data-fanpos="${p}" class="${FAN.pos===p?'on':''}">${p}</button>`).join('')}</div></div>`;
- const plSel=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Player</span><select id="fanpl" style="margin:0;min-height:36px;max-width:260px">${pool.map(p=>`<option value="${p.k}"${p.k===FAN.player?' selected':''}>${p.name} (${p.team}) · ER ${p.eff==null?'—':p.eff}</option>`).join('')}</select></div>`;
- const modeSeg=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Matchup</span><div class="subnav" style="margin:0">${[['week','By week'],['manual','Any defense']].map(([v,l])=>`<button data-fanmode="${v}" class="${FAN.mode===v?'on':''}">${l}</button>`).join('')}</div></div>`;
- const wkSel=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Week</span><div class="subnav" style="margin:0;flex-wrap:wrap">${schedule().weeks.map(x=>`<button data-fanwk="${x}" class="${x===FAN.week?'on':''}">${x}</button>`).join('')}</div></div>`;
- const dfSel=`<div class="subgroup filton" style="margin:0 10px 8px 0"><span class="subcap">Opposing defense</span><select id="fandef" style="margin:0;min-height:36px;max-width:220px">${Object.keys(NFLNAMES).sort().map(t=>`<option value="${t}"${t===T?' selected':''}>${teamName(t)}</option>`).join('')}</select></div>`;
- const matchSeg=modeSeg+(FAN.mode==='week'?wkSel:dfSel);
- const byeNote=(FAN.mode==='week'&&!wkOpp)?`<p class="note" style="margin:2px 0 0"><b>${pl.team} are on bye in week ${FAN.week}</b> — showing the manual pick (${teamName(T)}) instead.</p>`:'';
+ const plSel=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Player <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0">${pool.length} in this set</span></span><select id="fanpl" style="margin:0;min-height:36px;max-width:280px">${pool.map(p=>`<option value="${p.k}"${p.k===FAN.player?' selected':''}>${p.name} (${p.team}${byWeek&&oppFor(p.team,wk)?' vs '+oppFor(p.team,wk):''}) · ER ${p.eff==null?'—':p.eff}</option>`).join('')}</select></div>`;
+ const matchSeg=modeSeg+(byWeek?wkSel:dfSel)+gmSel+tmSel;
+ const byeNote=byWeek&&byes.length?`<p class="note" style="margin:2px 0 0"><b>On bye in week ${wk}:</b> ${byes.join(', ')} — their players drop out of the set.</p>`:'';
  // personnel-fit detail: their grouping mix vs how this defence fares against each
  const pfRows=(PF&&PF.rows.length)?PF.rows.slice(0,5).map(r=>{
    const good=r.d>=0,col=good?'#1e7a34':'#b23b3b',w=Math.min(46,Math.abs(r.d)/0.25*46),left=good?50:50-w;
@@ -2887,7 +2914,7 @@ function drawFantasy(){
   :st(pl.yprr==null?'—':pl.yprr,'Yds/route run')+st(pl.manY==null?'—':pl.manY,'YPRR vs man')+st(pl.zoneY==null?'—':pl.zoneY,'YPRR vs zone')+st(pl.cc==null?'—':pl.cc+'%','Contested catch%');
  const dEff=window.PFFX.def[T]||{}, dm=fanCtx().lgD[T]||{};
  const histNote=hist?`<span class="pill">vs ${T} in 2025: <b>${hist.n}</b> ${FAN.pos==='RB'?'carries':FAN.pos==='QB'?'dropbacks':'targets'} · <b>${hist.epa==null?'—':(hist.epa>0?'+':'')+hist.epa.toFixed(2)}</b> EPA${hist.td?` · ${hist.td} TD`:''} <span class="hint">${hist.n<12?'tiny sample — context only, not scored':'context only, not scored'}</span></span>`:'<span class="pill">No 2025 snaps vs this defense</span>';
- box.innerHTML=`<div class="card"><div style="display:flex;flex-wrap:wrap;align-items:flex-end">${posSeg}${plSel}${matchSeg}</div>${byeNote}
+ box.innerHTML=`<div class="card"><div style="display:flex;flex-wrap:wrap;align-items:flex-end">${matchSeg}${posSeg}${plSel}</div>${byeNote}
   <p class="note" style="margin:2px 0 0">Every input below is shown with its contribution — the verdict is auditable, not a black box. <b>By week</b> pulls the opponent off the ${schedule().weeks.length}-week slate reconstructed from the play data (2025).</p></div>
  <div class="card" style="border-top:3px solid ${v[1]}">
   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-bottom:6px">
@@ -2917,11 +2944,7 @@ function drawFantasy(){
     st(fanManRate(T)==null?'—':fanManRate(T).toFixed(0)+'%','Man coverage rate')}</div>
    <p class="note">Ratings are PFF-derived; <b>EPA allowed</b> and <b>man rate</b> are this dashboard's own nflverse play-by-play. <a href="#" onclick="curFZTeam='${T}';FIELDSIDE='def';renderField();goSection('field');return false" style="color:#2e5496;font-weight:700">Open ${T}'s defensive field tendencies →</a></p></div>
  </div>`;
- box.querySelectorAll('[data-fanpos]').forEach(b=>b.onclick=()=>{FAN.pos=b.dataset.fanpos;FAN.player='';drawFantasy();});
- box.querySelectorAll('[data-fanmode]').forEach(b=>b.onclick=()=>{FAN.mode=b.dataset.fanmode;drawFantasy();});
- box.querySelectorAll('[data-fanwk]').forEach(b=>b.onclick=()=>{FAN.week=+b.dataset.fanwk;drawFantasy();});
- const ps=$('#fanpl');if(ps)ps.onchange=e=>{FAN.player=e.target.value;drawFantasy();};
- const ds=$('#fandef');if(ds)ds.onchange=e=>{FAN.def=e.target.value;drawFantasy();};
+ wireFanControls(box);
 }
 renderRatings();renderEPA();renderOpponents();renderField();renderPhil();renderOverview();renderFantasy();
 // ---------- SORTABLE TABLES + DYNAMIC RANK ----------
