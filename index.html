@@ -2335,7 +2335,7 @@ function renderEPA(){const s=$('#epa');s.innerHTML=`${pageHead('epa')}<div class
  const groups=[
    ['Overview',[['ov','League-Wide']]],
    ['Rankings',[['off','Offense Ranking'],['def','Defense Ranking'],['st','Special Teams']]],
-   ['Personnel & Advanced Defense',[['qb','Quarterbacks'],['rec','Receivers'],['rb','Running Backs'],['specialist','Specialists'],['advdef','Advanced Defense']]],
+   ['Personnel & Advanced Defense',[['persuse','Personnel Usage'],['qb','Quarterbacks'],['rec','Receivers'],['rb','Running Backs'],['specialist','Specialists'],['advdef','Advanced Defense']]],
    ['Additional Advanced Metrics',[['passid','Pass Identity'],['fourth','Fourth Downs'],['luck','Luck'],['series','Series Success']]]
  ];
  const es=$('#esub');let firstBtn=true;
@@ -2376,6 +2376,22 @@ function buildRB(){const R={},P=window.PLAYS||{},ADV=window.RBADV||{};
  for(const t in P){for(const p of P[t].rush){const nm=p[2];if(!nm)continue;const o=R[nm]||(R[nm]={name:nm,tm:{},att:0,yds:0,ep:[],expl:0,sc:[],td:0,recTd:0,rec:0,rep:[],fum:0,rzTd:0});o.att++;o.tm[t]=(o.tm[t]||0)+1;o.yds+=p[7]||0;if(p[8]!=null)o.ep.push(p[8]);if(p[7]>=10)o.expl++;o.sc.push(p[9]);if(p[10]===1){o.td++;if(p[5]!=null&&p[5]<=20)o.rzTd++;}if(p[11]===1)o.fum++;}}
  for(const t in P){for(const p of P[t].pass){const nm=p[3];if(!nm||!R[nm])continue;const o=R[nm];if(p[12]==='C')o.rec++;if(p[13]===1){o.recTd++;if(p[6]!=null&&p[6]<=20)o.rzTd++;}if(p[10]!=null)o.rep.push(p[10]);}}
  return Object.values(R).map(o=>{const m=ADV[o.name]||{},car=m.car||0,touches=o.att+o.rec,tdTot=o.td+o.recTd;return {name:o.name,team:Object.keys(o.tm).sort((a,b)=>o.tm[b]-o.tm[a])[0],pos:m.pos||'?',snaps:m.s||0,att:o.att,touches:touches,ypc:o.att?o.yds/o.att:null,expl:o.att?100*o.expl/o.att:null,succ:o.sc.length?100*fmean(o.sc):null,epaRush:o.ep.length?fmean(o.ep):null,td:o.td,recTd:o.recTd,tdTot:tdTot,tdVal:o.td+1.6*o.recTd,fum:o.fum,rec:o.rec,recEpa:o.rep.length?fmean(o.rep):null,rzTd:o.rzTd,ybcAtt:car?m.ybc/car:null,yacAtt:car?m.yac/car:null,mtfAtt:car?m.mtf/car:null};});}
+// ---- league-wide personnel usage: raw snap counts per grouping, per team ----
+let PERSSIDE='off', PERSG='ALL';
+function persDesc(c){if(!/^\d\d$/.test(c))return '';const b=+c[0],te=+c[1],wr=Math.max(0,5-b-te);return `${b}RB ${te}TE ${wr}WR`;}
+const _persUse={};
+function persUsage(side){
+ if(_persUse[side])return _persUse[side];
+ const out={};
+ for(const t in (window.PLAYS||{})){
+  const P=teamSidePlays(t,side), g={}; let n=0;
+  const add=(c,e,isPass)=>{if(c==null)return;const k=String(c);const o=g[k]||(g[k]={n:0,np:0,ep:[]});o.n++;if(isPass)o.np++;if(e!=null)o.ep.push(e);n++;};
+  P.pass.forEach(p=>add(p[PI.pers],p[PI.epa],true));
+  P.rush.forEach(p=>add(p[RI.pers],p[RI.epa],false));
+  out[t]={g,n};
+ }
+ return _persUse[side]=out;
+}
 let STGRP='place'; // specialists board: which bucket (place/kickoff/punt/kret/pret)
 let RECPF='all', RECVOL='q'; // receiver board: position filter (all/WR/TE), volume (q=snap-qualified, o=overall)
 let RBVOL='q'; // RB board volume: q=qualified (100+ carries) | o=overall (40+ carries)
@@ -2589,6 +2605,44 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
   box.querySelectorAll('[data-advside]').forEach(b=>b.onclick=()=>{ADVSIDE=b.dataset.advside;drawEPA('advdef');});
   box.querySelectorAll('[data-advgrp]').forEach(b=>b.onclick=()=>{ADVGRP=b.dataset.advgrp;drawEPA('advdef');});
   box.querySelectorAll('[data-advvol]').forEach(b=>b.onclick=()=>{ADVVOL=b.dataset.advvol;drawEPA('advdef');});
+ }
+ else if(id=='persuse'){
+  if(!window.PLAYS){box.innerHTML='<div class="card banner">Personnel usage needs data/plays.js.</div>';return;}
+  const U=persUsage(PERSSIDE), DEF=PERSSIDE==='def';
+  const ef=v=>v==null?'—':(v>0?'+':'')+v.toFixed(3), pct=v=>v==null?'—':v.toFixed(1)+'%';
+  // league snap totals per grouping -> which groupings are worth their own column
+  const tot={};Object.values(U).forEach(o=>Object.entries(o.g).forEach(([k,v])=>{tot[k]=(tot[k]||0)+v.n;}));
+  const ranked=Object.keys(tot).sort((a,b)=>tot[b]-tot[a]);
+  const main=ranked.slice(0,6), lgTot=Object.values(tot).reduce((a,b)=>a+b,0);
+  if(PERSG!=='ALL'&&!tot[PERSG])PERSG='ALL';
+  const seg=(k,cur,opts,cap)=>`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">${cap}</span><div class="subnav" style="margin:0;flex-wrap:wrap">${opts.map(([v,l])=>`<button data-${k}="${v}" class="${String(cur)===String(v)?'on':''}">${l}</button>`).join('')}</div></div>`;
+  const sideSeg=seg('pside',PERSSIDE,[['off','Personnel they run'],['def','Personnel they face']],'Side');
+  const gSeg=seg('pgrp',PERSG,[['ALL','All groupings']].concat(ranked.slice(0,8).map(g=>[g,`${g} (${tot[g].toLocaleString()})`])),'Grouping — filter to one');
+  const ctrls=`<div class="card"><div style="display:flex;flex-wrap:wrap;align-items:flex-end">${sideSeg}${gSeg}</div>
+   <p class="note" style="margin:2px 0 0">Raw snap counts by offensive personnel grouping, all 32 teams — <b>${DEF?'what each defense faced':'what each offense lined up in'}</b>. ${lgTot.toLocaleString()} charted snaps league-wide. Personnel is the <b>offense's</b> grouping on every snap (nflverse charts the offense, not the defense) — so the Defense side reads "who saw the most of this look".</p></div>`;
+  if(PERSG==='ALL'){
+   const rows=Object.keys(U).sort((a,b)=>U[b].n-U[a].n).map(t=>({t,n:U[t].n,g:U[t].g}));
+   const shares={};main.forEach(g=>{shares[g]=rows.map(r=>r.g[g]?100*r.g[g].n/r.n:0);});
+   const head=`<tr><th class="tl">Team</th><th>Total</th>${main.map(g=>`<th>${g}<div class="hint" style="font-weight:600;text-transform:none;display:block;line-height:1.15">${persDesc(g)}</div></th>`).join('')}<th>Other</th></tr>`;
+   const body=rows.map(r=>{
+     const other=Object.entries(r.g).filter(([k])=>main.indexOf(k)<0).reduce((s,[,v])=>s+v.n,0);
+     return `<tr class="${r.t==='NO'?'no':''}"><td class="tl">${teamCell(r.t,teamName(r.t))}</td><td><b>${r.n.toLocaleString()}</b></td>${
+      main.map(g=>{const c=r.g[g]?r.g[g].n:0,sh=r.n?100*c/r.n:0;
+        return `<td style="${condStyle(sh,shares[g])}">${c?c.toLocaleString():'—'}<div class="hint" style="font-weight:700;display:block;line-height:1.15">${sh.toFixed(0)}%</div></td>`;}).join('')
+     }<td>${other?other.toLocaleString():'—'}<div class="hint" style="font-weight:700;display:block;line-height:1.15">${r.n?(100*other/r.n).toFixed(0):0}%</div></td></tr>`;}).join('');
+   box.innerHTML=ctrls+`<div class="card"><div class="scroll"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>
+    <p class="note">Snap counts with each grouping's share of that team's charted snaps underneath. Cells shade by share vs the league. Columns are the six most-used groupings league-wide; everything rarer folds into <b>Other</b>. <b>Pick a grouping above</b> for the leaderboard in it.</p></div>`;
+  } else {
+   const L=Object.keys(U).map(t=>{const o=U[t].g[PERSG];const e=o&&o.ep.length?fmean(o.ep):null;
+     return {abbr:t,name:teamName(t),snaps:o?o.n:0,share:U[t].n?100*(o?o.n:0)/U[t].n:0,epa:e,passRate:o&&o.n?100*o.np/o.n:null};})
+     .sort((a,b)=>b.snaps-a.snaps);
+   const chart=barChart(L.map(x=>({lab:x.abbr,ab:x.abbr,v:x.snaps,hl:x.abbr==='NO',title:`${x.name} — ${x.snaps} snaps in ${PERSG} (${x.share.toFixed(0)}% of their snaps) · EPA ${ef(x.epa)}`})),
+     {avg:L.reduce((s,x)=>s+x.snaps,0)/L.length,label:`${PERSG} personnel — snaps ${DEF?'faced':'run'}, most → fewest`,dec:0});
+   box.innerHTML=ctrls+`<div class="card">${chart}</div><div class="card">${tbl(L,[{k:'name',lab:'Team'},{k:'snaps',lab:'Snaps',heat:1},{k:'share',lab:'% of their snaps',fmt:v=>v.toFixed(1)+'%',heat:1},{k:'passRate',lab:'Pass rate in it',fmt:pct,heat:1},{k:'epa',lab:DEF?'EPA/play allowed':'EPA/play',fmt:ef,heat:1}],'abbr',true)}
+    <p class="note"><b>${PERSG} personnel</b> — ${persDesc(PERSG)}. <b>Snaps</b> = raw charted snaps ${DEF?'faced':'run'} in this grouping · <b>% of their snaps</b> = how much of their ${DEF?'defensive':'offensive'} diet it is · <b>Pass rate in it</b> = how they use it${DEF?' (how it was used against them)':''} · <b>EPA/play</b> = ${DEF?'what they allowed out of it — lower is better for the defense, so blue shading here means they gave up more':'how well it worked'}. ${lgTot?`${(tot[PERSG]||0).toLocaleString()} league snaps in this grouping.`:''}</p></div>`;
+  }
+  box.querySelectorAll('[data-pside]').forEach(b=>b.onclick=()=>{PERSSIDE=b.dataset.pside;drawEPA('persuse');});
+  box.querySelectorAll('[data-pgrp]').forEach(b=>b.onclick=()=>{PERSG=b.dataset.pgrp;drawEPA('persuse');});
  }
  else if(id=='st'){
   const S=window.SPECIALTEAMS;
