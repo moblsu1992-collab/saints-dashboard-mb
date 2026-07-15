@@ -451,6 +451,28 @@ details.tmfdet[open]>summary::before{content:"▾ "}
 .lgchip.clk:hover{border-color:var(--gold-deep);color:var(--navy2)}
 .lgchip.on{background:var(--navy2);color:#fff;border-color:var(--navy2)}
 .lgchip.on b{color:#fff}
+/* fantasy start/sit evidence rows — label | bar | note. minmax(0,1fr) so the note can shrink instead of overflowing */
+.fanev{display:grid;grid-template-columns:128px 130px minmax(0,1fr);align-items:center;gap:10px;margin:6px 0;font-size:11.5px}
+.fanev .el{font-weight:800;font-size:10.5px;text-align:right;color:var(--text);line-height:1.2}
+.fanev .eb{position:relative;height:16px;background:#eef2f8;border-radius:5px;overflow:hidden}
+.fanev .eb>i{position:absolute;top:0;bottom:0;border-radius:5px}
+.fanev .en{font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+/* personnel-fit rows — grouping | share | bar | delta | note */
+.fanpf{display:grid;grid-template-columns:98px 68px 118px 56px minmax(0,1fr);align-items:center;gap:8px;margin:6px 0;font-size:11.5px}
+.fanpf .el{font-weight:800;font-size:10.5px;color:var(--text)}
+.fanpf .es{font-size:10px;font-weight:700;color:var(--muted);text-align:right}
+.fanpf .eb{position:relative;height:16px;background:#eef2f8;border-radius:5px;overflow:hidden}
+.fanpf .eb>i{position:absolute;top:0;bottom:0;border-radius:5px}
+.fanpf .ev{font-weight:800;font-size:11px}
+.fanpf .en{font-size:10px;color:var(--muted);font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+/* narrow: a note column can't survive next to the fixed ones - drop it onto its own full-width line */
+@media(max-width:760px){
+ .fanev{grid-template-columns:minmax(0,1fr) 110px;gap:6px 8px;margin:9px 0}
+ .fanev .el{text-align:left}
+ .fanev .en{grid-column:1/-1;margin-top:-4px}
+ .fanpf{grid-template-columns:minmax(0,1fr) 58px 84px 50px;gap:5px 7px;margin:9px 0}
+ .fanpf .en{grid-column:1/-1;margin-top:-3px}
+}
 .fzrow.clk{cursor:pointer;border-radius:5px;transition:background .12s}
 .fzrow.clk:hover{background:#eef2f8}
 .fzrow.on{background:#e3ecf7;box-shadow:inset 2px 0 0 var(--navy2)}
@@ -2785,16 +2807,19 @@ function drawFanTab(){
  return FANTAB==='board'?drawFanBoard():drawFantasy();
 }
 // ---- Week Board: score every qualified player on the slate, surface the starts and the fades ----
-let BOARD={week:1,pos:'ALL'};
+let BOARD={week:1,pos:'ALL',game:''};
 function drawFanBoard(){
  const box=$('#fanbody');if(!box)return;
  const SC=schedule(), wks=SC.weeks, w=BOARD.week;
  const games=weekGames(w);
+ if(BOARD.game&&!games.find(g=>g.a+'|'+g.b===BOARD.game))BOARD.game=''; // week changed out from under the pick
+ const G=BOARD.game?BOARD.game.split('|'):null;
  const rows=[];
  ['QB','RB','WR','TE'].forEach(pos=>{
   if(BOARD.pos!=='ALL'&&BOARD.pos!==pos)return;
   fanPool(pos).forEach(pl=>{
    const opp=oppFor(pl.team,w);if(!opp)return;              // bye week or team not on this slate
+   if(G&&pl.team!==G[0]&&pl.team!==G[1])return;             // collapsed to a single game
    const M=fanMatchup(pl,pos,opp);if(!M||M.score==null)return;
    const ff=ffFor(pl);
    rows.push({pl,pos,opp,score:M.score,verdict:M.verdict,ffr:ff?ff.ffr:null,rank:ff?ff.rank:null});
@@ -2804,22 +2829,30 @@ function drawFanBoard(){
  const byes=Object.keys(NFLNAMES).filter(t=>!oppFor(t,w));
  const wkSeg=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Week</span><div class="subnav" style="margin:0;flex-wrap:wrap">${wks.map(x=>`<button data-bw="${x}" class="${x===w?'on':''}">${x}</button>`).join('')}</div></div>`;
  const posSeg=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Position</span><div class="subnav" style="margin:0">${['ALL','QB','RB','WR','TE'].map(p=>`<button data-bp="${p}" class="${BOARD.pos===p?'on':''}">${p}</button>`).join('')}</div></div>`;
- const gameChips=games.map(g=>`<span class="tzc">${teamLogo(g.a,'sm')}${g.a} <span style="color:#98a2b3">@</span> ${teamLogo(g.b,'sm')}${g.b}</span>`).join('');
+ const gameChips=`<div class="gmbar" style="max-width:none">${games.map(g=>{const k=g.a+'|'+g.b,on=BOARD.game===k;
+   return `<button class="gmchip${on?' on':''}" data-bg="${k}" title="collapse the board to ${g.a} @ ${g.b}">${teamLogo(g.a,'gm')}<span>${g.a}</span><span style="opacity:.55">@</span>${teamLogo(g.b,'gm')}<span>${g.b}</span></button>`;}).join('')}${BOARD.game?'<button class="gmchip clr" data-bg="" title="show the whole slate">✕ all games</button>':''}</div>`;
  const card=(r,i)=>`<tr class="${r.pl.team==='NO'?'no':''}"><td class="rkc">${i+1}</td><td class="tl">${teamCell(r.pl.team,r.pl.name)}</td><td>${r.pos}</td><td class="tl"><span class="hint">vs</span> ${teamCell(r.opp,r.opp)}</td><td><b style="color:${r.verdict[1]}">${r.score.toFixed(0)}</b></td><td><span class="edge" style="background:${r.verdict[1]};font-size:9.5px;padding:2px 8px">${r.verdict[0]}</span></td><td>${r.pl.eff==null?'—':r.pl.eff}</td><td>${r.ffr==null?'—':r.ffr}</td><td>${r.rank==null?'—':'#'+r.rank}</td></tr>`;
  const starts=rows.slice(0,12), fades=rows.slice(-12).reverse();
  const tbl2=(list,off)=>`<div class="scroll"><table><thead><tr><th data-rk="1">#</th><th class="tl">Player</th><th>Pos</th><th class="tl">Matchup</th><th>Score</th><th>Verdict</th><th>Eff</th><th>FF</th><th>Dyn</th></tr></thead><tbody>${list.map((r,i)=>card(r,off?rows.length-list.length+i:i)).join('')}</tbody></table></div>`;
+ // collapsed to one game: skip the slate-wide starts/fades split and show just that matchup, split by team
+ const gameView=G?(()=>{
+   const [A,B]=G, side=t=>rows.filter(r=>r.pl.team===t);
+   const teamCard=(t,o)=>`<div class="card" style="border-top:3px solid ${teamColor(t)}"><div class="sechead">${teamLogo(t)}${teamName(t)} <span class="hint" style="font-weight:600">vs ${o} · ${side(t).length} players</span></div>${side(t).length?tbl2(side(t),false):'<p class="note">No qualified players.</p>'}</div>`;
+   return `<div class="grid2">${teamCard(A,B)}${teamCard(B,A)}</div>`;
+ })():'';
  box.innerHTML=`<div class="card"><div style="display:flex;flex-wrap:wrap;align-items:flex-end">${wkSeg}${posSeg}</div>
-  <div style="margin-top:4px">${gameChips}</div>
-  <p class="note" style="margin:6px 0 0"><b>Week ${w} — ${games.length} games</b>, ${rows.length} qualified players scored${byes.length?` · on bye: ${byes.join(', ')}`:''}. Every player is run through the same matchup model as the Analysis tab; this ranks the whole slate by it.</p>
+  <div style="margin-top:4px"><span class="subcap" style="display:block;margin-bottom:3px">Game <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0">tap one to collapse the board to that matchup</span></span>${gameChips}</div>
+  <p class="note" style="margin:6px 0 0">${G?`<b>${G[0]} @ ${G[1]}</b> — ${rows.length} qualified players in this game.`:`<b>Week ${w} — ${games.length} games</b>, ${rows.length} qualified players scored${byes.length?` · on bye: ${byes.join(', ')}`:''}.`} Every player is run through the same matchup model as the Analysis tab.</p>
   <p class="note" style="margin:4px 0 0"><b>⚠ This is the 2025 slate</b> — reconstructed from the play data, because the dashboard has no 2026 schedule yet. Give me the 2026 schedule and this board switches to it with no other change.</p></div>
- <div class="grid2">
+ ${G?gameView:`<div class="grid2">
   <div class="card"><div class="sechead o">▲ Top starts — week ${w}</div>${tbl2(starts,false)}</div>
   <div class="card"><div class="sechead d">▼ Top fades — week ${w}</div>${tbl2(fades,true)}</div>
- </div>
- <div class="card"><div class="sechead">Full slate — ${rows.length} players</div>${tbl2(rows,false)}
+ </div>`}
+ <div class="card"><div class="sechead">${G?`${G[0]} @ ${G[1]} — all ${rows.length} players ranked`:`Full slate — ${rows.length} players`}</div>${tbl2(rows,false)}
   <p class="note"><b>Score</b> = the matchup model (player quality, defense strength in the relevant phase, EPA allowed, personnel fit, man/zone fit, OL). Open <b>Start / Sit Analysis</b> for any player to see the components behind his number. <b>Eff</b> = Efficiency Rating (PFF-derived) · <b>FF</b>/<b>Dyn</b> = Fantasy Footballers rating / dynasty rank.</p></div>`;
- box.querySelectorAll('[data-bw]').forEach(b=>b.onclick=()=>{BOARD.week=+b.dataset.bw;drawFanBoard();});
+ box.querySelectorAll('[data-bw]').forEach(b=>b.onclick=()=>{BOARD.week=+b.dataset.bw;BOARD.game='';drawFanBoard();});
  box.querySelectorAll('[data-bp]').forEach(b=>b.onclick=()=>{BOARD.pos=b.dataset.bp;drawFanBoard();});
+ box.querySelectorAll('[data-bg]').forEach(b=>b.onclick=()=>{const v=b.dataset.bg;BOARD.game=(BOARD.game===v)?'':v;drawFanBoard();});
 }
 function drawFantasy(){
  const box=$('#fanbody');if(!box)return;
@@ -2841,12 +2874,12 @@ function drawFantasy(){
  // personnel-fit detail: their grouping mix vs how this defence fares against each
  const pfRows=(PF&&PF.rows.length)?PF.rows.slice(0,5).map(r=>{
    const good=r.d>=0,col=good?'#1e7a34':'#b23b3b',w=Math.min(46,Math.abs(r.d)/0.25*46),left=good?50:50-w;
-   return `<div class="fzrow"><span class="zl" style="width:118px">${r.c} personnel</span><span class="hint" style="flex:0 0 74px;text-align:right;font-weight:700">${r.share.toFixed(0)}% of snaps</span><span class="zb" style="flex:0 0 130px"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="zv" style="color:${col};flex:0 0 54px">${r.d>0?'+':''}${r.d.toFixed(3)}</span><span class="hint" style="flex:1;text-align:left">${r.n} snaps faced · ${T} allows ${r.epa>0?'+':''}${r.epa.toFixed(3)} here vs ${PF.base>0?'+':''}${PF.base.toFixed(3)} overall</span></div>`;
+   return `<div class="fanpf"><span class="el">${r.c} personnel</span><span class="es">${r.share.toFixed(0)}% of snaps</span><span class="eb"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="ev" style="color:${col}">${r.d>0?'+':''}${r.d.toFixed(3)}</span><span class="en">${r.n} snaps faced · ${T} allows ${r.epa>0?'+':''}${r.epa.toFixed(3)} here vs ${PF.base>0?'+':''}${PF.base.toFixed(3)} overall</span></div>`;
  }).join(''):'<p class="note">Not enough charted personnel snaps for this pairing.</p>';
  const v=M?M.verdict:['—','#8a93a3'];
  const mx=M&&M.ev.length?Math.max(...M.ev.map(e=>Math.abs(e.c)),0.5):1;
  const evRows=M?M.ev.map(e=>{const w=Math.min(46,Math.abs(e.c)/mx*46),pos=e.c>=0,left=pos?50:50-w,col=pos?'#1e7a34':'#b23b3b';
-   return `<div class="fzrow"><span class="zl" style="width:150px">${e.lab}</span><span class="zb" style="flex:0 0 150px"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="hint" style="flex:1;text-align:left;font-weight:600">${e.note}</span></div>`;}).join(''):'';
+   return `<div class="fanev"><span class="el">${e.lab}</span><span class="eb"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="en">${e.note}</span></div>`;}).join(''):'';
  const ffCard=ff?`<div class="idrow"><span class="pill">FF Rating <b>${ff.ffr}</b></span><span class="pill">Dynasty rank <b>#${ff.rank}</b></span><span class="pill">Age <b>${ff.age}</b></span><span class="pill">Andy ${ff.andy} · Jason ${ff.jason} · Mike ${ff.mike}</span>${ff.spread!=null&&ff.spread>=15?`<span class="pill" style="background:#fdf3dc;border-color:#e6c877;color:#7a5406">⚠ analysts split by ${ff.spread}</span>`:''}</div>`:'<p class="note">Not on the Fantasy Footballers dynasty board.</p>';
  const st=(v2,l,c,sub)=>`<div><div class="v" style="color:${c||'var(--ink)'}">${v2}</div><div class="l">${l}</div>${sub?`<div style="font-size:8.5px;color:#98a2b3;margin-top:1px">${sub}</div>`:''}</div>`;
  const prof=FAN.pos==='QB'?st(pl.btt==null?'—':pl.btt+'%','Big-time throw%')+st(pl.twp==null?'—':pl.twp+'%','Turnover-worthy%')+st(pl.acc==null?'—':pl.acc+'%','Accuracy%')+st(pl.ypa==null?'—':pl.ypa,'YPA')
