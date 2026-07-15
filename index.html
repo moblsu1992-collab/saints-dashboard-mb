@@ -532,7 +532,7 @@ const PAGE={
  opponents:{k:'Step 4 · The slate',t:'Opponent Scouting Packages',d:`One card per team, 2026 opponents first — the matchup verdict, their tendencies, and live situational splits.`,h:['Pick any team','Switch Matchup / Offense / Defense','Filter by play type, score state & down']},
  field:{k:'Step 5 · The field',t:'Field Tendencies — Offense & Defense',d:`Every throw and carry, plotted on the field, for a team's offense or the plays its defense faced — filter by player, personnel, lane, zone, down, quarter and game.`,h:['Offense / Defense toggle','Pick a team','Pass chart / Run chart / Tendency map','Filter by game, personnel & more','Tap any dot for the play']},
  philosophy:{k:'Step 6 · Reference',t:'Coaching Philosophy & Scheme Lineage — 2026',d:`Each team's 2026 staff and the coaching tree its scheme descends from.`,h:['Filter by division']},
- fantasy:{k:'Step 7 · Fantasy',t:'Fantasy — Start / Sit Matchup Tool',d:`Pick a player and the defense he faces. Fuses the Efficiency Rating (PFF-derived), the FF Rating (Fantasy Footballers dynasty board) and this dashboard's own nflverse play-by-play into one matchup read.`,h:['Pick a player','Pick the opposing defense','Read the verdict + the evidence behind it']}
+ fantasy:{k:'Step 7 · Fantasy',t:'Fantasy — Dynasty Rankings',d:`The Fantasy Footballers dynasty startup board — all 472 players, the consensus rank plus Andy, Jason and Mike individually, and where the three of them disagree.`,h:['Filter by position','Search any player or team','Spread column = how split the analysts are']}
 };
 function pageHead(id){const p=PAGE[id];if(!p)return '';
  const hints=(p.h||[]).map(x=>`<span class="hint">${x}</span>`).join('');
@@ -2666,10 +2666,45 @@ function fanMatchup(pl,pos,T){
  const verdict=score==null?['—','#8a93a3']:score>=66?['START','#1e7a34']:score>=58?['Lean start','#4a8f4f']:score>=42?['Toss-up','#8a7a2a']:score>=34?['Lean sit','#b06a10']:['SIT','#a23b3b'];
  return {score,verdict,ev:ev.sort((a,b)=>Math.abs(b.c)-Math.abs(a.c))};
 }
+// ---- FF dynasty rankings board (the lead view) ----
+let FANTAB='rank', FFPOS='ALL', FFQ='';
+function ffPosRanks(){
+ const F=window.FFX,by={};
+ F.players.forEach(p=>{(by[p.pos]=by[p.pos]||[]).push(p);});
+ Object.values(by).forEach(a=>{a.sort((x,y)=>x.rank-y.rank);a.forEach((p,i)=>{p.posRank=i+1;});});
+}
+function drawFFRank(){
+ const box=$('#fanbody');if(!box)return;
+ const F=window.FFX;ffPosRanks();
+ const q=FFQ.trim().toLowerCase();
+ let rows=F.players.filter(p=>(FFPOS==='ALL'||p.pos===FFPOS)&&(!q||p.name.toLowerCase().includes(q)||(p.team||'').toLowerCase().includes(q)));
+ const counts={};F.players.forEach(p=>{counts[p.pos]=(counts[p.pos]||0)+1;});
+ const seg=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Position</span><div class="subnav" style="margin:0">${[['ALL','All ('+F.players.length+')'],['QB','QB ('+(counts.QB||0)+')'],['RB','RB ('+(counts.RB||0)+')'],['WR','WR ('+(counts.WR||0)+')'],['TE','TE ('+(counts.TE||0)+')']].map(([v,l])=>`<button data-ffpos="${v}" class="${FFPOS===v?'on':''}">${l}</button>`).join('')}</div></div>`;
+ const search=`<div class="subgroup${q?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">Search</span><input id="ffq" type="search" placeholder="player or team…" value="${FFQ.replace(/"/g,'&quot;')}" style="min-height:34px;max-width:200px;padding:4px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:12px"></div>`;
+ const spreads=F.players.map(p=>p.spread).filter(x=>typeof x==='number');
+ const trs=rows.length?rows.map(p=>{
+   const sp=p.spread, spSt=(typeof sp==='number'&&sp>=25)?'background:rgba(214,134,33,.22);font-weight:800':(typeof sp==='number'&&sp>=15)?'background:rgba(214,134,33,.11)':'';
+   const nm=p.team?teamCell(p.team,p.name):`${p.name} <span class="hint">FA</span>`;
+   return `<tr class="${p.team==='NO'?'no':''}"><td class="rkc">${p.rank}</td><td class="tl">${nm}</td><td><b>${p.pos}${p.posRank}</b></td><td>${p.age==null?'—':p.age}</td><td><b>${p.ffr}</b></td><td>${p.andy==null?'—':p.andy}</td><td>${p.jason==null?'—':p.jason}</td><td>${p.mike==null?'—':p.mike}</td><td style="${spSt}">${sp==null?'—':sp}</td></tr>`;
+ }).join(''):'<tr><td colspan="9" class="muted">No players match.</td></tr>';
+ box.innerHTML=`<div class="card"><div style="display:flex;flex-wrap:wrap;align-items:flex-end">${seg}${search}</div>
+  <p class="note" style="margin:2px 0 0">Showing <b>${rows.length}</b> of ${F.players.length}. <b>FF Rating</b> rescales the consensus rank to 0–100 (top = 100). <b>Spread</b> = the gap between the highest and lowest of the three analysts — shaded when they disagree by 15+ (amber) or 25+ (bold), which is where the interesting debates are.</p></div>
+ <div class="card"><div class="scroll"><table><thead><tr><th data-rk="1">#</th><th class="tl">Player</th><th>Pos</th><th>Age</th><th>FF Rating</th><th>Andy</th><th>Jason</th><th>Mike</th><th>Spread</th></tr></thead><tbody>${trs}</tbody></table></div>
+  <p class="note"><b>Source:</b> Fantasy Footballers Podcast dynasty startup rankings (Andy, Jason &amp; Mike). <b>FF Rating</b> is derived from their consensus rank; the ranks themselves are theirs. Saints players highlighted.</p></div>`;
+ box.querySelectorAll('[data-ffpos]').forEach(b=>b.onclick=()=>{FFPOS=b.dataset.ffpos;drawFFRank();});
+ const qi=$('#ffq');if(qi)qi.oninput=e=>{FFQ=e.target.value;drawFFRank();const n=$('#ffq');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length);}};
+}
 function renderFantasy(){
  const s=$('#fantasy');if(!s)return;
- if(!window.PFFX||!window.FFX){s.innerHTML=`${pageHead('fantasy')}<div class="card banner">Fantasy ratings not loaded — needs data/pff.js &amp; data/ff.js.</div>`;return;}
- s.innerHTML=`${pageHead('fantasy')}<div id="fanbody"></div>`;
+ if(!window.FFX){s.innerHTML=`${pageHead('fantasy')}<div class="card banner">Fantasy rankings not loaded — needs data/ff.js.</div>`;return;}
+ const tabs=[['rank','Dynasty Rankings'],['startsit','Start / Sit (wip)']];
+ s.innerHTML=`${pageHead('fantasy')}<div class="subnav" id="fantabs">${tabs.map(([id,l])=>`<button data-fantab="${id}" class="${FANTAB===id?'on':''}">${l}</button>`).join('')}</div><div id="fanbody"></div>`;
+ s.querySelectorAll('[data-fantab]').forEach(b=>b.onclick=()=>{FANTAB=b.dataset.fantab;s.querySelectorAll('#fantabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');drawFanTab();});
+ drawFanTab();
+}
+function drawFanTab(){
+ if(FANTAB==='rank')return drawFFRank();
+ if(!window.PFFX){const b=$('#fanbody');if(b)b.innerHTML='<div class="card banner">Start/Sit needs data/pff.js.</div>';return;}
  drawFantasy();
 }
 function drawFantasy(){
