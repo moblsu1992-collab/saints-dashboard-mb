@@ -310,6 +310,20 @@ select:hover{border-color:var(--navy3)}
 .fc-group.filton select{border-color:#c9901e!important;background:#fdf6e6;box-shadow:0 0 0 2px rgba(201,144,30,.18)}
 .filtpill{display:inline-flex;align-items:center;gap:6px;background:#fdf3dc;border:1px solid #e6c877;color:#7a5406;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;margin:2px 0 8px}
 .filtpill b{color:#5a3d04}
+/* tendency-explorer filter grouping */
+.tmfhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 6px}
+.tmfttl{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+.tmfn{display:inline-block;background:#fdf3dc;border:1px solid #e6c877;color:#7a5406;font-size:9.5px;font-weight:800;padding:1px 7px;border-radius:10px;margin-left:5px;text-transform:none;letter-spacing:0}
+.tmfset{border:1px solid var(--line2);border-radius:10px;padding:7px 10px 1px;margin:0 0 8px;background:#fbfcfd}
+.tmfcap{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#8a94a3;margin:0 0 5px}
+.tmfrow{display:flex;flex-wrap:wrap;align-items:flex-end}
+details.tmfdet{padding-bottom:1px}
+details.tmfdet>summary{cursor:pointer;list-style:none;user-select:none;margin-bottom:0}
+details.tmfdet>summary::-webkit-details-marker{display:none}
+details.tmfdet>summary::before{content:"▸ ";color:#b7c0cd}
+details.tmfdet[open]>summary{margin-bottom:5px}
+details.tmfdet[open]>summary::before{content:"▾ "}
+.tmfset .tzsel{margin:0 0 6px}
 /* active-filter highlight on the tendency-explorer control groups */
 .subgroup.tmfilton>.subcap{color:#9a6a08}
 .subgroup.tmfilton>.subcap::after{content:" ●";color:#c9901e;font-size:8px}
@@ -1784,7 +1798,10 @@ function drawFieldPage(){
 // ---------- TENDENCY FIELD MAP — what they call, by zone × down/distance/score ----------
 // Slim rows = the scan layer: only stats that DEVIATE from this team's own cut-wide baseline get color.
 // Tap a zone to open its dossier: full call detail, down-by-down context, and the results layer.
-let TMAP={side:'off',down:'all',dist:'all',score:'all',zones:[],ptype:'all',outcome:'all',player:'',pa:'all',series:'all',prevtype:'all',prevresult:'all',stage:'all',pgroup:'pass',psort:'epa',pdir:1};
+let TMAP={side:'off',down:'all',dist:'all',score:'all',zones:[],ptype:'all',outcome:'all',player:'',pers:'all',pa:'all',series:'all',prevtype:'all',prevresult:'all',stage:'all',pgroup:'pass',psort:'epa',pdir:1};
+// every play-level filter on the explorer, for the "N active" count + clear-all
+function tmActiveCount(){let n=0;['down','dist','score','ptype','outcome','pers','pa','series','prevtype','prevresult','stage'].forEach(k=>{if(TMAP[k]!=='all')n++;});if(TMAP.player)n++;if(TMAP.zones.length)n++;if(FFILT.qtrs.length)n++;if(FFILT.games.length)n++;return n;}
+function tmClearAll(){['down','dist','score','ptype','outcome','pers','pa','series','prevtype','prevresult','stage'].forEach(k=>TMAP[k]='all');TMAP.player='';TMAP.zones=[];FFILT.qtrs=[];FFILT.games=[];}
 function renderTendMap(){
  const body=$('#fieldbody');if(!body)return;
  const ab=curFZTeam;
@@ -1794,9 +1811,10 @@ function renderTendMap(){
  // per-row field indices differ between pass and rush rows
  const IX={pass:{dn:7,ytg:21,sd:20,yl:6,form:19,ay:4,loc:5,yg:8,epa:10,succ:11,out:12,td:13,route:18,pers:14,mz:15,cov:16,box:17,qtr:24,pa:25,dseq:26,sfirst:27,prevpt:28,prevsucc:29,qb:2,rec:3},
            rush:{dn:6,ytg:19,sd:18,yl:5,form:17,gap:3,dir:4,yg:7,epa:8,succ:9,td:10,fum:11,pers:12,mz:13,cov:14,box:15,qtr:20,dseq:21,sfirst:22,prevpt:23,prevsucc:24,run:2}};
- const keep=(p,I,ignoreDown,ignoreZone)=>{
+ const keep=(p,I,ignoreDown,ignoreZone,ignorePers)=>{
   if(FFILT.games.length&&!FFILT.games.includes(p[0]))return false;
   if(FFILT.qtrs.length&&!FFILT.qtrs.includes(p[I.qtr]))return false;
+  if(!ignorePers&&TMAP.pers!=='all'){const c=p[I.pers];if(c==null||String(c)!==String(TMAP.pers))return false;}
   if(!ignoreDown&&TMAP.down!=='all'&&p[I.dn]!==+TMAP.down)return false;
   const y=p[I.ytg];if(TMAP.dist==='short'&&!(y!=null&&y<=3))return false;if(TMAP.dist==='med'&&!(y!=null&&y>=4&&y<=7))return false;if(TMAP.dist==='long'&&!(y!=null&&y>=8))return false;
   const sd=p[I.sd];if(TMAP.score==='one'&&!(sd!=null&&Math.abs(sd)<=8))return false;if(TMAP.score==='trail'&&!(sd!=null&&sd<0))return false;if(TMAP.score==='lead'&&!(sd!=null&&sd>0))return false;
@@ -1812,6 +1830,11 @@ function renderTendMap(){
   if(TMAP.ptype==='pass'&&!isPass)return [];if(TMAP.ptype==='run'&&isPass)return [];
   if(TMAP.outcome==='all')return arr;const th=isPass?15:10;
   return arr.filter(p=>TMAP.outcome==='succ'?p[I.succ]===1:TMAP.outcome==='expl'?(p[I.yg]||0)>=th:TMAP.outcome==='td'?p[I.td]===1:true);};
+ // personnel dropdown pool — same cut with the personnel filter itself lifted, so every grouping stays selectable
+ const persCount={};
+ ptOut(src.pass.filter(p=>keep(p,IX.pass,false,false,true)),IX.pass,true).forEach(p=>{const c=p[IX.pass.pers];if(c!=null)persCount[c]=(persCount[c]||0)+1;});
+ ptOut(src.rush.filter(p=>keep(p,IX.rush,false,false,true)),IX.rush,false).forEach(p=>{const c=p[IX.rush.pers];if(c!=null)persCount[c]=(persCount[c]||0)+1;});
+ if(TMAP.pers!=='all'&&!persCount[TMAP.pers])TMAP.pers='all';
  const poolPass=ptOut(src.pass.filter(p=>keep(p,IX.pass)),IX.pass,true), poolRush=ptOut(src.rush.filter(p=>keep(p,IX.rush)),IX.rush,false);
  // player dropdown pool (before the player filter)
  const pcount={};poolPass.forEach(p=>{if(p[2])pcount[p[2]]=(pcount[p[2]]||0)+1;if(p[3])pcount[p[3]]=(pcount[p[3]]||0)+1;});poolRush.forEach(p=>{if(p[2])pcount[p[2]]=(pcount[p[2]]||0)+1;});
@@ -1979,22 +2002,32 @@ function renderTendMap(){
  // controls
  const seg=(k,cur,opts,cap)=>{const act=String(cur)!==String(opts[0][0]);return `<div class="subgroup${act?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">${cap}</span><div class="subnav" style="margin:0">${opts.map(([v,l])=>`<button data-tm-${k}="${v}" class="${String(cur)===String(v)?'on':''}">${l}</button>`).join('')}</div></div>`;};
  const gmB=gameBar();
- const row1=`<div style="display:flex;flex-wrap:wrap;align-items:flex-end">${
-  seg('down',TMAP.down,[['all','All'],['1','1st'],['2','2nd'],['3','3rd'],['4','4th']],'Down')}${
-  seg('dist',TMAP.dist,[['all','All'],['short','Short (≤3)'],['med','Medium (4–7)'],['long','Long (8+)']],'Distance')}${
-  seg('score',TMAP.score,[['all','All'],['one','One-score'],['trail','Trailing'],['lead','Leading']],'Score')}<div class="subgroup${FFILT.qtrs.length?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">Quarter</span>${qtrBar()}</div>${gmB?`<div class="subgroup${FFILT.games.length?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">Game ${FIELDSIDE==='def'?'(opponent)':''}</span>${gmB}</div>`:''}</div>`;
  const players=Object.keys(pcount).sort((a,b)=>pcount[b]-pcount[a]);
  const playerSel=`<div class="subgroup${TMAP.player?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">${FIELDSIDE==='def'?'Opp player':'Player'}</span><select id="tmplayer" style="margin:0;min-height:34px;max-width:200px">${['<option value="">All players</option>'].concat(players.map(nm=>`<option value="${nm}"${nm===TMAP.player?' selected':''}>${nm} (${pcount[nm]})</option>`)).join('')}</select></div>`;
- const rowB=`<div style="display:flex;flex-wrap:wrap;align-items:flex-end">${
-  seg('ptype',TMAP.ptype,[['all','All plays'],['pass','Pass'],['run','Run']],'Play type')}${
-  seg('outcome',TMAP.outcome,[['all','All'],['succ','Successful'],['expl','Explosive'],['td','TD']],'Outcome')}${
-  playerSel}</div>`;
- const row2=`<div style="display:flex;flex-wrap:wrap;align-items:flex-end">${
-  TMAP.side==='off'?seg('pa',TMAP.pa,[['all','All'],['pa','Play-action'],['no','No PA']],'Play-action'):''}${
-  seg('series',TMAP.series,[['all','All'],['first','1st of series'],['later','Later downs']],'Series')}${
-  seg('prevtype',TMAP.prevtype,[['all','All'],['run','After run'],['pass','After pass']],'Prev play')}${
-  seg('prevresult',TMAP.prevresult,[['all','All'],['succ','After success'],['fail','After failure']],'Prev result')}${
-  seg('stage',TMAP.stage,[['all','All'],['open','Opening'],['early','Early (2–4)'],['late','Late (5+)']],'Drive stage')}</div>`;
+ const persList=Object.keys(persCount).sort((a,b)=>persCount[b]-persCount[a]);
+ const persSel=`<div class="subgroup${TMAP.pers!=='all'?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">Personnel${FIELDSIDE==='def'?' faced':''}</span><select id="tmpers" style="margin:0;min-height:34px;max-width:190px"><option value="all">All personnel</option>${persList.map(c=>`<option value="${c}"${String(c)===String(TMAP.pers)?' selected':''}>${persTag(c)} (${persCount[c]})</option>`).join('')}</select></div>`;
+ // ---- filters, grouped: Situation · Field zone · Play · (Sequence & drive, collapsed until used) ----
+ const fset=(cap,inner)=>`<div class="tmfset"><div class="tmfcap">${cap}</div><div class="tmfrow">${inner}</div></div>`;
+ const gSituation=fset('Situation',
+  seg('down',TMAP.down,[['all','All'],['1','1st'],['2','2nd'],['3','3rd'],['4','4th']],'Down')+
+  seg('dist',TMAP.dist,[['all','All'],['short','Short (≤3)'],['med','Medium (4–7)'],['long','Long (8+)']],'Distance')+
+  seg('score',TMAP.score,[['all','All'],['one','One-score'],['trail','Trailing'],['lead','Leading']],'Score')+
+  `<div class="subgroup${FFILT.qtrs.length?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">Quarter</span>${qtrBar()}</div>`+
+  (gmB?`<div class="subgroup${FFILT.games.length?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">Game ${FIELDSIDE==='def'?'(opponent)':''}</span>${gmB}</div>`:''));
+ const gPlay=fset('Play',
+  seg('ptype',TMAP.ptype,[['all','All plays'],['pass','Pass'],['run','Run']],'Play type')+
+  persSel+
+  (TMAP.side==='off'?seg('pa',TMAP.pa,[['all','All'],['pa','Play-action'],['no','No PA']],'Play-action'):'')+
+  seg('outcome',TMAP.outcome,[['all','All'],['succ','Successful'],['expl','Explosive'],['td','TD']],'Outcome')+
+  playerSel);
+ const seqN=['series','prevtype','prevresult','stage'].filter(k=>TMAP[k]!=='all').length;
+ const gSeq=`<details class="tmfset tmfdet"${seqN?' open':''}><summary class="tmfcap">Sequence &amp; drive${seqN?` <span class="tmfn">${seqN} active</span>`:' <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0">series · previous play · drive stage</span>'}</summary><div class="tmfrow">${
+  seg('series',TMAP.series,[['all','All'],['first','1st of series'],['later','Later downs']],'Series')+
+  seg('prevtype',TMAP.prevtype,[['all','All'],['run','After run'],['pass','After pass']],'Prev play')+
+  seg('prevresult',TMAP.prevresult,[['all','All'],['succ','After success'],['fail','After failure']],'Prev result')+
+  seg('stage',TMAP.stage,[['all','All'],['open','Opening'],['early','Early (2–4)'],['late','Late (5+)']],'Drive stage')}</div></details>`;
+ const nAct=tmActiveCount();
+ const filtHead=`<div class="tmfhead"><span class="tmfttl">Filters${nAct?` <span class="tmfn">${nAct} active</span>`:''}</span>${nAct?'<button class="fclear" id="tmclear">✕ clear all filters</button>':''}</div>`;
  // horizontal, left-to-right zone FILTER (multi-select); counts are zone-agnostic within the cut
  const passNZ=src.pass.filter(p=>keep(p,IX.pass,false,true)), rushNZ=src.rush.filter(p=>keep(p,IX.rush,false,true));
  const zoneSel=`<div class="tzsel">${zoneOrder.map((z,i)=>{const on=TMAP.zones.includes(z);const cnt=passNZ.filter(x=>x[IX.pass.yl]!=null&&zoneOf(x[IX.pass.yl])===z).length+rushNZ.filter(x=>x[IX.rush.yl]!=null&&zoneOf(x[IX.rush.yl])===z).length;return `<button class="zchip${on?' on':''}" data-tzsel="${z}" title="${ZYD[z]}"><span class="zt">${ZSHORT[z]}</span><span class="zn">${cnt} snaps</span></button>`+(i<zoneOrder.length-1?'<span class="zarrow">▸</span>':'');}).join('')}</div>`;
@@ -2003,15 +2036,15 @@ function renderTendMap(){
   ident=`<p class="note" style="margin:0 0 8px"><b>Season identity:</b> <b style="color:var(--navy2)">${f.fam}</b> — ${f.why}.</p>`;}}
  const summary=`<div class="tzstat" style="grid-template-columns:repeat(5,1fr);margin:8px 0 12px">${
   st(o.n,'Snaps')+st(fp(o.passRate),'Pass rate',null,'lg '+fp(L.passRate))+st(fmtE(o.epa),inv?'EPA allowed':'EPA/play',eCol(o.epa),'lg '+fmtE(L.epa))+st(fp(o.succ),'Success%',null,'lg '+fp(L.succ))+st(fp(o.expl),'Explosive%',null,'lg '+fp(L.expl))}</div>`;
- const activeCut=[TMAP.ptype!=='all'?({pass:'passes',run:'runs'}[TMAP.ptype]):'',TMAP.outcome!=='all'?({succ:'successful',expl:'explosive',td:'TD'}[TMAP.outcome]):'',TMAP.player?TMAP.player:'',FFILT.games.length?gameNote():'',qtrNote(),TMAP.zones.length?TMAP.zones.map(z=>ZSHORT[z]).join(' + '):'',TMAP.pa!=='all'?(TMAP.pa==='pa'?'play-action':'no PA'):'',TMAP.series!=='all'?(TMAP.series==='first'?'1st of series':'later downs'):'',(TMAP.prevtype!=='all'||TMAP.prevresult!=='all')?('after '+[{succ:'successful',fail:'failed'}[TMAP.prevresult]||'',{run:'run',pass:'pass'}[TMAP.prevtype]||(TMAP.prevresult!=='all'?'play':'')].filter(Boolean).join(' ')):'',TMAP.stage!=='all'?({open:'opening play',early:'early in drive',late:'late in drive'}[TMAP.stage]):''].filter(Boolean).join(' · ');
+ const activeCut=[TMAP.ptype!=='all'?({pass:'passes',run:'runs'}[TMAP.ptype]):'',TMAP.outcome!=='all'?({succ:'successful',expl:'explosive',td:'TD'}[TMAP.outcome]):'',TMAP.pers!=='all'?TMAP.pers+' personnel':'',TMAP.player?TMAP.player:'',FFILT.games.length?gameNote():'',qtrNote(),TMAP.zones.length?TMAP.zones.map(z=>ZSHORT[z]).join(' + '):'',TMAP.pa!=='all'?(TMAP.pa==='pa'?'play-action':'no PA'):'',TMAP.series!=='all'?(TMAP.series==='first'?'1st of series':'later downs'):'',(TMAP.prevtype!=='all'||TMAP.prevresult!=='all')?('after '+[{succ:'successful',fail:'failed'}[TMAP.prevresult]||'',{run:'run',pass:'pass'}[TMAP.prevtype]||(TMAP.prevresult!=='all'?'play':'')].filter(Boolean).join(' ')):'',TMAP.stage!=='all'?({open:'opening play',early:'early in drive',late:'late in drive'}[TMAP.stage]):''].filter(Boolean).join(' · ');
  body.innerHTML=`<div class="card" style="border-top:3px solid ${teamColor(ab)};--tmac:${teamColor(ab)}">
   <h2 style="margin-top:0" class="tchip">${teamLogo(ab)}${teamName(ab)} — tendency explorer ${TMAP.side==='off'?'(offense)':'(defense)'}</h2>
-  <p class="note" style="margin:0 0 10px">Everything ${TMAP.side==='off'?'they call':'their defense shows'} for the situation you pick — <b>no clicking to expand</b>. Stack any filters below (field zone, quarter, down &amp; distance, play-action, series, previous play, drive stage); the calls, results, splits and player tables all recut live${activeCut?`. <b>Now showing:</b> ${activeCut}`:'.'}</p>
-  ${row1}
-  ${rowB}
-  <span class="subcap" style="display:block;margin:2px 0 3px">Field zone <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0;color:#98a2b3">own goal → opponent goal · filter to one or more (none = whole field)</span></span>
-  ${zoneSel}
-  ${row2}
+  <p class="note" style="margin:0 0 10px">Everything ${TMAP.side==='off'?'they call':'their defense shows'} for the situation you pick — <b>no clicking to expand</b>. Stack any filters below; the calls, results, splits and player tables all recut live${activeCut?`. <b>Now showing:</b> ${activeCut}`:'.'}</p>
+  ${filtHead}
+  ${gSituation}
+  <div class="tmfset"><div class="tmfcap">Field zone <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0">own goal → opponent goal · pick one or more (none = whole field)</span></div>${zoneSel}</div>
+  ${gPlay}
+  ${gSeq}
   ${ident}
   ${summary}
   <div class="grid2">${calls}<div style="display:flex;flex-direction:column;gap:12px">${results}${personnelBlock}</div></div>
@@ -2021,6 +2054,8 @@ function renderTendMap(){
   <p class="note" style="margin-top:10px">Red tick / thin bar = league average in the same cut. Run direction/gap = closest public proxy for run concept. "Runs" include QB scrambles; routes are the targeted receiver's. Play-action, coverage &amp; personnel from FTN / participation charting.</p>
  </div>`;
  body.querySelectorAll('[data-tzsel]').forEach(b=>b.onclick=()=>{const z=b.dataset.tzsel,i=TMAP.zones.indexOf(z);if(i<0)TMAP.zones.push(z);else TMAP.zones.splice(i,1);renderTendMap();});
+ const tps=$('#tmpers');if(tps)tps.onchange=e=>{TMAP.pers=e.target.value;renderTendMap();};
+ const tcl=$('#tmclear');if(tcl)tcl.onclick=()=>{tmClearAll();renderTendMap();};
  bindQtrChips(body,renderTendMap);
  bindGameChips(body,renderTendMap);
  ['side','down','dist','score','ptype','outcome','pa','series','prevtype','prevresult','stage','pgroup'].forEach(k=>{const dk='data-tm-'+k;body.querySelectorAll('['+dk+']').forEach(b=>b.onclick=()=>{TMAP[k]=b.getAttribute(dk);renderTendMap();});});
