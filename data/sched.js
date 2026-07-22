@@ -1,4 +1,4 @@
-window.SCHED={"season":2026,"gen":"2026-07-15","src":"nflverse schedules release (games.csv)",
+window.SCHED={"season":2026,"gen":"2026-07-22","src":"nflverse schedules release (games.csv)",
 "weeks":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18],
 "games":[
 {"wk":1,"away":"ARI","home":"LAC","date":"2026-09-13"},
