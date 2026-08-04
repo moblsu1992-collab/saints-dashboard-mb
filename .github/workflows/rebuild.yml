@@ -14,7 +14,9 @@ on:
   workflow_dispatch:        # lets you run it on demand from the Actions tab
 
 env:
-  # Bump to 2026 once the 2026 regular season kicks off (Sept 2026).
+  # Bump to 2026 once the 2026 regular season kicks off (Sept 2026). Because 2025 is the
+  # flat baseline (data/*.js), any SEASON != 2025 is auto-written to data/<SEASON>/ as a
+  # namespaced bundle and added to the Year toggle — the 2025 baseline stays frozen.
   SEASON: "2025"
 
 jobs:
@@ -39,17 +41,28 @@ jobs:
           curl -sSL --retry 3 -o games.csv   "$base/schedules/games.csv"
           ls -lh pbp.csv.gz part.csv ftn.csv roster.csv pfrrush.csv pfrdef.csv games.csv
 
-      - name: Rebuild play-level data
+      # Play data, scheme aggregates and special teams for SEASON.
+      # For the flat BASELINE season these overwrite data/*.js in place (the app loads
+      # them synchronously). For any OTHER season they are built into ./stage and then
+      # wrapped into data/<SEASON>/ as self-registering regData bundles, so bumping
+      # SEASON to 2026 never clobbers the 2025 baseline — the Year toggle picks up the
+      # new folder automatically via build_years.ps1.
+      - name: Rebuild season data
         shell: pwsh
-        run: ./build_plays.ps1 -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir . -Year ([int]$env:SEASON)
-
-      - name: Rebuild scheme-fingerprint aggregates
-        shell: pwsh
-        run: ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir . -Year ([int]$env:SEASON)
-
-      - name: Rebuild special-teams dataset
-        shell: pwsh
-        run: ./build_st.ps1 -Gz pbp.csv.gz -OutDir . -Year ([int]$env:SEASON)
+        run: |
+          $S = [int]$env:SEASON
+          $BASE = 2025
+          if ($S -eq $BASE) {
+            ./build_plays.ps1  -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir . -Year $S
+            ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir . -Year $S
+            ./build_st.ps1     -Gz pbp.csv.gz -OutDir . -Year $S
+          } else {
+            New-Item -ItemType Directory -Force stage/data | Out-Null
+            ./build_plays.ps1  -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir ./stage -Year $S
+            ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir ./stage -Year $S
+            ./build_st.ps1     -Gz pbp.csv.gz -OutDir ./stage -Year $S
+            ./build_years.ps1  -Bundle $S -StageDir ./stage
+          }
 
       # Schedule for the UPCOMING season (matchups + rest for the fantasy start/sit + week board),
       # which is one year ahead of the play-data SEASON until that season kicks off.
@@ -57,9 +70,15 @@ jobs:
         shell: pwsh
         run: ./build_sched.ps1 -Games games.csv -OutDir . -Year ([int]$env:SEASON + 1)
 
+      # Regenerate the Year-toggle manifest from whatever seasons now exist on disk.
+      - name: Regenerate season manifest
+        shell: pwsh
+        run: ./build_years.ps1
+
       - name: Commit refreshed data
         run: |
           rm -f pbp.csv.gz part.csv ftn.csv
+          rm -rf stage
           git config user.name  "nflverse-refresh-bot"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add data/
