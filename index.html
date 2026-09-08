@@ -3,32 +3,33 @@
 <title>Saints NFL Scouting Dashboard — 2025/26</title>
 <style>
 :root{
- --navy:#0e1830;--navy2:#1f3a63;--navy3:#2c4d80;
- --gold:#d4bd8a;--gold-deep:#b6975a;--gold-soft:#f3ebda;
- --ink:#15233f;--text:#28323f;--muted:#64748b;--faint:#94a3b8;
- --line:#e7ebf2;--line2:#eff2f8;--bg:#eef2f8;--card:#ffffff;
- --blue:#2e5496;--good:#1e7a34;--good-bg:#e7f3ea;--bad:#b23b3b;--bad-bg:#fbeaea;--warn:#b07d12;
- --r-sm:6px;--r:10px;--r-lg:14px;
+ /* Modernist design system — Archivo, accent #ec3013, squared corners, warm neutral ground */
+ --navy:#201e1d;--navy2:#2d2b2b;--navy3:#444141;
+ --gold:#ec3013;--gold-deep:#c92a10;--gold-soft:#fdece9;
+ --ink:#201e1d;--text:#201e1d;--muted:#6b6a68;--faint:#9b9797;
+ --line:#d7d3d3;--line2:#e6e3e3;--bg:#f3f2f2;--card:#ffffff;
+ --blue:#c92a10;--good:#1e7a34;--good-bg:#e2f0e5;--bad:#c02a17;--bad-bg:#fbe4e0;--warn:#b07d12;
+ --r-sm:0px;--r:0px;--r-lg:0px;
  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;
- --sh-1:0 1px 2px rgba(16,26,51,.04);--sh-2:0 2px 8px rgba(16,26,51,.06);--sh-3:0 8px 24px rgba(16,26,51,.10);
- --font:"Inter","Segoe UI",-apple-system,Roboto,Helvetica,Arial,sans-serif;
+ --sh-1:0 1px 2px rgba(45,43,43,.10);--sh-2:0 3px 10px rgba(45,43,43,.13);--sh-3:0 12px 32px rgba(45,43,43,.20);
+ --font:"Archivo","Segoe UI",-apple-system,Roboto,Helvetica,Arial,sans-serif;
  --mono:"SF Mono",ui-monospace,"Cascadia Mono","Segoe UI Mono",Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;font-feature-settings:"tnum" 1,"cv05" 1}
-::selection{background:var(--gold);color:var(--navy)}
+::selection{background:var(--gold);color:#fff}
 /* ---------- header ---------- */
-header{background:radial-gradient(120% 140% at 0% 0%,var(--navy2),var(--navy) 70%);color:#fff;padding:18px 22px 16px;border-bottom:2px solid var(--gold)}
+header{background:var(--bg);color:var(--ink);padding:20px 22px 16px;border-bottom:2px solid var(--ink)}
 header h1{margin:0;font-size:21px;font-weight:800;letter-spacing:-.2px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
 header h1 .g{color:var(--gold)}
 header .sub{font-size:12px;opacity:.78;margin-top:4px;font-weight:500;letter-spacing:.1px}
 /* ---------- nav ---------- */
-nav{display:flex;flex-wrap:wrap;gap:5px;padding:9px 16px;background:var(--navy);position:sticky;top:0;z-index:30;box-shadow:var(--sh-2)}
-nav button{position:relative;background:transparent;color:#c4d0e4;border:1px solid transparent;padding:7px 13px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;transition:background .15s,color .15s,transform .1s}
-nav button:hover{background:rgba(255,255,255,.10);color:#fff}
+nav{display:flex;flex-wrap:wrap;gap:5px;padding:9px 16px;background:var(--bg);position:sticky;top:0;z-index:30;border-bottom:2px solid var(--line)}
+nav button{position:relative;background:transparent;color:var(--text);border:1px solid transparent;padding:7px 13px;border-radius:0;cursor:pointer;font-size:12.5px;font-weight:700;transition:background .15s,color .15s,transform .1s}
+nav button:hover{background:color-mix(in srgb,var(--ink) 7%,transparent);color:var(--ink)}
 nav button:active{transform:translateY(1px)}
-nav button.on{background:var(--gold);color:var(--navy);border-color:var(--gold);box-shadow:0 2px 8px rgba(212,189,138,.3)}
+nav button.on{background:var(--gold);color:#fff;border-color:var(--gold);box-shadow:none}
 /* ---------- layout ---------- */
 main{max-width:1200px;margin:0 auto;padding:22px 18px 72px}
 section{display:none}
@@ -42,102 +43,100 @@ h2{font-size:20px;font-weight:800;color:var(--ink);margin:4px 0 3px;letter-spaci
 /* ---------- tables ---------- */
 table{border-collapse:collapse;width:100%;font-size:12.5px}
 th,td{padding:7px 10px;border:none;border-bottom:1px solid var(--line2);text-align:center;white-space:nowrap}
-thead th{background:var(--navy2);color:#eaf0fa;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px;cursor:pointer;position:relative;padding-right:18px;user-select:none}
-thead th:first-child{border-top-left-radius:var(--r-sm)}
-thead th:last-child{border-top-right-radius:var(--r-sm)}
+thead th{background:transparent;color:var(--muted);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;cursor:pointer;position:relative;padding-right:18px;user-select:none;border-bottom:2px solid var(--ink)}
 thead th::after{content:"⇅";position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:9px;opacity:.32}
-thead th:hover{background:var(--navy3)}
+thead th:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}
 thead th:hover::after{opacity:.9}
 thead th.tl{padding-right:18px}
 td.tl,th.tl{text-align:left}
 tbody tr{transition:background .12s}
-tbody tr:nth-child(even) td{background:#fafbfd}
-tbody tr:hover td{background:#eef3fa}
+tbody tr:nth-child(even) td{background:color-mix(in srgb,var(--ink) 3%,transparent)}
+tbody tr:hover td{background:color-mix(in srgb,var(--ink) 7%,transparent)}
 tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
 tbody td{color:var(--text)}
 tr.no td{background:var(--gold-soft) !important;font-weight:700;color:var(--ink)}
 tr.no td:first-child{box-shadow:inset 3px 0 0 var(--gold-deep)}
-tr.lg td{background:#fbf6e8 !important;font-weight:700;color:#6a6450}
+tr.lg td{background:color-mix(in srgb,var(--ink) 6%,transparent) !important;font-weight:700;color:var(--muted)}
 .scroll{overflow-x:auto;border-radius:var(--r-sm)}
 .scroll::-webkit-scrollbar{height:9px}
-.scroll::-webkit-scrollbar-thumb{background:#cdd6e4;border-radius:9px}
+.scroll::-webkit-scrollbar-thumb{background:#cfcbcb;border-radius:9px}
 .scroll::-webkit-scrollbar-track{background:transparent}
 /* ---------- sub-navigation (segmented) ---------- */
-.subnav{display:inline-flex;gap:3px;flex-wrap:wrap;margin:0 0 16px;padding:3px;background:#e7ecf4;border-radius:10px}
-.subnav button{background:transparent;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-weight:600;font-size:12.5px;color:#5a6675;transition:background .15s,color .15s,box-shadow .15s}
-.subnav button:hover{color:var(--navy2)}
-.subnav button.on{background:#fff;color:var(--navy2);box-shadow:var(--sh-1)}
+.subnav{display:inline-flex;gap:3px;flex-wrap:wrap;margin:0 0 16px;padding:3px;background:#eae9e9;border:1px solid var(--line);border-radius:0}
+.subnav button{background:transparent;border:none;padding:6px 14px;border-radius:0;cursor:pointer;font-weight:700;font-size:12.5px;color:var(--muted);transition:background .15s,color .15s,box-shadow .15s}
+.subnav button:hover{color:var(--ink)}
+.subnav button.on{background:var(--gold);color:#fff;box-shadow:none}
 .subnav select{margin:0}
 .subgroups{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:flex-end;margin:0 0 16px}
 .subgroup{display:flex;flex-direction:column;gap:4px}
 .subgroup .subnav{margin:0}
-.subcap{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#8a93a3;padding-left:5px}
+.subcap{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#6b6a68;padding-left:5px}
 .fzgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
-.fzc{background:#f5f7fa;border:1px solid #e3e7ee;border-radius:8px;padding:8px;cursor:pointer;transition:background .12s}
-.fzc:hover{background:#eaf0f8}
-.fzc-h{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8a93a3;margin-bottom:4px}
+.fzc{background:#eae9e9;border:1px solid #d7d3d3;border-radius:8px;padding:8px;cursor:pointer;transition:background .12s}
+.fzc:hover{background:#f6f5f5}
+.fzc-h{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#6b6a68;margin-bottom:4px}
 .fzc-l{font-size:12.5px;font-weight:600;color:var(--navy2);line-height:1.2}
-.fzc-v{font-size:11.5px;color:#5a6675;margin-top:2px}
+.fzc-v{font-size:11.5px;color:#605d5d;margin-top:2px}
 .fzc-rz{font-size:10px;font-weight:600;color:#a2543a;margin-top:2px}
-.shcard{border-top:3px solid #2e5496}
+.shcard{border-top:3px solid #c92a10}
 .shcoaches{display:flex;flex-wrap:wrap;gap:6px 18px;margin:4px 0 8px}
 .shc{display:flex;flex-direction:column;gap:1px}
-.shc-r{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8a93a3}
+.shc-r{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b6a68}
 .shc-n{font-size:13px;font-weight:600;color:var(--navy2)}
-.shnew{font-size:8.5px;font-weight:800;color:#fff;background:#a23b3b;padding:1px 4px;border-radius:4px;vertical-align:middle;letter-spacing:.04em}
-.shwarn{background:rgba(178,59,59,.09);border-left:3px solid #a23b3b;padding:7px 10px;border-radius:6px;font-size:12px;color:#7a2e2e;margin:6px 0}
+.shnew{font-size:8.5px;font-weight:800;color:#fff;background:#c02a17;padding:1px 4px;border-radius:4px;vertical-align:middle;letter-spacing:.04em}
+.shwarn{background:rgba(178,59,59,.09);border-left:3px solid #c02a17;padding:7px 10px;border-radius:6px;font-size:12px;color:#7a2e2e;margin:6px 0}
 .shkv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:5px 14px;margin:4px 0 8px}
-.shkv .shk{font-size:11px;color:#5a6675;margin-right:6px}
+.shkv .shk{font-size:11px;color:#605d5d;margin-right:6px}
 .shkv .shv{font-size:13px;font-weight:600;color:var(--navy2)}
-.shrk{font-size:11px;font-weight:700;color:#8a93a3}
+.shrk{font-size:11px;font-weight:700;color:#6b6a68}
 .shunits{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:5px}
-.shunit{background:#f5f7fa;border:1px solid #e3e7ee;border-radius:7px;padding:5px 8px;display:flex;justify-content:space-between;align-items:baseline}
-.shul{font-size:11px;color:#5a6675}
+.shunit{background:#eae9e9;border:1px solid #d7d3d3;border-radius:7px;padding:5px 8px;display:flex;justify-content:space-between;align-items:baseline}
+.shul{font-size:11px;color:#605d5d}
 .shur{font-size:13px;font-weight:700}
 .shros{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:4px 16px;font-size:12px}
 .shros ul{margin:2px 0 6px;padding-left:16px}.shros li{margin:1px 0}
-.shros b{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#8a93a3}
+.shros b{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#6b6a68}
 .shgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(116px,1fr));gap:6px;margin:4px 0 10px}
-.shtile{background:#f5f7fa;border:1px solid #e3e7ee;border-radius:8px;padding:7px 9px}
-.sht-l{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#8a93a3;line-height:1.15;display:block;margin-bottom:3px}
+.shtile{background:#eae9e9;border:1px solid #d7d3d3;border-radius:8px;padding:7px 9px}
+.sht-l{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.02em;color:#6b6a68;line-height:1.15;display:block;margin-bottom:3px}
 .sht-row{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
 .sht-v{font-size:15px;font-weight:800;color:var(--navy2);line-height:1.1}
 .sht-r{font-size:11.5px;font-weight:800;white-space:nowrap}
-.fzmute{color:#aab4c2}
+.fzmute{color:#b3afaf}
 tr.cl{cursor:pointer}
-tr.cl:hover td{background:#eef2f8}
+tr.cl:hover td{background:#eae9e9}
 /* ---------- overview hero strip ---------- */
 .hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:8px;margin:0 0 18px}
 .htile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;box-shadow:var(--sh-1)}
-.htile .hl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#8a93a3;display:block;margin-bottom:4px;line-height:1.2}
+.htile .hl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#6b6a68;display:block;margin-bottom:4px;line-height:1.2}
 .htile .hv{font-size:20px;font-weight:800;color:var(--ink);line-height:1.05;letter-spacing:-.3px}
 .htile .hs{font-size:10.5px;font-weight:600;color:var(--muted);margin-top:3px;line-height:1.25}
 .htile.go{cursor:pointer;transition:border-color .12s,box-shadow .12s}
 .htile.go:hover{border-color:var(--gold);box-shadow:var(--sh-2)}
 /* ---------- drill affordances ---------- */
 .fzc.cl{position:relative}
-.fzc.cl::after{content:"top 50 ▸";position:absolute;top:7px;right:8px;font-size:8.5px;font-weight:700;color:#a8b2c2;letter-spacing:.03em}
+.fzc.cl::after{content:"top 50 ▸";position:absolute;top:7px;right:8px;font-size:8.5px;font-weight:700;color:#b3afaf;letter-spacing:.03em}
 .fzc.cl:hover::after{color:var(--blue)}
 @media(max-width:640px){.fzc.cl::after{content:"▸"}}
 /* ---------- back to top ---------- */
-#totop{position:fixed;right:16px;bottom:18px;z-index:40;width:42px;height:42px;border-radius:50%;border:1px solid var(--gold);background:var(--navy);color:var(--gold);font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(14,24,48,.35);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .2s,transform .2s}
+#totop{position:fixed;right:16px;bottom:18px;z-index:40;width:42px;height:42px;border-radius:0;border:2px solid var(--ink);background:var(--ink);color:#fff;font-size:17px;font-weight:800;cursor:pointer;box-shadow:var(--sh-2);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .2s,transform .2s}
 #totop.show{opacity:.94;pointer-events:auto;transform:none}
 #totop:hover{opacity:1}
 /* ---------- chips, pills, badges ---------- */
 .tier{display:inline-block;padding:2px 10px;border-radius:11px;font-size:11px;font-weight:700;color:#fff;letter-spacing:.2px}
 .bar{height:9px;border-radius:5px;background:var(--gold)}
-.barwrap{background:#eef1f6;border-radius:5px;width:70px;display:inline-block;vertical-align:middle;overflow:hidden}
+.barwrap{background:#eae9e9;border-radius:5px;width:70px;display:inline-block;vertical-align:middle;overflow:hidden}
 .wts{display:flex;gap:22px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
 .wts label{font-size:12px;font-weight:600;color:var(--text);display:flex;flex-direction:column;gap:4px}
 .wts input{width:160px;accent-color:var(--navy2)}
-.pill{display:inline-flex;align-items:center;gap:4px;background:#f1f5fb;border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:11.5px;margin:2px 4px 2px 0;color:var(--text)}
+.pill{display:inline-flex;align-items:center;gap:4px;background:#eae9e9;border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:11.5px;margin:2px 4px 2px 0;color:var(--text)}
 .note{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.5}
 .banner{background:linear-gradient(0deg,#fdeee9,#fcf3ef);border:1px solid #f1c4b4;border-left:3px solid #d9794f;color:#8a3417;padding:9px 12px;border-radius:var(--r-sm);font-size:12.5px;margin:10px 0;font-weight:500}
 .staff{font-size:13px;color:var(--muted);margin:3px 0 6px;font-weight:500}
 .oppbtns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
 .oppbtns button{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:6px 11px 6px 8px;cursor:pointer;font-weight:700;font-size:12px;color:var(--text);transition:border-color .15s,background .15s,transform .1s,box-shadow .15s}
 .oppbtns button:hover{border-color:var(--gold);box-shadow:var(--sh-1);transform:translateY(-1px)}
-.oppbtns button.on{background:var(--gold);border-color:var(--gold);color:var(--navy);box-shadow:0 2px 8px rgba(212,189,138,.35)}
+.oppbtns button.on{background:var(--gold);border-color:var(--gold);color:var(--navy);box-shadow:0 2px 8px rgba(236,48,19,.35)}
 .oppbtns .obdiv{flex-basis:100%;height:0;margin:1px 0}
 .oppbtns .oblab{width:100%;font-size:9.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:2px 0 -2px}
 .tlogo{width:18px;height:18px;object-fit:contain;vertical-align:middle;flex:none}
@@ -151,9 +150,9 @@ h2 .tlogo{width:30px;height:30px}
 .tcaccent{display:inline-block;width:4px;height:1.05em;border-radius:2px;vertical-align:-2px;margin-right:7px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 @media(max-width:780px){.grid2{grid-template-columns:1fr}}
-.sechead{font-weight:700;color:#fff;background:var(--navy2);padding:7px 12px;border-radius:8px;margin:18px 0 10px;font-size:12.5px;letter-spacing:.2px;display:flex;align-items:center;gap:6px}
-.sechead.o{background:linear-gradient(90deg,#2e5496,#3a63a8)}
-.sechead.d{background:linear-gradient(90deg,#375623,#48702f)}
+.sechead{font-weight:800;color:#fff;background:var(--ink);padding:7px 12px;border-radius:0;margin:18px 0 10px;font-size:12.5px;letter-spacing:.2px;display:flex;align-items:center;gap:6px}
+.sechead.o{background:var(--gold)}
+.sechead.d{background:var(--navy2)}
 small.src{color:rgba(255,255,255,.7);font-weight:500}
 .sechead small.src{color:rgba(255,255,255,.72)}
 select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;color:var(--text);cursor:pointer}
@@ -162,12 +161,12 @@ select:hover{border-color:var(--navy3)}
 .intro{display:flex;align-items:flex-start;gap:10px;background:linear-gradient(90deg,var(--gold-soft),transparent);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 var(--r-sm) var(--r-sm) 0;margin:0 0 16px;font-size:12.5px;color:var(--text);line-height:1.5}
 .kicker{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--gold-deep);margin-bottom:2px}
 /* ---------- interactivity hint ---------- */
-.hint{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--muted);background:#eef2f8;border:1px dashed #c5cfde;border-radius:999px;padding:2px 9px}
+.hint{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--muted);background:#eae9e9;border:1px dashed #cbc7c7;border-radius:999px;padding:2px 9px}
 .hint::before{content:"☰";font-size:10px;opacity:.7}
 .hintrow{display:flex;gap:6px;flex-wrap:wrap;margin:-8px 0 18px}
 .pagehead{margin-bottom:2px}
 /* ---------- data-viz primitives ---------- */
-.hbar{position:relative;height:8px;border-radius:999px;background:#e9edf4;overflow:hidden;width:100%}
+.hbar{position:relative;height:8px;border-radius:999px;background:#e6e3e3;overflow:hidden;width:100%}
 .hbar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--navy3),var(--navy2))}
 .hbar.gold>i{background:linear-gradient(90deg,var(--gold),var(--gold-deep))}
 .statline{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:11.5px;color:var(--muted);margin:3px 0}
@@ -181,7 +180,7 @@ select:hover{border-color:var(--navy3)}
 .mbhdr .mbscale{font-size:8.5px;color:var(--faint);font-weight:700;white-space:nowrap}
 .mbrow{display:grid;grid-template-columns:92px 1fr 50px;align-items:center;gap:9px;margin:6px 0}
 .mblab{font-size:11px;color:var(--text);font-weight:600;text-align:right;line-height:1.15}
-.mbtrack{position:relative;height:22px;background:linear-gradient(90deg,#e9f1ea,#f3f5f9 55%,#f8efef);border:1px solid var(--line);border-radius:7px}
+.mbtrack{position:relative;height:22px;background:linear-gradient(90deg,#e9f1ea,#eae9e9 55%,#f8efef);border:1px solid var(--line);border-radius:7px}
 .mbline{position:absolute;top:50%;height:4px;transform:translateY(-50%);border-radius:3px;opacity:.65}
 .mbdot{position:absolute;top:50%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:#fff;box-shadow:0 1px 3px rgba(16,26,51,.3);border:1.5px solid #fff;z-index:2}
 .mbdot.a{background:var(--navy2)}
@@ -189,7 +188,7 @@ select:hover{border-color:var(--navy3)}
 .mbedge{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.2px;text-align:center;border-radius:6px;padding:3px 2px;line-height:1.1}
 .mbedge.opp{color:#9b1c1c;background:#fbeaea}
 .mbedge.sai{color:#7a5e1e;background:var(--gold-soft)}
-.mbedge.even{color:var(--faint);background:#f1f3f7}
+.mbedge.even{color:var(--faint);background:#eae9e9}
 .mbk{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin:0 2px 0 6px;border:1px solid #fff;box-shadow:0 0 0 1px var(--line)}
 .mbk.a{background:var(--navy2)}.mbk.b{background:var(--gold-deep)}
 .tblfb{margin-top:8px}
@@ -209,10 +208,10 @@ select:hover{border-color:var(--navy3)}
 .fdot{cursor:pointer;transition:r .1s}
 .fdot.sel{stroke:#111;stroke-width:2.2}
 .flegend{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
-.lgchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text);background:#f1f5fb;border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer;user-select:none;min-height:30px}
+.lgchip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--text);background:#eae9e9;border:1px solid var(--line);border-radius:999px;padding:4px 10px;cursor:pointer;user-select:none;min-height:30px}
 .lgchip.off{opacity:.38;text-decoration:line-through}
 .lgdot{width:11px;height:11px;border-radius:50%;display:inline-block}
-.fdetail{margin-top:10px;background:#f8fafd;border:1px solid var(--line);border-left:3px solid var(--navy2);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:9px 12px;font-size:12px;min-height:30px;color:var(--text)}
+.fdetail{margin-top:10px;background:#eae9e9;border:1px solid var(--line);border-left:3px solid var(--navy2);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:9px 12px;font-size:12px;min-height:30px;color:var(--text)}
 .fdetail .big{font-weight:800;color:var(--ink);font-size:13px}
 .fdetail .muted{color:var(--muted)}
 .fagg{min-width:0}
@@ -223,12 +222,12 @@ select:hover{border-color:var(--navy3)}
 .fstat .l{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);margin-top:2px}
 .fzrow{display:grid;grid-template-columns:74px 1fr 48px;align-items:center;gap:8px;margin:5px 0;font-size:11.5px}
 .fzrow .zl{font-weight:700;color:var(--text);text-align:right;font-size:10.5px}
-.fzrow .zb{position:relative;height:18px;background:#eef2f8;border-radius:5px;overflow:hidden}
+.fzrow .zb{position:relative;height:18px;background:#eae9e9;border-radius:5px;overflow:hidden}
 .fzrow .zb>i{position:absolute;top:0;bottom:0;border-radius:5px}
 .fzrow .zv{font-weight:800;text-align:left;font-size:11px}
 .frecs{width:100%;font-size:11.5px;border-collapse:collapse}
 .frecs th,.frecs td{padding:5px 7px;border-bottom:1px solid var(--line2);text-align:right;white-space:nowrap}
-.frecs th{background:var(--navy2);color:#eaf0fa;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;cursor:default;position:static}
+.frecs th{background:var(--navy2);color:#f6f5f5;font-size:9.5px;text-transform:uppercase;letter-spacing:.3px;cursor:default;position:static}
 .frecs td:first-child,.frecs th:first-child{text-align:left}
 .frecs tbody tr{cursor:pointer}
 .frecs tbody tr.sel td{background:var(--gold-soft);font-weight:700}
@@ -238,55 +237,55 @@ select:hover{border-color:var(--navy3)}
 .seqbars{margin-top:6px}
 .seqrow{display:grid;grid-template-columns:1fr 130px 44px;align-items:center;gap:10px;margin:7px 0;font-size:11.5px}
 .seql{color:var(--text);font-weight:600}
-.seqtrack{height:14px;background:#eef2f8;border-radius:7px;overflow:hidden}
+.seqtrack{height:14px;background:#eae9e9;border-radius:7px;overflow:hidden}
 .seqtrack>i{display:block;height:100%;background:linear-gradient(90deg,var(--navy3),var(--navy2));border-radius:7px}
 .seqv{font-weight:800;text-align:right;color:var(--navy2)}
 @media(max-width:520px){.seqrow{grid-template-columns:1fr 84px 38px}}
 .zfield{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh-1);background:#eef4ee;max-width:560px}
-.zfe{background:#16284a;color:#d4bd8a;text-align:center;font-size:10px;font-weight:800;letter-spacing:1.2px;padding:5px 4px}
-.zfe.b{background:#39404d;color:#cdd3de}
+.zfe{background:#201e1d;color:#d4bd8a;text-align:center;font-size:10px;font-weight:800;letter-spacing:1.2px;padding:5px 4px}
+.zfe.b{background:#39404d;color:#cfcbcb}
 .zband{display:grid;grid-template-columns:118px 1fr 66px;align-items:center;gap:12px;padding:9px 12px;border-bottom:1px solid #d7e2d7;border-left:5px solid var(--line)}
 .zband:nth-child(even){background:#e7f0e7}
-.zband .zn{font-weight:800;font-size:12.5px;color:#15233f}
-.zband .zsub{font-size:9.5px;color:#5a6675;font-weight:600;margin-top:1px}
+.zband .zn{font-weight:800;font-size:12.5px;color:#201e1d}
+.zband .zsub{font-size:9.5px;color:#605d5d;font-weight:600;margin-top:1px}
 .zbar2{height:10px;border-radius:5px;overflow:hidden;display:flex;margin:4px 0 2px;background:#fff}
-.zbar2 .p{background:#2e5496}.zbar2 .r{background:#d4bd8a}
+.zbar2 .p{background:#c92a10}.zbar2 .r{background:#d4bd8a}
 .zband .zstat{text-align:right}
 .zband .zstat .e{font-weight:800;font-size:16px;line-height:1}
-.zband .zstat .el{font-size:8.5px;color:#5a6675;font-weight:700;text-transform:uppercase;letter-spacing:.2px}
+.zband .zstat .el{font-size:8.5px;color:#605d5d;font-weight:700;text-transform:uppercase;letter-spacing:.2px}
 @media(max-width:520px){.zband{grid-template-columns:84px 1fr 50px;gap:8px;padding:8px 9px}}
 /* ---------- tendency field map ---------- */
 .tzwrap{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#f2f7f2}
-.tz-zn{font-weight:800;font-size:13px;color:#15233f}
-.tz-n{font-size:10px;color:#5a6675;font-weight:600;margin-top:1px}
-.tz-thin{font-size:11px;color:#8a93a3;font-style:italic}
+.tz-zn{font-weight:800;font-size:13px;color:#201e1d}
+.tz-n{font-size:10px;color:#605d5d;font-weight:600;margin-top:1px}
+.tz-thin{font-size:11px;color:#6b6a68;font-style:italic}
 .tzrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:10px 14px;border-bottom:1px solid #dbe6db;cursor:pointer;transition:background .12s,opacity .12s}
 .tzrow:nth-child(even){background:#eaf2ea}
-.tzrow:hover{background:#e2ecf5}
+.tzrow:hover{background:#eae9e9}
 .tzrow.dim{opacity:.45}
 .tzrow .tzlab{flex:0 0 128px}
 .tzrow .tzsplit{flex:0 0 150px}
 .tzrow .tzchips{flex:1 1 260px;min-width:0}
-.tzrow .tzcar{flex:0 0 14px;color:#8a93a3;font-size:12px;font-weight:800;text-align:right}
-.tzc{display:inline-block;font-size:10.5px;font-weight:700;padding:2.5px 9px;border-radius:9px;background:#e6ebf2;color:#3c4757;margin:2px 5px 2px 0;white-space:nowrap}
-.tzc.hi{background:rgba(46,84,150,.17);color:#1f3c72}
+.tzrow .tzcar{flex:0 0 14px;color:#6b6a68;font-size:12px;font-weight:800;text-align:right}
+.tzc{display:inline-block;font-size:10.5px;font-weight:700;padding:2.5px 9px;border-radius:9px;background:#e6e3e3;color:#3c4757;margin:2px 5px 2px 0;white-space:nowrap}
+.tzc.hi{background:rgba(201,42,16,.17);color:#201e1d}
 .tzc.lo{background:rgba(214,134,33,.19);color:#84560e}
 .tzopen{background:#fff;border-bottom:1px solid #dbe6db;box-shadow:inset 3px 0 0 var(--gold)}
 .tzopen .tzhd{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:12px 14px 2px;cursor:pointer}
 .tzgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:10px 14px 14px}
 @media(max-width:880px){.tzgrid{grid-template-columns:1fr}}
-.tzsec{background:#f8fafc;border:1px solid #e6ebf2;border-radius:9px;padding:10px 12px;min-width:0}
+.tzsec{background:#eae9e9;border:1px solid #e6e3e3;border-radius:9px;padding:10px 12px;min-width:0}
 .tzsec .tt{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#7f8b9d;margin-bottom:7px;display:block}
-.tzkv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:11.5px;padding:3px 0;border-bottom:1px dashed #e8edf3}
+.tzkv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:11.5px;padding:3px 0;border-bottom:1px dashed #e6e3e3}
 .tzkv:last-child{border-bottom:none}
-.tzkv .k{color:#5a6675;font-weight:600}
+.tzkv .k{color:#605d5d;font-weight:600}
 .tzkv b{font-weight:800;color:var(--ink);white-space:nowrap}
 .tzstat{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px}
-.tzstat>div{background:#fff;border:1px solid #e6ebf2;border-radius:7px;padding:6px 8px;text-align:center}
+.tzstat>div{background:#fff;border:1px solid #e6e3e3;border-radius:7px;padding:6px 8px;text-align:center}
 .tzstat .v{font-size:14.5px;font-weight:800;line-height:1.05}
-.tzstat .l{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#8a93a3;margin-top:2px}
+.tzstat .l{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#6b6a68;margin-top:2px}
 .tzsplits{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:2px 0 4px}
-.tzsplit.hi .zbar2{box-shadow:0 0 0 2px rgba(46,84,150,.45)}
+.tzsplit.hi .zbar2{box-shadow:0 0 0 2px rgba(201,42,16,.45)}
 .tzsplit.lo .zbar2{box-shadow:0 0 0 2px rgba(214,134,33,.5)}
 /* quarter multi-select chips */
 .qtrbar{display:inline-flex;gap:3px;flex-wrap:wrap;align-items:center}
@@ -314,13 +313,13 @@ select:hover{border-color:var(--navy3)}
 .tmfhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 6px}
 .tmfttl{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
 .tmfn{display:inline-block;background:#fdf3dc;border:1px solid #e6c877;color:#7a5406;font-size:9.5px;font-weight:800;padding:1px 7px;border-radius:10px;margin-left:5px;text-transform:none;letter-spacing:0}
-.tmfset{border:1px solid var(--line2);border-radius:10px;padding:7px 10px 1px;margin:0 0 8px;background:#fbfcfd}
-.tmfcap{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#8a94a3;margin:0 0 5px}
+.tmfset{border:1px solid var(--line2);border-radius:10px;padding:7px 10px 1px;margin:0 0 8px;background:#f6f5f5}
+.tmfcap{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:#6b6a68;margin:0 0 5px}
 .tmfrow{display:flex;flex-wrap:wrap;align-items:flex-end}
 details.tmfdet{padding-bottom:1px}
 details.tmfdet>summary{cursor:pointer;list-style:none;user-select:none;margin-bottom:0}
 details.tmfdet>summary::-webkit-details-marker{display:none}
-details.tmfdet>summary::before{content:"▸ ";color:#b7c0cd}
+details.tmfdet>summary::before{content:"▸ ";color:#c3bfbf}
 details.tmfdet[open]>summary{margin-bottom:5px}
 details.tmfdet[open]>summary::before{content:"▾ "}
 .tmfset .tzsel{margin:0 0 6px}
@@ -340,54 +339,54 @@ details.tmfdet[open]>summary::before{content:"▾ "}
 .tzsel .zchip.on{background:var(--tmac,var(--navy2));border-color:var(--tmac,var(--navy2))}
 .tzsel .zchip.on .zt,.tzsel .zchip.on .zn{color:#fff}
 .tzsel .zchip .zt{font-size:11.5px;font-weight:800;color:var(--navy2);line-height:1.15;display:block}
-.tzsel .zchip .zn{font-size:9px;font-weight:600;color:#8a93a3;margin-top:1px;display:block}
-.tzsel .zarrow{align-self:center;color:#b7c0cd;font-size:11px;font-weight:800;flex:0 0 auto}
+.tzsel .zchip .zn{font-size:9px;font-weight:600;color:#6b6a68;margin-top:1px;display:block}
+.tzsel .zarrow{align-self:center;color:#c3bfbf;font-size:11px;font-weight:800;flex:0 0 auto}
 @media(max-width:640px){.tzsel .zarrow{display:none}.tzsel .zchip{flex:1 1 40%}}
 /* dossier "calls" viz: bar + league tick, twin stacked mixes */
 .tqrow{display:grid;grid-template-columns:82px 1fr 96px;gap:8px;align-items:center;padding:3px 0}
-.tqlab{font-size:10px;font-weight:700;color:#5a6675;text-align:right;line-height:1.15}
-.tqtrack{position:relative;height:12px;background:#e8edf4;border-radius:6px}
+.tqlab{font-size:10px;font-weight:700;color:#605d5d;text-align:right;line-height:1.15}
+.tqtrack{position:relative;height:12px;background:#eae9e9;border-radius:6px}
 .tqtrack>i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--tmac,var(--navy2));min-width:2px;opacity:.9}
-.tqtrack .lgtick{position:absolute;top:-3px;bottom:-3px;width:2.5px;background:#a23b3b;border-radius:2px;opacity:.85;transform:translateX(-1px)}
+.tqtrack .lgtick{position:absolute;top:-3px;bottom:-3px;width:2.5px;background:#c02a17;border-radius:2px;opacity:.85;transform:translateX(-1px)}
 .tqv{font-size:11px;font-weight:800;color:var(--ink);white-space:nowrap}
-.tqv small{font-weight:600;color:#98a2b3;font-size:9px}
-.tqbar{display:flex;border-radius:5px;overflow:hidden;background:#e8edf4}
+.tqv small{font-weight:600;color:#9b9797;font-size:9px}
+.tqbar{display:flex;border-radius:5px;overflow:hidden;background:#eae9e9}
 .tqbar span{display:block;height:100%}
 .tqbar+.tqbar{margin-top:2px;opacity:.7}
-.tqleg{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;color:#5a6675;margin:2px 9px 0 0}
+.tqleg{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;color:#605d5d;margin:2px 9px 0 0}
 .tqleg i{width:8px;height:8px;border-radius:2px;display:inline-block}
 .tqleg b{font-size:10px}
-.tqleg small{color:#98a2b3}
-.tt2{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#a3adbd;display:block;margin:10px 0 3px;border-top:1px dashed #e6ebf2;padding-top:8px}
+.tqleg small{color:#9b9797}
+.tt2{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#9b9797;display:block;margin:10px 0 3px;border-top:1px dashed #e6e3e3;padding-top:8px}
 .bigcta{display:inline-flex;align-items:center;gap:6px;background:var(--gold);color:var(--navy);border:none;border-radius:9px;padding:11px 17px;font-weight:800;font-size:13px;cursor:pointer;margin-top:12px;box-shadow:var(--sh-1)}
 .bigcta:hover{box-shadow:var(--sh-2);transform:translateY(-1px)}
 /* ---------- tendency tracker (team mode) ---------- */
 .trkfilters{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-bottom:16px}
 .trkfilters .fc-group{display:flex;flex-direction:column;gap:4px}
 .trkfilters label{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
-.trkseg{display:inline-flex;gap:2px;padding:3px;background:#e7ecf4;border-radius:9px}
-.trkseg button{background:transparent;border:none;padding:6px 11px;border-radius:7px;cursor:pointer;font-weight:700;font-size:11.5px;color:#5a6675;min-height:34px}
+.trkseg{display:inline-flex;gap:2px;padding:3px;background:#eae9e9;border-radius:9px}
+.trkseg button{background:transparent;border:none;padding:6px 11px;border-radius:7px;cursor:pointer;font-weight:700;font-size:11.5px;color:#605d5d;min-height:34px}
 .trkseg button:hover{color:var(--navy2)}
 .trkseg button.on{background:#fff;color:var(--navy2);box-shadow:var(--sh-1)}
 .relrow{display:grid;grid-template-columns:120px 1fr 78px;align-items:center;gap:10px;margin:8px 0;font-size:11.5px}
 .rellab{font-weight:600;color:var(--text);text-align:right;font-size:11px;line-height:1.1}
-.reltrack{position:relative;height:16px;background:linear-gradient(90deg,#e8efe8,#e3e9f1 50%,#f6ece9);border-radius:8px;border:1px solid var(--line)}
+.reltrack{position:relative;height:16px;background:linear-gradient(90deg,#e8efe8,#e6e3e3 50%,#f6ece9);border-radius:8px;border:1px solid var(--line)}
 .relmk{position:absolute;top:-2px;width:5px;height:20px;border-radius:2px;transform:translateX(-50%);box-shadow:0 1px 2px rgba(0,0,0,.22)}
 .relval{text-align:left;font-weight:800;font-size:12px;white-space:nowrap}
 .relrk{font-size:9.5px;color:var(--muted);font-weight:700}
 @media(max-width:520px){.relrow{grid-template-columns:84px 1fr 66px;gap:7px}}
 .persrow{display:grid;grid-template-columns:48px 1fr 54px 56px;align-items:center;gap:8px;margin:6px 0;font-size:11.5px}
 .persrow .pn{font-weight:800;color:var(--ink)}
-.persrow .pb{height:13px;background:#eef2f8;border-radius:6px;overflow:hidden}
+.persrow .pb{height:13px;background:#eae9e9;border-radius:6px;overflow:hidden}
 .persrow .pb>i{display:block;height:100%;background:linear-gradient(90deg,var(--navy3),var(--navy2));border-radius:6px}
 .mzsplit{display:flex;height:26px;border-radius:7px;overflow:hidden;border:1px solid var(--line);margin:5px 0 4px}
 .mzsplit>div{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;min-width:0}
 .mzsplit .m{background:linear-gradient(90deg,#b07d2e,#caa24a)}
-.mzsplit .z{background:linear-gradient(90deg,#2e5496,#3a63a8)}
-.mstrip{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;background:#f8fafd;border:1px solid var(--line);border-radius:9px;padding:10px 14px;margin:10px 0}
-.mttl{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.mzsplit .z{background:linear-gradient(90deg,#c92a10,#c92a10)}
+.mstrip{display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center;background:#eae9e9;border:1px solid var(--line);border-radius:9px;padding:10px 14px;margin:10px 0}
+.mttl{font-size:11px;font-weight:700;color:#6b6a68;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
 .mbig{font-size:18px;font-weight:800;color:var(--navy2)}
-.msub{font-size:11.5px;color:#6b7280}
+.msub{font-size:11.5px;color:#6b6a68}
 .medge{text-align:center}
 .edge{display:inline-block;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:11px;white-space:nowrap}
 .rk{font-size:10.5px;font-weight:700}
@@ -400,18 +399,18 @@ details.tmfdet[open]>summary::before{content:"▾ "}
 @media(max-width:560px){.fz{grid-template-columns:1fr}}
 .fzz{background:linear-gradient(180deg,#f4f9f4,#ecf3ec);border:1px solid #cfdccf;border-radius:8px;padding:8px 9px;min-width:0}
 .fzh{font-weight:800;font-size:12px;color:#1f3864}
-.fzy{font-size:10px;color:#6b7280;margin-bottom:2px}
+.fzy{font-size:10px;color:#6b6a68;margin-bottom:2px}
 .fzbar{display:flex;height:12px;border-radius:4px;overflow:hidden;margin:6px 0 3px;background:#eee}
-.fzbar .p{background:#2e5496}.fzbar .r{background:#D3BC8D}
+.fzbar .p{background:#c92a10}.fzbar .r{background:#D3BC8D}
 .fzm{font-size:11px;margin:2.5px 0;color:#333}
 .fzd{font-size:9.5px;font-weight:700;margin-left:3px}
-.fzlab{display:block;font-size:9.5px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
+.fzlab{display:block;font-size:9.5px;font-weight:700;color:#6b6a68;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px}
 .fzrun{display:flex;gap:6px;align-items:flex-end}
 .fzrc{font-size:9.5px;text-align:center;color:#444;display:flex;flex-direction:column;align-items:center;gap:1px}
 .fzrb{width:16px;background:#D3BC8D;border-radius:2px 2px 0 0}
 .fzgr{display:grid;grid-template-columns:30px 1fr 1fr 1fr;gap:2px;margin-bottom:2px;font-size:9.5px;align-items:center}
 .fzgr>span{text-align:center}
-.fzgl{color:#6b7280;font-weight:700;text-align:right !important;padding-right:2px;font-size:9px}
+.fzgl{color:#6b6a68;font-weight:700;text-align:right !important;padding-right:2px;font-size:9px}
 .fzg{padding:3px 0;border-radius:3px;font-weight:600}
 .fzmute{opacity:.5}
 .bw{font-size:9.5px;font-weight:800}
@@ -420,11 +419,11 @@ details.tmfdet[open]>summary::before{content:"▾ "}
 .obox .oc .n{font-size:15px;letter-spacing:0}
 .oc.td{background:#fbf3dd;color:#8a6d1a;border-color:#e8d6a0}
 .oc.int{background:#fbeaea;color:#9b1c1c;border-color:#eec4c4}
-.oc.fum{background:#f0eefb;color:#4a2b8a;border-color:#d6cef0}
-.oc.neu{background:#eef2f8;color:#40506a;border-color:#d5deea}
+.oc.fum{background:#eae9e9;color:#4a2b8a;border-color:#d6cef0}
+.oc.neu{background:#eae9e9;color:#40506a;border-color:#d5deea}
 .rtrow{display:grid;grid-template-columns:104px 1fr 38px 36px 32px 30px;align-items:center;gap:7px;margin:5px 0;font-size:11px}
 .rtrow .rn{font-weight:700;color:var(--ink);font-size:9.5px;line-height:1.05;text-align:right}
-.rtrow .rb{height:14px;background:#eef2f8;border-radius:6px;overflow:hidden}
+.rtrow .rb{height:14px;background:#eae9e9;border-radius:6px;overflow:hidden}
 .rtrow .rb>i{display:block;height:100%;background:linear-gradient(90deg,var(--navy3),var(--navy2));border-radius:6px}
 .rtrow .rv{font-weight:800;font-size:11px;text-align:left}
 .rtrow .rtd{font-size:10px;font-weight:800;text-align:center;color:#8a6d1a}
@@ -434,7 +433,7 @@ details.tmfdet[open]>summary::before{content:"▾ "}
 .rtrow .rk{font-size:10px;color:var(--muted);font-weight:700;text-align:right}
 .runbrk td.tl{font-weight:700}
 .runbrk tbody tr[data-fk]{cursor:pointer}
-.runbrk tbody tr[data-fk]:hover td{background:#eef2f8}
+.runbrk tbody tr[data-fk]:hover td{background:#eae9e9}
 .runbrk tbody tr.on td{outline:1.5px solid var(--navy2);outline-offset:-2px}
 .runbrk tbody tr.on td.tl{box-shadow:inset 3px 0 0 var(--navy2)}
 .hfield{width:100%;background:#e4efe4;border:1px solid #cdd9cd;border-radius:10px;display:block}
@@ -454,14 +453,14 @@ details.tmfdet[open]>summary::before{content:"▾ "}
 /* fantasy start/sit evidence rows — label | bar | note. minmax(0,1fr) so the note can shrink instead of overflowing */
 .fanev{display:grid;grid-template-columns:128px 130px minmax(0,1fr);align-items:center;gap:10px;margin:6px 0;font-size:11.5px}
 .fanev .el{font-weight:800;font-size:10.5px;text-align:right;color:var(--text);line-height:1.2}
-.fanev .eb{position:relative;height:16px;background:#eef2f8;border-radius:5px;overflow:hidden}
+.fanev .eb{position:relative;height:16px;background:#eae9e9;border-radius:5px;overflow:hidden}
 .fanev .eb>i{position:absolute;top:0;bottom:0;border-radius:5px}
 .fanev .en{font-size:10.5px;color:var(--muted);font-weight:600;line-height:1.4;overflow-wrap:anywhere}
 /* personnel-fit rows — grouping | share | bar | delta | note */
 .fanpf{display:grid;grid-template-columns:98px 68px 118px 56px minmax(0,1fr);align-items:center;gap:8px;margin:6px 0;font-size:11.5px}
 .fanpf .el{font-weight:800;font-size:10.5px;color:var(--text)}
 .fanpf .es{font-size:10px;font-weight:700;color:var(--muted);text-align:right}
-.fanpf .eb{position:relative;height:16px;background:#eef2f8;border-radius:5px;overflow:hidden}
+.fanpf .eb{position:relative;height:16px;background:#eae9e9;border-radius:5px;overflow:hidden}
 .fanpf .eb>i{position:absolute;top:0;bottom:0;border-radius:5px}
 .fanpf .ev{font-weight:800;font-size:11px}
 .fanpf .en{font-size:10px;color:var(--muted);font-weight:600;line-height:1.4;overflow-wrap:anywhere}
@@ -474,13 +473,13 @@ details.tmfdet[open]>summary::before{content:"▾ "}
  .fanpf .en{grid-column:1/-1;margin-top:-3px}
 }
 .fzrow.clk{cursor:pointer;border-radius:5px;transition:background .12s}
-.fzrow.clk:hover{background:#eef2f8}
-.fzrow.on{background:#e3ecf7;box-shadow:inset 2px 0 0 var(--navy2)}
+.fzrow.clk:hover{background:#eae9e9}
+.fzrow.on{background:#eae9e9;box-shadow:inset 2px 0 0 var(--navy2)}
 .rtrow.clk{cursor:pointer;border-radius:5px;transition:background .12s}
-.rtrow.clk:hover{background:#eef2f8}
-.rtrow.on{background:#e3ecf7;box-shadow:inset 2px 0 0 var(--navy2)}
+.rtrow.clk:hover{background:#eae9e9}
+.rtrow.on{background:#eae9e9;box-shadow:inset 2px 0 0 var(--navy2)}
 .frecs tbody tr[data-fk]{cursor:pointer}
-.frecs tbody tr[data-fk]:hover td{background:#eef2f8}
+.frecs tbody tr[data-fk]:hover td{background:#eae9e9}
 .fclear{display:inline-flex;align-items:center;gap:5px;background:#fef0ee;color:#9b3116;border:1px solid #f1c4b4;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:800;cursor:pointer;margin:2px 0 10px}
 .rkc{color:#888;font-size:10.5px}
 th[data-rk]{min-width:18px}
@@ -488,16 +487,16 @@ th[data-rk]{min-width:18px}
 @media(max-width:980px){.rtv{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.rtv{grid-template-columns:repeat(2,1fr)}}
 .rtvp{min-width:0}
-details>summary{cursor:pointer;font-size:12px;font-weight:700;color:#2e5496;margin-top:10px}
+details>summary{cursor:pointer;font-size:12px;font-weight:700;color:#c92a10;margin-top:10px}
 th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 .yrbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 auto 14px;max-width:1180px;padding:0 16px}
-.yrbar .yrlab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#6b7a90}
-.yrbar .yrgroup{display:inline-flex;gap:4px;background:#eef2f8;border:1px solid #d6deea;border-radius:9px;padding:3px}
-.yrbar button{font:inherit;font-size:12.5px;font-weight:700;color:#37445a;background:transparent;border:0;border-radius:6px;padding:4px 12px;cursor:pointer;line-height:1.2}
-.yrbar button:hover:not(:disabled){background:#dde5f1}
-.yrbar button.on{background:#2e5496;color:#fff;box-shadow:0 1px 2px rgba(46,84,150,.35)}
-.yrbar button:disabled{color:#aab4c4;cursor:default}
-.yrbar .yrnote{font-size:11px;color:#8592a6}
+.yrbar .yrlab{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.yrbar .yrgroup{display:inline-flex;gap:4px;background:#eae9e9;border:1px solid var(--line);border-radius:0;padding:3px}
+.yrbar button{font:inherit;font-size:12.5px;font-weight:700;color:var(--text);background:transparent;border:0;border-radius:0;padding:4px 12px;cursor:pointer;line-height:1.2}
+.yrbar button:hover:not(:disabled){background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.yrbar button.on{background:var(--gold);color:#fff;box-shadow:none}
+.yrbar button:disabled{color:var(--faint);cursor:default}
+.yrbar .yrnote{font-size:11px;color:var(--muted)}
 /* ===== MOBILE APP (<700px) — "Modernist" design system, scoped to #mroot ===== */
 #mroot{display:none}
 @media (max-width:699.5px){
@@ -623,14 +622,14 @@ let DATA={"coverage":{"routes":["QUICK OUT","HITCH/CURL","GO","SCREEN","IN/DIG",
 const $=(s,e=document)=>e.querySelector(s);
 const fmt=v=>v==null?'—':(typeof v==='number'?(Number.isInteger(v)?v:v.toFixed(1)):v);
 function heat(v,mn,mx,inv){if(v==null)return '';let t=(v-mn)/(mx-mn||1);if(inv)t=1-t;t=Math.max(0,Math.min(1,t));
- // light -> blue
- const r=Math.round(255-(255-157)*t),g=Math.round(255-(255-195)*t),b=Math.round(255-(255-230)*t);return `background:rgb(${r},${g},${b})`;}
+ // light -> soft accent red (Modernist sequential)
+ const r=Math.round(255-(255-236)*t),g=Math.round(255-(255-150)*t),b=Math.round(255-(255-135)*t);return `background:rgb(${r},${g},${b})`;}
 // Threshold shading: only color cells notably above (blue) / below (amber) the column average.
-function condStyle(v,vals){if(typeof v!=='number'||!vals||vals.length<4)return '';const m=vals.reduce((a,b)=>a+b,0)/vals.length;const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/vals.length)||1;const z=(v-m)/sd;if(Math.abs(z)<0.9)return '';const a=Math.min(1,(Math.abs(z)-0.9)/1.6);return z>0?`background:rgba(46,84,150,${(0.12+0.42*a).toFixed(2)})`:`background:rgba(214,134,33,${(0.12+0.42*a).toFixed(2)})`;}
+function condStyle(v,vals){if(typeof v!=='number'||!vals||vals.length<4)return '';const m=vals.reduce((a,b)=>a+b,0)/vals.length;const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/vals.length)||1;const z=(v-m)/sd;if(Math.abs(z)<0.9)return '';const a=Math.min(1,(Math.abs(z)-0.9)/1.6);return z>0?`background:rgba(30,122,52,${(0.10+0.34*a).toFixed(2)})`:`background:rgba(192,42,23,${(0.10+0.34*a).toFixed(2)})`;}
 // One-sided: only tint cells notably ABOVE the set average (for concentration grids — the hot spots).
-function condHi(v,vals){if(typeof v!=='number'||!vals||vals.length<3)return '';const m=vals.reduce((a,b)=>a+b,0)/vals.length;const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/vals.length)||1;const z=(v-m)/sd;if(z<0.9)return '';const a=Math.min(1,(z-0.9)/1.6);return `background:rgba(46,84,150,${(0.12+0.45*a).toFixed(2)})`;}
+function condHi(v,vals){if(typeof v!=='number'||!vals||vals.length<3)return '';const m=vals.reduce((a,b)=>a+b,0)/vals.length;const sd=Math.sqrt(vals.reduce((a,b)=>a+(b-m)*(b-m),0)/vals.length)||1;const z=(v-m)/sd;if(z<0.9)return '';const a=Math.min(1,(z-0.9)/1.6);return `background:rgba(236,48,19,${(0.10+0.36*a).toFixed(2)})`;}
 // z-based tint for a single rate vs a league {m,sd}; goodHigh flips green/red meaning. Only fires when |z|>=1 (drastic).
-function rateTint(rate,ref,goodHigh){if(rate==null||!ref)return '';const z=(rate-ref.m)/(ref.sd||1);if(Math.abs(z)<1)return '';const good=goodHigh?z>0:z<0;const a=Math.min(1,(Math.abs(z)-1)/1.6);return good?`background:rgba(30,122,52,${(0.12+0.32*a).toFixed(2)})`:`background:rgba(178,59,59,${(0.12+0.32*a).toFixed(2)})`;}
+function rateTint(rate,ref,goodHigh){if(rate==null||!ref)return '';const z=(rate-ref.m)/(ref.sd||1);if(Math.abs(z)<1)return '';const good=goodHigh?z>0:z<0;const a=Math.min(1,(Math.abs(z)-1)/1.6);return good?`background:rgba(30,122,52,${(0.10+0.32*a).toFixed(2)})`:`background:rgba(192,42,23,${(0.10+0.32*a).toFixed(2)})`;}
 // League per-team rate distributions (cached) for the field-chart outcome tiles.
 let _rushRates=null,_passRates=null;
 function _ms(a){if(!a.length)return null;const m=a.reduce((x,y)=>x+y,0)/a.length;const sd=Math.sqrt(a.reduce((x,y)=>x+(y-m)*(y-m),0)/a.length)||1;return {m,sd};}
@@ -639,7 +638,7 @@ function leaguePassRates(){if(_passRates)return _passRates;const td=[],ic=[],cp=
 function fTile(v,l,st,ref,fk,fv){const clk=fk!=null?` data-fk="${fk}" data-fv="${fv}"`:'';const on=fk!=null&&String(FFILT[fk])===String(fv);return `<div class="fstat${fk!=null?' clk':''}${on?' on':''}" style="${st||''}"${clk}><div class="v">${v}</div><div class="l">${l}</div>${ref!=null?`<div class="lgref">lg ${ref}</div>`:''}</div>`;}
 function heatRYG(v){if(v==null)return '';let t=Math.max(0,Math.min(1,v/100));
  let r,g,b;if(t<.5){r=248;g=Math.round(105+(235-105)*(t/.5));b=Math.round(107+(132-107)*(t/.5));}else{let u=(t-.5)/.5;r=Math.round(255-(255-99)*u);g=Math.round(235-(235-190)*u);b=Math.round(132-(132-123)*u);}return `background:rgb(${r},${g},${b})`;}
-function tier(h){return h>=65?['Elite','#1e7a34']:h>=55?['Strong','#2e5496']:h>=45?['Average','#b07d12']:['Rebuilding','#a23b3b'];}
+function tier(h){return h>=65?['Elite','#1e7a34']:h>=55?['Strong','#444141']:h>=45?['Average','#9b9797']:['Rebuilding','#c02a17'];}
 
 // ---------- NAV ----------
 const SECTIONS=[['overview','1 · Overview'],['ratings','2 · Team Ratings'],['epa','3 · League Stats'],['opponents','4 · Opponents'],['field','5 · Field Tendencies'],['philosophy','6 · Philosophy'],['fantasy','7 · Fantasy']];
@@ -685,7 +684,7 @@ function drawBoard(which){
   box.innerHTML=`<table><thead><tr><th>#</th><th class="tl">Team</th><th>Off</th><th>Def</th><th>ST</th><th>Holistic</th><th class="tl">Tier</th></tr></thead><tbody>${avgRow}${L.map((t,i)=>{const[tn,tc]=tier(t.h);return `<tr class="${t.abbr=='NO'?'no':''}"><td>${i+1}</td><td class="tl">${teamCell(t.abbr,t.team)}</td><td style="${condStyle(t.off,offs)}">${t.off.toFixed(1)}</td><td style="${condStyle(t.def,defs)}">${t.def.toFixed(1)}</td><td style="${condStyle(t.st,sts)}">${t.st.toFixed(1)}</td><td><b>${t.h.toFixed(1)}</b></td><td class="tl"><span class="tier" style="background:${tc}">${tn}</span></td></tr>`}).join('')}</tbody></table>`;
  } else if(which==='pace'){
   const T=window.TEMPO;
-  if(!T){box.innerHTML='<div class="banner" style="border-color:#cdd6e4;border-left-color:#7d93b8;background:#f3f6fb;color:#37445a">Pace &amp; volume data (data/tempo.js) not loaded.</div>';return;}
+  if(!T){box.innerHTML='<div class="banner" style="border-color:#cfcbcb;border-left-color:#9b9797;background:#eae9e9;color:#201e1d">Pace &amp; volume data (data/tempo.js) not loaded.</div>';return;}
   const rows=Object.keys(T).map(ab=>{const t=T[ab],g=t.g||1;return {team:teamName(ab),abbr:ab,top:t.topSec/g/60,off:t.off/g,def:t.def/g,tot:(t.off+t.def)/g,secpl:t.off?t.topSec/t.off:null};}).sort((a,b)=>b.top-a.top);
   const fmtTop=v=>{if(v==null)return '—';const m=Math.floor(v),s=Math.round((v-m)*60);return (s===60?m+1:m)+':'+String(s===60?0:s).padStart(2,'0');};
   box.innerHTML=tbl(rows,[{k:'team',lab:'Team'},{k:'top',lab:'TOP / game',fmt:fmtTop,heat:1},{k:'off',lab:'Off snaps / g',fmt:v=>v.toFixed(1),heat:1},{k:'def',lab:'Def snaps / g',fmt:v=>v.toFixed(1),heat:1},{k:'tot',lab:'Total snaps / g',fmt:v=>v.toFixed(1),heat:1},{k:'secpl',lab:'Sec / off snap',fmt:v=>v==null?'—':v.toFixed(1),heat:1}],'abbr',true)+`<p class="note"><b>TOP / game</b> = average time of possession (sum of drive possession time). <b>Snaps</b> = scrimmage plays (pass + rush; kneels, spikes and special teams excluded) — offense = plays run, defense = plays faced. <b>Sec / off snap</b> = possession seconds per offensive snap, a tempo proxy (lower = faster). NFL-average row pinned on top; click any header to sort.</p>`;
@@ -741,7 +740,7 @@ function relBar(spec,M,league){
  const v=M[spec.k];const vals=Object.values(league).map(m=>m[spec.k]).filter(x=>x!=null);
  if(v==null||vals.length<3)return `<div class="relrow"><span class="rellab">${spec.lab}</span><span class="reltrack"></span><span class="relval relrk">—</span></div>`;
  const mn=Math.min(...vals),mx=Math.max(...vals),t=mx>mn?(v-mn)/(mx-mn):0.5,rank=rankOf(vals,v,!!spec.better);
- let col='#2e5496';if(spec.quality){const q=rank/vals.length;col=q<=.25?'#1e7a34':q<=.5?'#2e5496':q<=.75?'#b07d12':'#a23b3b';}
+ let col='#c92a10';if(spec.quality){const q=rank/vals.length;col=q<=.25?'#1e7a34':q<=.5?'#c92a10':q<=.75?'#b07d12':'#c02a17';}
  const pct=(spec.k==='succ'||spec.k==='expl'||spec.k==='passRate')?'%':'';
  const vs=spec.dec===3?((v>0?'+':'')+v.toFixed(3)):v.toFixed(spec.dec)+pct;
  return `<div class="relrow" title="${spec.lab}: ${vs} · ${ord(rank)} of ${vals.length}"><span class="rellab">${spec.lab}</span><span class="reltrack"><span class="relmk" style="left:${(6+t*88).toFixed(1)}%;background:${col}"></span></span><span class="relval"><span style="color:${col}">${vs}</span> <span class="relrk">${ord(rank)}</span></span></div>`;
@@ -754,7 +753,7 @@ function trkZoneField(P,side){
   if(!n)return `<div class="zband" style="border-left-color:#ccc"><div><div class="zn">${nm}</div><div class="zsub">${TRKYARD[nm]} · no plays</div></div><div class="zsub">—</div><div class="zstat"><div class="e" style="color:#aaa">—</div><div class="el">EPA</div></div></div>`;
   const epa=fmean(sub.map(x=>x.epa)),sc=100*fmean(sub.map(x=>x.sc)),pr=Math.round(100*fmean(sub.map(x=>x.pa)));
   const good=(side==='def'?-(epa||0):(epa||0))>=0,ec=epaColor(side==='def'?(epa==null?null:-epa):epa);
-  return `<div class="zband" style="border-left-color:${ec}"><div><div class="zn">${nm}</div><div class="zsub">${TRKYARD[nm]} · ${n} pl</div></div><div><div class="zbar2"><div class="p" style="width:${pr}%"></div><div class="r" style="width:${100-pr}%"></div></div><div class="zsub">Pass ${pr}% · Succ ${isNaN(sc)?'—':sc.toFixed(0)+'%'}</div></div><div class="zstat"><div class="e" style="color:${epa==null?'#999':(good?'#1e7a34':'#b23b3b')}">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</div><div class="el">EPA${side==='def'?' allowed':''}</div></div></div>`;};
+  return `<div class="zband" style="border-left-color:${ec}"><div><div class="zn">${nm}</div><div class="zsub">${TRKYARD[nm]} · ${n} pl</div></div><div><div class="zbar2"><div class="p" style="width:${pr}%"></div><div class="r" style="width:${100-pr}%"></div></div><div class="zsub">Pass ${pr}% · Succ ${isNaN(sc)?'—':sc.toFixed(0)+'%'}</div></div><div class="zstat"><div class="e" style="color:${epa==null?'#999':(good?'#1e7a34':'#c02a17')}">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</div><div class="el">EPA${side==='def'?' allowed':''}</div></div></div>`;};
  return `<div class="zfield"><div class="zfe">▲ OPPONENT END ZONE · RED ZONE</div>${['Red','Green','Midfield','Own','Backed Up'].map(band).join('')}<div class="zfe b">OWN GOAL · BACKED UP ▼</div></div>`;
 }
 function personnelViz(P){
@@ -762,7 +761,7 @@ function personnelViz(P){
  P.pass.forEach(p=>add(p[PI.pers],p[PI.epa],p[PI.succ],1));P.rush.forEach(p=>add(p[RI.pers],p[RI.epa],p[RI.succ],0));
  const tot=Object.values(g).reduce((s,o)=>s+o.n,0);if(!tot)return '<p class="note">No personnel data for this cut.</p>';
  const rows=Object.entries(g).sort((a,b)=>b[1].n-a[1].n).slice(0,7).map(([k,o])=>{const use=100*o.n/tot,epa=fmean(o.ep),pr=Math.round(100*o.np/o.n);
-  return `<div class="persrow"><span class="pn">${k}</span><span class="pb" title="${o.n} plays · ${pr}% pass"><i style="width:${use.toFixed(0)}%"></i></span><span class="relval" style="color:${epa==null?'#888':(epa>=0?'#1e7a34':'#b23b3b')}">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</span><span class="relrk">${use.toFixed(0)}% use</span></div>`;}).join('');
+  return `<div class="persrow"><span class="pn">${k}</span><span class="pb" title="${o.n} plays · ${pr}% pass"><i style="width:${use.toFixed(0)}%"></i></span><span class="relval" style="color:${epa==null?'#888':(epa>=0?'#1e7a34':'#c02a17')}">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</span><span class="relrk">${use.toFixed(0)}% use</span></div>`;}).join('');
  return `<p class="note" style="margin-top:0">Usage bar · EPA/play · share of snaps. Top groupings.</p>${rows}`;
 }
 function coverageViz(P){
@@ -773,7 +772,7 @@ function coverageViz(P){
  const COVN={C0:'Cover 0',C1:'Cover 1',C2:'Cover 2',C3:'Cover 3',C4:'Cover 4',C6:'Cover 6',C9:'Cover 9','2M':'2-Man',CMB:'Combo'};
  const split=mzTot?`<p class="note" style="margin:0 0 4px">Man vs Zone (tagged dropbacks)</p><div class="mzsplit"><div class="m" style="width:${(100*M/mzTot).toFixed(0)}%">${(100*M/mzTot).toFixed(0)}% MAN</div><div class="z" style="width:${(100*Z/mzTot).toFixed(0)}%">${(100*Z/mzTot).toFixed(0)}% ZONE</div></div>`:'';
  const rows=ftot?Object.entries(fam).sort((a,b)=>b[1].n-a[1].n).map(([c,o])=>{const use=100*o.n/ftot,epa=fmean(o.ep);
-  return `<div class="persrow"><span class="pn" style="font-size:11px">${COVN[c]||c}</span><span class="pb"><i style="width:${use.toFixed(0)}%"></i></span><span class="relval" style="color:${epa==null?'#888':(epa<=0?'#1e7a34':'#b23b3b')}">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</span><span class="relrk">${use.toFixed(0)}%</span></div>`;}).join(''):'';
+  return `<div class="persrow"><span class="pn" style="font-size:11px">${COVN[c]||c}</span><span class="pb"><i style="width:${use.toFixed(0)}%"></i></span><span class="relval" style="color:${epa==null?'#888':(epa<=0?'#1e7a34':'#c02a17')}">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</span><span class="relrk">${use.toFixed(0)}%</span></div>`;}).join(''):'';
  return `${split}<div class="fsub">Coverage family · share · EPA allowed</div>${rows||'<p class="note">No coverage tags in this cut.</p>'}`;
 }
 function runViz(P){
@@ -796,7 +795,7 @@ function routeViz(P){
  const keys=Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,9);
  const maxN=Math.max(...keys.map(r=>cnt[r]),1);
  const rows=keys.map(r=>{const use=100*cnt[r]/tot,e=fmean(ep[r]),w=100*cnt[r]/maxN;
-  return `<div class="rtrow"><span class="rn">${RT13[r]}</span><span class="rb" title="${cnt[r]} targets · ${use.toFixed(0)}% of routes"><i style="width:${w.toFixed(0)}%"></i></span><span class="rv" style="color:${e==null?'#888':(e>=0?'#1e7a34':'#b23b3b')}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="rk">${use.toFixed(0)}%</span></div>`;}).join('');
+  return `<div class="rtrow"><span class="rn">${RT13[r]}</span><span class="rb" title="${cnt[r]} targets · ${use.toFixed(0)}% of routes"><i style="width:${w.toFixed(0)}%"></i></span><span class="rv" style="color:${e==null?'#888':(e>=0?'#1e7a34':'#c02a17')}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="rk">${use.toFixed(0)}%</span></div>`;}).join('');
  return `<p class="note" style="margin-top:0">Bar = share of targeted routes (scaled to the most-used) · <b>green/red</b> = EPA/play · right = % of all routes. Top routes of ${tot} charted targets.</p>${rows}`;
 }
 function filtNote(){const a=[];if(TRK.ptype!=='all')a.push(TRK.ptype==='pass'?'pass only':'run only');if(TRK.score!=='all')a.push({one:'one-score',trail:'trailing',lead:'leading'}[TRK.score]);if(TRK.down!=='all')a.push(TRK.down+(['','st','nd','rd','th'][+TRK.down]||'th')+' down');return a.length?'· '+a.join(' · '):'· all situations';}
@@ -811,12 +810,12 @@ function muBars(O,D,offL,defL,oAb,dAb){
   const orank=mRank(offL,O,k,true), drank=mRank(defL,D,k,false);
   const ax=orank==null?null:muPos(orank), bx=drank==null?null:muPos(drank);
   let who='even',ec='var(--faint)';
-  if(orank!=null&&drank!=null){const g=drank-orank;if(g>=6){who='o';ec='#2e5496';}else if(g<=-6){who='d';ec='#2e7d4f';}}
+  if(orank!=null&&drank!=null){const g=drank-orank;if(g>=6){who='o';ec='#c92a10';}else if(g<=-6){who='d';ec='#2e7d4f';}}
   const line=(ax!=null&&bx!=null)?`<div class="mbline" style="left:${Math.min(ax,bx)}%;width:${Math.abs(ax-bx)}%;background:${ec}"></div>`:'';
   const da=orank==null?'':`<div class="mbdot a" style="left:${ax}%;background:${teamColor(oAb)}" title="${oAb} offense ${lab}: ${ord(orank)} of 32">${orank}</div>`;
   const db=drank==null?'':`<div class="mbdot" style="left:${bx}%;background:${teamColor(dAb)};z-index:3" title="${dAb} defense ${lab}: ${ord(drank)} of 32">${drank}</div>`;
   const et=who==='o'?oAb:who==='d'?dAb:'even';
-  const ecls=who==='o'?'color:#1d3f78;background:#e3ecf7':who==='d'?'color:#245c34;background:#e5f1e8':'color:var(--faint);background:#f1f3f7';
+  const ecls=who==='o'?'color:#1d3f78;background:#eae9e9':who==='d'?'color:#245c34;background:#e5f1e8':'color:var(--faint);background:#eae9e9';
   return `<div class="mbrow"><div class="mblab">${lab}</div><div class="mbtrack">${line}${da}${db}</div><div class="mbedge" style="${ecls}">${et}</div></div>`;
  }).join('')}</div>`;
 }
@@ -852,7 +851,7 @@ function drawMatchup(){
  const out=$('#muout');if(!out)return;const A=MU.a,B=MU.b;
  const offL=allTeamMetricsF('off',ALLF),defL=allTeamMetricsF('def',ALLF);
  const flags=[...flagsFor(offL,defL,A,B),...flagsFor(offL,defL,B,A)].sort((x,y)=>y.sev-x.sev).slice(0,6);
- const flagLi=f=>{const c=f.favor==='o'?'#2e5496':f.favor==='d'?'#2e7d4f':'#8a8f98';return `<li style="border-left:3px solid ${c};padding-left:9px;margin:8px 0;list-style:none">${f.txt}</li>`;};
+ const flagLi=f=>{const c=f.favor==='o'?'#c92a10':f.favor==='d'?'#2e7d4f':'#8a8f98';return `<li style="border-left:3px solid ${c};padding-left:9px;margin:8px 0;list-style:none">${f.txt}</li>`;};
  out.innerHTML=`<div class="grid2"><div class="card" style="border-top:3px solid ${teamColor(A)}"><div class="sechead o">${teamLogo(A)}${teamName(A)} offense › ${teamLogo(B)}${teamName(B)} defense</div>${muBars(A,B,offL,defL,A,B)}</div><div class="card" style="border-top:3px solid ${teamColor(B)}"><div class="sechead o">${teamLogo(B)}${teamName(B)} offense › ${teamLogo(A)}${teamName(A)} defense</div>${muBars(B,A,offL,defL,B,A)}</div></div><div class="card"><div class="sechead">⚑ Situational mismatches</div>${flags.length?`<ul class="keys" style="padding-left:2px">${flags.map(flagLi).join('')}</ul>`:'<p class="note">No extreme mismatches — an even matchup on paper.</p>'}<p class="note">Blue accent = the offense holds that edge · green = the defense. Flags fire on league-rank gaps ≥ ~8 plus directional/down tendencies. All-situations, 2025.</p></div><div class="card"><div class="sechead">Projected game flow</div><p style="font-size:13px;line-height:1.65">${gameFlowText(A,B,offL,defL)}</p></div>`;
 }
 function renderMatchup(root){
@@ -917,7 +916,7 @@ function zoneField(team,side,lev){
   const ev=epa==null?0:(side==='def'?-epa:epa);const good=ev>=0;
   const ec=epaColor(epa==null?null:(side==='def'?-epa:epa));
   const runP=pass==null?0:Math.round(100-pass);
-  return `<div class="zband" style="border-left-color:${ec}"><div><div class="zn">${nm}</div><div class="zsub">${yl} · ${n} pl</div></div><div><div class="zbar2"><div class="p" style="width:${pass||0}%"></div><div class="r" style="width:${runP}%"></div></div><div class="zsub">Pass ${pass==null?'—':pass+'%'} · Succ ${succ==null?'—':succ+'%'}${shot!=null?' · Shot '+shot+'%':''}</div></div><div class="zstat"><div class="e" style="color:${epa==null?'#999':(good?'#1e7a34':'#b23b3b')}">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</div><div class="el">EPA${side==='def'?' allowed':''}</div></div></div>`;};
+  return `<div class="zband" style="border-left-color:${ec}"><div><div class="zn">${nm}</div><div class="zsub">${yl} · ${n} pl</div></div><div><div class="zbar2"><div class="p" style="width:${pass||0}%"></div><div class="r" style="width:${runP}%"></div></div><div class="zsub">Pass ${pass==null?'—':pass+'%'} · Succ ${succ==null?'—':succ+'%'}${shot!=null?' · Shot '+shot+'%':''}</div></div><div class="zstat"><div class="e" style="color:${epa==null?'#999':(good?'#1e7a34':'#c02a17')}">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</div><div class="el">EPA${side==='def'?' allowed':''}</div></div></div>`;};
  return `<div class="zfield"><div class="zfe">▲ OPPONENT END ZONE · RED ZONE</div>${order.map(band).join('')}<div class="zfe b">OWN GOAL · BACKED UP ▼</div></div>`;
 }
 
@@ -947,9 +946,9 @@ const meanSd=a=>{const v=a.filter(x=>typeof x==='number');if(!v.length)return[0,
 //   can only add value, never subtract (e.g. QB rushing — a bonus for runners, not a penalty for pocket passers).
 // Normalized by the sum of absolute weights so the result stays in ~SD units; missing values contribute 0 (neutral).
 function zComposite(items,keys){const norm=keys.map(k=>Array.isArray(k)?{k:k[0],w:k[1],f:k[2]}:{k:k,w:1});const st=norm.map(o=>meanSd(items.map(x=>x[o.k])));const wsum=norm.reduce((a,o)=>a+Math.abs(o.w),0)||1;return items.map(x=>{let s=0;norm.forEach((o,i)=>{const v=x[o.k];if(typeof v==='number'){let z=(v-st[i][0])/st[i][1];if(o.f&&z<0)z=0;s+=o.w*z;}});return {...x,comp:norm.length?s/wsum:null};});}
-const rkTag=(r,n=32)=>{if(!r)return '';const q=r/n;const c=q<=.25?'#1e7a34':q<=.5?'#2e5496':q<=.75?'#b07d12':'#a23b3b';return `<span class="rk" style="color:${c}">${ord(r)}${n!==32?'/'+n:''}</span>`;};
+const rkTag=(r,n=32)=>{if(!r)return '';const q=r/n;const c=q<=.25?'#1e7a34':q<=.5?'#c92a10':q<=.75?'#b07d12':'#c02a17';return `<span class="rk" style="color:${c}">${ord(r)}${n!==32?'/'+n:''}</span>`;};
 // Deviation cell: blue = above league avg, orange = below; intensity = |z|
-function devCell(v,m,sd,dec=1){if(typeof v!=='number')return '<td>—</td>';const z=(v-m)/(sd||1);const d=v-m;let bg='';if(Math.abs(z)>=0.9){const a=Math.min(1,(Math.abs(z)-0.9)/1.6);bg=z>=0?`background:rgba(46,84,150,${(0.12+0.4*a).toFixed(2)})`:`background:rgba(216,134,33,${(0.12+0.4*a).toFixed(2)})`;}return `<td style="${bg}"><b>${fmt(v)}</b><span class="dv">${d>=0?'+':'-'}${Math.abs(d).toFixed(dec)}</span></td>`;}
+function devCell(v,m,sd,dec=1){if(typeof v!=='number')return '<td>—</td>';const z=(v-m)/(sd||1);const d=v-m;let bg='';if(Math.abs(z)>=0.9){const a=Math.min(1,(Math.abs(z)-0.9)/1.6);bg=z>=0?`background:rgba(201,42,16,${(0.12+0.4*a).toFixed(2)})`:`background:rgba(216,134,33,${(0.12+0.4*a).toFixed(2)})`;}return `<td style="${bg}"><b>${fmt(v)}</b><span class="dv">${d>=0?'+':'-'}${Math.abs(d).toFixed(dec)}</span></td>`;}
 const SUMM2OB={'Neutral ED Pass%':'Neutral ED Pass%','PROE':'PROE','Play-action%':'PlayAction%','Motion%':'Motion%','Deep% (air>=20)':'Deep% (air>=20)','3rd & 7+ Pass%':'3rd&7+ Pass%','Red Zone Pass%':'RedZone Pass%','Shotgun%':'Shotgun%','No-Huddle%':'NoHuddle%'};
 // Rule-based scouting angles. h = angle when tendency is high, l = when low.
 const ANG={
@@ -1000,7 +999,7 @@ const keyUl=arr=>arr.length?`<ul class="keys">${arr.map(keyLi).join('')}</ul>`:'
 // Matchup counterpart picker — defaults to the Saints, any team selectable (excluding the opponent itself).
 function muTeamPicker(oppAb,V){
  const teams=['NO',...Object.keys(NFLNAMES).filter(a=>a!=='NO').sort()].filter(a=>a!==oppAb);
- return `<div class="fc-group${V!=='NO'?' filton':''}" style="margin:2px 0 10px"><label>Matchup against <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0;color:#98a2b3">defaults to the Saints</span></label>
+ return `<div class="fc-group${V!=='NO'?' filton':''}" style="margin:2px 0 10px"><label>Matchup against <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0;color:#9b9797">defaults to the Saints</span></label>
   <select id="muvs" style="min-height:38px;max-width:260px">${teams.map(a=>`<option value="${a}"${a===V?' selected':''}>${teamName(a)}${a==='NO'?' (default)':''}</option>`).join('')}</select></div>`;
 }
 function matchupHTML(o){
@@ -1008,8 +1007,8 @@ function matchupHTML(o){
  const oe=ET[o.src]||ET[o.abbr],te=ET[o.abbr],ne=ET[V];
  const offE=DATA.leagueEPA.teams.map(t=>t.off.epa),defE=DATA.leagueEPA.teams.map(t=>t.deff.epa);
  const rTO=rankOf(offE,oe.off.epa,true),rND=rankOf(defE,ne.deff.epa,false),rTD=rankOf(defE,te.deff.epa,false),rNO=rankOf(offE,ne.off.epa,true);
- const edge1=(()=>{const d=rND-rTO;return d>=6?[o.abbr+' O edge','#a23b3b']:d<=-6?[V+' D edge','#1e7a34']:['Even','#6b7280'];})();
- const edge2=(()=>{const d=rNO-rTD;return d>=6?[o.abbr+' D edge','#a23b3b']:d<=-6?[V+' O edge','#1e7a34']:['Even','#6b7280'];})();
+ const edge1=(()=>{const d=rND-rTO;return d>=6?[o.abbr+' O edge','#c02a17']:d<=-6?[V+' D edge','#1e7a34']:['Even','#6b6a68'];})();
+ const edge2=(()=>{const d=rNO-rTD;return d>=6?[o.abbr+' D edge','#c02a17']:d<=-6?[V+' O edge','#1e7a34']:['Even','#6b6a68'];})();
  const side=(epa,r)=>`<div class="mbig">${epa.toFixed(3)}</div><div class="msub">EPA/play · ${ord(r)} of 32</div>`;
  const strip=(t1,h1,t2,h2,e)=>`<div class="mstrip"><div><div class="mttl">${t1}</div>${h1}</div><div class="medge"><span class="edge" style="background:${e[1]}">${e[0]}</span></div><div style="text-align:right"><div class="mttl">${t2}</div>${h2}</div></div>`;
  const mRank=(grp,met,v,desc)=>rankOf(DATA.ratings.teams.map(t=>t[grp][met]?t[grp][met].v:null),v,desc);
@@ -1043,7 +1042,7 @@ function matchupHTML(o){
  const mBars=(meta,aLab,bLab)=>`<div class="mbars"><div class="mbhdr"><span style="color:var(--navy2)">●&nbsp;${aLab}</span><span class="mbscale">1st ◄ rank ► 32nd</span><span style="color:var(--gold-deep);text-align:right">${bLab}&nbsp;●</span></div>${meta.map(m=>{
    const ar=m.a?m.a[1]:null,br=m.b?m.b[1]:null,ax=mPos(ar),bx=mPos(br);
    let who='even',ec='var(--faint)';
-   if(ar!=null&&br!=null){const g=ar-br;if(g<=-3){who='opp';ec='#b23b3b';}else if(g>=3){who='sai';ec='var(--gold-deep)';}}
+   if(ar!=null&&br!=null){const g=ar-br;if(g<=-3){who='opp';ec='#c02a17';}else if(g>=3){who='sai';ec='var(--gold-deep)';}}
    const line=(ax!=null&&bx!=null)?`<div class="mbline" style="left:${Math.min(ax,bx)}%;width:${Math.abs(ax-bx)}%;background:${ec}"></div>`:'';
    const da=ax==null?'':`<div class="mbdot a" style="left:${ax}%" title="${aLab}: ${fv(m.a[0],m.dec)} · ${ord(ar)} of 32">${ar}</div>`;
    const db=bx==null?'':`<div class="mbdot b" style="left:${bx}%" title="${bLab}: ${fv(m.b[0],m.dec)} · ${ord(br)} of 32">${br}</div>`;
@@ -1073,7 +1072,7 @@ function matchupHTML(o){
  <div class="grid2" style="margin-top:4px">
  <div><div class="sechead o">Game-plan keys — defending their offense</div>${keyUl(offK)}</div>
  <div><div class="sechead d">Game-plan keys — attacking their defense</div>${keyUl(defK)}</div></div>
- <p class="note"><a href="#" onclick="gotoField('${o.abbr}');return false" style="color:#2e5496;font-weight:700">Open the field-zone tear sheet & passing volume map for ${o.abbr} →</a></p>
+ <p class="note"><a href="#" onclick="gotoField('${o.abbr}');return false" style="color:#c92a10;font-weight:700">Open the field-zone tear sheet & passing volume map for ${o.abbr} →</a></p>
  <p class="note">Keys are auto-flagged tendencies ≥0.55σ from league/opponent-sample average, ranked by extremity. σ from the 15-team tendency boards (offense) and the 14-opponent sample (defense).</p>`;
 }
 // Personnel lollipop — snap volume + EPA/play per grouping. The driver of the Opponents tab: click a row to
@@ -1089,29 +1088,29 @@ function personnelLollipop(ab,side){
  if(!total)return '<p class="note">No plays in this cut.</p>';
  const rows=Object.entries(g).map(([code,o])=>({code,n:o.n,pct:100*o.n/total,epa:o.ep.length?fmean(o.ep):null})).filter(r=>r.n>=3).sort((a,b)=>b.n-a.n);
  if(!rows.length)return '<p class="note">No personnel grouping has enough snaps in this cut.</p>';
- const inv=side==='def', POS='#1f9d8a', NEG='#ef5a4a';
+ const inv=side==='def', POS='#1e7a34', NEG='#c02a17';
  const D=Math.max(0.35,...rows.map(r=>r.epa==null?0:Math.abs(r.epa)));
  const W=740,rh=58,top=54,H=top+rows.length*rh+16,cx=500,half=200,xOf=e=>cx+(e/D)*half;
  const maxN=Math.max(...rows.map(r=>r.n));
  const desc=code=>{if(code==='Other')return 'multiple / exotic';const b=+code[0],te=+code[1],wr=Math.max(0,5-b-te);return `${b} RB, ${te} TE, ${wr} WR`;};
  const bodyR=rows.map((r,i)=>{
-  const y=top+i*rh+rh/2, e=r.epa, good=e==null?null:(inv?e<0:e>=0), col=e==null?'#9aa3b0':(good?POS:NEG), x=e==null?cx:xOf(e);
+  const y=top+i*rh+rh/2, e=r.epa, good=e==null?null:(inv?e<0:e>=0), col=e==null?'#9b9797':(good?POS:NEG), x=e==null?cx:xOf(e);
   const sel=String(OPPF.pers)===String(r.code), vw=170*(r.n/maxN), rr=4+5*Math.sqrt(r.n/maxN);
   const vlab=e==null?'—':(e>=0?'+':'')+e.toFixed(3), vx=e>=0?x+rr+6:x-rr-6, va=e>=0?'start':'end';
   const line=e==null?'':`<line x1="${cx}" y1="${y}" x2="${x.toFixed(1)}" y2="${y}" stroke="${col}" stroke-width="3.4"/>`;
   return `<g class="perscol${sel?' sel':''}" data-opers="${r.code}" style="cursor:pointer"><title>${r.n} snaps (${r.pct.toFixed(0)}%) · EPA/play ${vlab} — click to filter everything below to ${r.code==='Other'?'these groupings':r.code+' personnel'}</title>`+
    `<rect x="4" y="${(top+i*rh+3)}" width="${W-8}" height="${rh-6}" rx="8" fill="${sel?'rgba(203,180,127,.32)':'rgba(0,0,0,0)'}"/>`+
-   `<text x="14" y="${y-8}" font-size="14.5" font-weight="800" fill="#1b2733">${r.code==='Other'?'Other':r.code+' Personnel'}<tspan font-size="10" font-weight="600" fill="#8a94a3"> · ${desc(r.code)}</tspan></text>`+
+   `<text x="14" y="${y-8}" font-size="14.5" font-weight="800" fill="#1b2733">${r.code==='Other'?'Other':r.code+' Personnel'}<tspan font-size="10" font-weight="600" fill="#6b6a68"> · ${desc(r.code)}</tspan></text>`+
    `<rect x="14" y="${y+2}" width="170" height="7" rx="3.5" fill="#dfe4ea"/>`+
    `<rect x="14" y="${y+2}" width="${vw.toFixed(1)}" height="7" rx="3.5" fill="${sel?'#a8842f':'#8c96a3'}"/>`+
-   `<text x="192" y="${y+9}" font-size="10.5" font-weight="800" fill="#5a6472">${r.n} snaps · ${r.pct.toFixed(0)}%</text>`+
+   `<text x="192" y="${y+9}" font-size="10.5" font-weight="800" fill="#605d5d">${r.n} snaps · ${r.pct.toFixed(0)}%</text>`+
    line+`<circle cx="${x.toFixed(1)}" cy="${y}" r="${rr.toFixed(1)}" fill="${col}"/>`+
    `<text x="${vx.toFixed(1)}" y="${y+4}" text-anchor="${va}" font-size="12.5" font-weight="800" fill="${col}">${vlab}</text>`+
    `</g>`;
  }).join('');
  const axis=`<line x1="${cx}" y1="${top-6}" x2="${cx}" y2="${H-10}" stroke="#b9c2ce" stroke-dasharray="4 4"/>`+
-  `<text x="14" y="${top-24}" font-size="9.5" font-weight="800" fill="#8a94a3" letter-spacing=".5">SNAP VOLUME</text>`+
-  `<text x="${cx}" y="${top-24}" text-anchor="middle" font-size="11" font-weight="700" fill="#8a94a3">0</text>`+
+  `<text x="14" y="${top-24}" font-size="9.5" font-weight="800" fill="#6b6a68" letter-spacing=".5">SNAP VOLUME</text>`+
+  `<text x="${cx}" y="${top-24}" text-anchor="middle" font-size="11" font-weight="700" fill="#6b6a68">0</text>`+
   `<text x="${cx-16}" y="${top-24}" text-anchor="end" font-size="11" font-weight="800" fill="${inv?POS:NEG}">← ${inv?'BETTER for D':'WORSE'}</text>`+
   `<text x="${cx+16}" y="${top-24}" text-anchor="start" font-size="11" font-weight="800" fill="${inv?NEG:POS}">${inv?'WORSE for D':'BETTER'} →</text>`;
  return `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:620px;max-width:860px;background:#f5f7f9;border:1px solid var(--line);border-radius:10px">${axis}${bodyR}</svg></div>`;
@@ -1152,18 +1151,18 @@ function offHTML(o){
  const oe=ET[o.src]||ET[o.abbr];const serO=SER[o.src]||SER[o.abbr];
  const eff=`<div class="idrow"><span class="pill">EPA/play <b>${oe.off.epa.toFixed(3)}</b> ${rkTag(rankOf(DATA.leagueEPA.teams.map(t=>t.off.epa),oe.off.epa,true))}</span><span class="pill">Success <b>${fmt(oe.off.succ)}%</b> ${rkTag(rankOf(DATA.leagueEPA.teams.map(t=>t.off.succ),oe.off.succ,true))}</span><span class="pill">Series success <b>${fmt(serO.off)}%</b> ${rkTag(rankOf(DATA.leagueEPA.series.map(x=>x.off),serO.off,true))}</span><span class="pill">Pass EPA <b>${oe.off.passEPA.toFixed(3)}</b></span><span class="pill">Rush EPA <b>${oe.off.rushEPA.toFixed(3)}</b></span></div>`;
  const summOrder=['Neutral ED Pass%','PROE','Play-action%','Motion%','Deep% (air>=20)','3rd & 7+ Pass%','Red Zone Pass%','Shotgun%','No-Huddle%'];
- const summ=`<table><thead><tr><th class="tl">Tendency</th><th>${o.abbr} <span class="dv" style="color:#dfe6f2">Δ vs avg</span></th><th>NFL avg</th></tr></thead><tbody>${summOrder.map(k=>{const[,sd]=meanSd(Object.values(OBR).map(r=>r[OBI[SUMM2OB[k]]]));return `<tr><td class="tl">${k}</td>${devCell(o.summ[k],DATA.leagueSumm[k],sd)}<td style="color:#888">${fmt(DATA.leagueSumm[k])}</td></tr>`;}).join('')}</tbody></table>`;
+ const summ=`<table><thead><tr><th class="tl">Tendency</th><th>${o.abbr} <span class="dv" style="color:#e6e3e3">Δ vs avg</span></th><th>NFL avg</th></tr></thead><tbody>${summOrder.map(k=>{const[,sd]=meanSd(Object.values(OBR).map(r=>r[OBI[SUMM2OB[k]]]));return `<tr><td class="tl">${k}</td>${devCell(o.summ[k],DATA.leagueSumm[k],sd)}<td style="color:#888">${fmt(DATA.leagueSumm[k])}</td></tr>`;}).join('')}</tbody></table>`;
  const pers=persTable(o.src||o.abbr,'off');
  const seq=`<table><thead><tr><th class="tl">Sequencing</th><th>Pass %</th><th>Opp avg</th></tr></thead><tbody>${Object.entries(o.seq).map(([k,v])=>{const[m,sd]=meanSd(DATA.opponents.map(x=>x.seq[k]));return `<tr><td class="tl">${k}</td>${devCell(v,m,sd)}<td style="color:#888">${fmt(m)}</td></tr>`;}).join('')}</tbody></table><p class="note">Early-down pass % by previous-play result. Avg = 14-opponent sample.</p>`;
  const dd=`<table><thead><tr><th>Dn\\Dist</th>${o.ddCols.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${o.ddRows.map((r,ri)=>`<tr><td class="tl"><b>${r[0]}</b></td>${r.slice(1).map((v,ci)=>{const cnt=o.ddCount[ri][ci+1];const mut=cnt<10?'color:#999':'';return `<td style="${v==null?'':heatRYG(v)};${mut}">${v==null?'—':v}</td>`}).join('')}</tr>`).join('')}</tbody></table>`;
- const dirCell=(v,lg)=>{if(typeof v!=='number')return '<td>—</td>';const d=v-lg;const st=Math.abs(d)>=5?(d>0?'background:rgba(46,84,150,.22)':'background:rgba(216,134,33,.22)'):'';return `<td style="${st}">${fmt(v)}</td>`;};
+ const dirCell=(v,lg)=>{if(typeof v!=='number')return '<td>—</td>';const d=v-lg;const st=Math.abs(d)>=5?(d>0?'background:rgba(201,42,16,.22)':'background:rgba(216,134,33,.22)'):'';return `<td style="${st}">${fmt(v)}</td>`;};
  const dpH=['Pass split','aDOT','Deep 20+','Interm','Short<10','Middle','Perim'];
  const dirP=`<table><thead><tr>${dpH.map((h,i)=>`<th class="${i==0?'tl':''}">${h}</th>`).join('')}</tr></thead><tbody><tr class="lg"><td class="tl">NFL avg</td>${o.dirPassLG.map(v=>`<td>${fmt(v)}</td>`).join('')}</tr>${o.dirPass.filter(r=>!['Own→Mid','Green','Red'].includes(r[0])).map(r=>`<tr><td class="tl">${r[0]}</td>${r.slice(1).map((v,i)=>dirCell(v,o.dirPassLG[i])).join('')}</tr>`).join('')}</tbody></table>`;
  const drH=['Run split','Left','Mid','Right','Int G','OffTkl','Edge'];
  const dirR=`<table><thead><tr>${drH.map((h,i)=>`<th class="${i==0?'tl':''}">${h}</th>`).join('')}</tr></thead><tbody><tr class="lg"><td class="tl">NFL avg</td>${o.dirRunLG.map(v=>`<td>${fmt(v)}</td>`).join('')}</tr>${o.dirRun.filter(r=>!['Own→Mid','Green','Red'].includes(r[0])).map(r=>`<tr><td class="tl">${r[0]}</td>${r.slice(1).map((v,i)=>dirCell(v,o.dirRunLG[i])).join('')}</tr>`).join('')}</tbody></table>`;
  return `${personnelLead(o.src||o.abbr,'off')}
  ${sideCutStats(o.src||o.abbr,'off')}
- <div class="sechead o">▣ Their Offense — what the Saints D must stop ${o.proxy?`<small class="src" style="color:#dfe6f2">· data: 2025 ${o.srcName}</small>`:''}</div>
+ <div class="sechead o">▣ Their Offense — what the Saints D must stop ${o.proxy?`<small class="src" style="color:#e6e3e3">· data: 2025 ${o.srcName}</small>`:''}</div>
  ${eff}
  <div class="grid2"><div>${summ}</div><div>${seq}</div></div>
  <details class="tblfb" style="margin-top:12px"><summary>Personnel table — usage, EPA &amp; direction (all situations)</summary><div style="margin-top:8px">${pers}</div></details>
@@ -1199,8 +1198,8 @@ const FZSTATE={opp:{side:'off',lev:'all'},saints:{side:'off',lev:'all'}};
 const FZLEVS=[['all','All situations'],['one','One-score game'],['trail','Trailing 9+'],['lead','Leading 9+']];
 const FZYARDS=['Own 1-10','Own 11-40','Own 41 → Opp 42','Opp 21-40','Opp 1-20'];
 const FZW=[10,30,19,20,20];
-function fzDelta(v,lg,inv,dec){if(v==null||lg==null)return '';const d=v-lg;const good=inv?d<0:d>0;const thin=dec===2?0.02:1.5;const c=Math.abs(d)<thin?'#888':good?'#1e7a34':'#a23b3b';return `<span class="fzd" style="color:${c}">${d>=0?'+':''}${d.toFixed(dec)}</span>`;}
-function fzDevN(v,lg,dec=1){if(v==null||lg==null)return '';const d=v-lg;const c=Math.abs(d)<1.5?'#888':d>0?'#2e5496':'#b06a10';return `<span class="fzd" style="color:${c}">${d>=0?'+':''}${d.toFixed(dec)}</span>`;}
+function fzDelta(v,lg,inv,dec){if(v==null||lg==null)return '';const d=v-lg;const good=inv?d<0:d>0;const thin=dec===2?0.02:1.5;const c=Math.abs(d)<thin?'#888':good?'#1e7a34':'#c02a17';return `<span class="fzd" style="color:${c}">${d>=0?'+':''}${d.toFixed(dec)}</span>`;}
+function fzDevN(v,lg,dec=1){if(v==null||lg==null)return '';const d=v-lg;const c=Math.abs(d)<1.5?'#888':d>0?'#c92a10':'#b06a10';return `<span class="fzd" style="color:${c}">${d>=0?'+':''}${d.toFixed(dec)}</span>`;}
 function fzZone(zi,Z,L,side){
  const name=DATA.fieldZones.zones[zi];
  if(!Z)return `<div class="fzz fzmute"><div class="fzh">${name}</div><div class="fzy">${FZYARDS[zi]}</div><p class="note">no plays in this situation</p></div>`;
@@ -1218,7 +1217,7 @@ function fzZone(zi,Z,L,side){
   const mx=Math.max(...grid.filter(x=>x!=null),1);
   const rowsOrd=[3,2,1,0],names=['BLOS','0-9','10-19','20+'];
   const gvals=grid.filter(x=>typeof x==='number');
-  g=`<div class="fzm" style="margin-top:5px"><span class="fzlab">Targets — depth × side${side==='def'?' (faced)':''}</span><div class="fzgw${att<12?' fzmute':''}"><div class="fzgr"><span></span><span style="color:#6b7280;font-weight:700">L</span><span style="color:#6b7280;font-weight:700">M</span><span style="color:#6b7280;font-weight:700">R</span></div>${rowsOrd.map(ri=>`<div class="fzgr"><span class="fzgl">${names[ri]}</span>${[0,1,2].map(ci=>{const v=grid[ri*3+ci];const st=condHi(v,gvals);return `<span class="fzg" style="${st||'background:#f0f3f8'}">${v==null?'—':Math.round(v)}</span>`;}).join('')}</div>`).join('')}</div>${att<12?'<span class="fzy">thin sample ('+att+' located att)</span>':''}</div>`;
+  g=`<div class="fzm" style="margin-top:5px"><span class="fzlab">Targets — depth × side${side==='def'?' (faced)':''}</span><div class="fzgw${att<12?' fzmute':''}"><div class="fzgr"><span></span><span style="color:#6b6a68;font-weight:700">L</span><span style="color:#6b6a68;font-weight:700">M</span><span style="color:#6b6a68;font-weight:700">R</span></div>${rowsOrd.map(ri=>`<div class="fzgr"><span class="fzgl">${names[ri]}</span>${[0,1,2].map(ci=>{const v=grid[ri*3+ci];const st=condHi(v,gvals);return `<span class="fzg" style="${st||'background:#f0f3f8'}">${v==null?'—':Math.round(v)}</span>`;}).join('')}</div>`).join('')}</div>${att<12?'<span class="fzy">thin sample ('+att+' located att)</span>':''}</div>`;
  }
  return `<div class="fzz${mute}"><div class="fzh">${name}</div><div class="fzy">${FZYARDS[zi]} · <b>${n}</b> plays${n<20?' · small sample':''}</div>${bar}${epaRow}${pr}${shotRow}${rd}${g}</div>`;
 }
@@ -1230,28 +1229,28 @@ function fzFieldSVG(rows,side){
  let x=EZ,seg='';
  rows.forEach((z,i)=>{
   const w=FZWD[i]*scale,cx=x+w/2;
-  if(!z||z[0]==null){seg+=`<rect x="${x.toFixed(1)}" y="8" width="${w.toFixed(1)}" height="46" fill="#e8efe8"/><text x="${cx.toFixed(1)}" y="13.5" font-size="2.9" fill="#8a93a3" text-anchor="middle" font-weight="800">${FZSHORT[i]}</text><text x="${cx.toFixed(1)}" y="32" font-size="2.6" fill="#9aa" text-anchor="middle">no plays</text>`;x+=w;return;}
+  if(!z||z[0]==null){seg+=`<rect x="${x.toFixed(1)}" y="8" width="${w.toFixed(1)}" height="46" fill="#e8efe8"/><text x="${cx.toFixed(1)}" y="13.5" font-size="2.9" fill="#6b6a68" text-anchor="middle" font-weight="800">${FZSHORT[i]}</text><text x="${cx.toFixed(1)}" y="32" font-size="2.6" fill="#9aa" text-anchor="middle">no plays</text>`;x+=w;return;}
   const n=z[0],pass=z[1],epa=z[2],succ=z[5];
   const ev=side==='def'?(epa==null?null:-epa):epa,col=epaColor(ev),runP=pass==null?0:100-pass;
   seg+=`<rect x="${x.toFixed(1)}" y="8" width="${w.toFixed(1)}" height="46" fill="${col}"/>`;
   seg+=`<text x="${cx.toFixed(1)}" y="13.4" font-size="2.9" fill="#fff" font-weight="800" text-anchor="middle" letter-spacing="0.1" style="text-shadow:0 1px 1.5px rgba(0,0,0,.4)">${FZSHORT[i]}</text>`;
   const chw=Math.min(w-2.5,18);
   seg+=`<rect x="${(cx-chw/2).toFixed(1)}" y="16.5" width="${chw.toFixed(1)}" height="11.5" rx="2.4" fill="#fff" opacity="0.96"/>`;
-  const ecol=epa==null?'#999':(ev>=0?'#1a7a34':'#b23b3b');
+  const ecol=epa==null?'#999':(ev>=0?'#1a7a34':'#c02a17');
   seg+=`<text x="${cx.toFixed(1)}" y="22.4" font-size="4.5" fill="${ecol}" font-weight="800" text-anchor="middle">${epa==null?'—':(epa>0?'+':'')+epa.toFixed(2)}</text>`;
-  seg+=`<text x="${cx.toFixed(1)}" y="26.6" font-size="2.2" fill="#5a6675" text-anchor="middle" font-weight="600">EPA${side==='def'?' allowed':''}</text>`;
+  seg+=`<text x="${cx.toFixed(1)}" y="26.6" font-size="2.2" fill="#605d5d" text-anchor="middle" font-weight="600">EPA${side==='def'?' allowed':''}</text>`;
   const by=33,bw=Math.min(w-3,20),bx=cx-bw/2;
   seg+=`<rect x="${bx.toFixed(1)}" y="${by}" width="${bw.toFixed(1)}" height="3.2" rx="1.6" fill="#ffffff" opacity="0.55"/>`;
-  if(pass!=null)seg+=`<rect x="${bx.toFixed(1)}" y="${by}" width="${(bw*pass/100).toFixed(1)}" height="3.2" rx="1.6" fill="#16284a"/>`;
+  if(pass!=null)seg+=`<rect x="${bx.toFixed(1)}" y="${by}" width="${(bw*pass/100).toFixed(1)}" height="3.2" rx="1.6" fill="#201e1d"/>`;
   seg+=`<text x="${cx.toFixed(1)}" y="40.3" font-size="2.5" fill="#fff" text-anchor="middle" font-weight="700" style="text-shadow:0 1px 1.5px rgba(0,0,0,.4)">${pass==null?'—':'P '+Math.round(pass)+'% · R '+Math.round(runP)+'%'}</text>`;
-  seg+=`<text x="${cx.toFixed(1)}" y="45" font-size="2.4" fill="#eef2f8" text-anchor="middle" style="text-shadow:0 1px 1.5px rgba(0,0,0,.4)">${succ==null?n+' pl':Math.round(succ)+'% su · '+n+' pl'}</text>`;
+  seg+=`<text x="${cx.toFixed(1)}" y="45" font-size="2.4" fill="#eae9e9" text-anchor="middle" style="text-shadow:0 1px 1.5px rgba(0,0,0,.4)">${succ==null?n+' pl':Math.round(succ)+'% su · '+n+' pl'}</text>`;
   x+=w;
  });
  let sepx=EZ,sep='';for(let i=0;i<rows.length-1;i++){sepx+=FZWD[i]*scale;sep+=`<line x1="${sepx.toFixed(1)}" y1="8" x2="${sepx.toFixed(1)}" y2="54" stroke="#ffffff" stroke-width="0.5" opacity="0.55"/>`;}
- const lEZ=`<rect x="0" y="8" width="${EZ}" height="46" fill="#16284a"/><text x="${EZ/2}" y="31" font-size="2.6" fill="#d4bd8a" text-anchor="middle" font-weight="800" transform="rotate(-90 ${EZ/2} 31)" letter-spacing="0.6">OWN GOAL</text>`;
+ const lEZ=`<rect x="0" y="8" width="${EZ}" height="46" fill="#201e1d"/><text x="${EZ/2}" y="31" font-size="2.6" fill="#d4bd8a" text-anchor="middle" font-weight="800" transform="rotate(-90 ${EZ/2} 31)" letter-spacing="0.6">OWN GOAL</text>`;
  const rEZ=`<rect x="108" y="8" width="${EZ}" height="46" fill="#7a2a2a"/><text x="112" y="31" font-size="2.6" fill="#ffe0e0" text-anchor="middle" font-weight="800" transform="rotate(90 112 31)" letter-spacing="0.6">OPP GOAL</text>`;
- const hdr=`<text x="58" y="5.4" font-size="3" fill="#5a6675" text-anchor="middle" font-weight="700" letter-spacing="0.4">◄ own territory     ·     driving toward the end zone     ·     scoring ►</text>`;
- const foot=`<text x="58" y="60" font-size="2.7" fill="#8a93a3" text-anchor="middle">Zone tinted by EPA (green = good, red = bad for this ${side==='def'?'defense':'offense'}) · navy bar = pass share of the zone.</text>`;
+ const hdr=`<text x="58" y="5.4" font-size="3" fill="#605d5d" text-anchor="middle" font-weight="700" letter-spacing="0.4">◄ own territory     ·     driving toward the end zone     ·     scoring ►</text>`;
+ const foot=`<text x="58" y="60" font-size="2.7" fill="#6b6a68" text-anchor="middle">Zone tinted by EPA (green = good, red = bad for this ${side==='def'?'defense':'offense'}) · navy bar = pass share of the zone.</text>`;
  return `<svg class="hfield" viewBox="0 0 116 62" preserveAspectRatio="xMidYMid meet">${hdr}${seg}${sep}${lEZ}${rEZ}${foot}</svg>`;
 }
 function fzPanel(ab,side,lev,proxyNote){
@@ -1280,7 +1279,7 @@ function persTable(ab,side){
  const rows=Object.entries(grps).map(([g,v])=>{
   const[n,us,pa,epa,su,sh,ad,run,tgt]=v;const lg=L[g];
   const tint=g===best?'background:rgba(30,122,52,.08)':g===worst?'background:rgba(162,59,59,.08)':'';
-  const tag=g===best?' <span class="bw" style="color:#1e7a34">◂ best</span>':g===worst?' <span class="bw" style="color:#a23b3b">◂ worst</span>':'';
+  const tag=g===best?' <span class="bw" style="color:#1e7a34">◂ best</span>':g===worst?' <span class="bw" style="color:#c02a17">◂ worst</span>':'';
   return `<tr style="${tint}"><td class="tl"><b>${g==='Oth'?'Other':g+' pers'}</b>${tag}</td><td><b>${us}%</b>${fzDevN(us,lg?lg[1]:null)}</td><td>${n}</td><td>${pa}%${fzDevN(pa,lg?lg[2]:null)}</td><td><b>${epa.toFixed(2)}</b>${fzDelta(epa,lg?lg[3]:null,inv,2)}</td><td>${su}%</td><td>${sh==null?'—':sh+'%'}${fzDevN(sh,lg?lg[5]:null)}</td><td>${ad==null?'—':ad}</td><td>${dirs(run)}</td><td>${dirs(tgt)}</td></tr>`;
  }).join('');
  return `<div class="scroll"><table><thead><tr><th class="tl">Personnel</th><th>Usage${inv?' faced':''}</th><th>Plays</th><th>Pass%</th><th>EPA/play${inv?' allowed':''}</th><th>Succ%</th><th>Deep%</th><th>aDOT</th><th>Run L/M/R</th><th>Tgt L/M/R</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note">Row tint = their best (green) / worst (red) grouping by EPA${inv?' allowed':''}. Per-play personnel from NGS participation (backs digit = RB+FB, second = TE); Δ = vs league within the same grouping; Run/Tgt L/M/R = % of located runs/targets; groups under 25 plays roll into Other.</p>`;
@@ -1295,7 +1294,7 @@ function covTable(ab,side){
  if(fams.length>1){const s=[...fams].sort((x,y)=>inv?x[1][2]-y[1][2]:y[1][2]-x[1][2]);best=s[0][0];worst=s[s.length-1][0];}
  const row=(key,lab,v,lg)=>{if(!v)return '';
   const tint=key===best?'background:rgba(30,122,52,.08)':key===worst?'background:rgba(162,59,59,.08)':'';
-  const tag=key===best?' <span class="bw" style="color:#1e7a34">◂ best</span>':key===worst?' <span class="bw" style="color:#a23b3b">◂ worst</span>':'';
+  const tag=key===best?' <span class="bw" style="color:#1e7a34">◂ best</span>':key===worst?' <span class="bw" style="color:#c02a17">◂ worst</span>':'';
   return `<tr style="${tint}"><td class="tl"><b>${lab}</b>${tag}</td><td><b>${v[1]}%</b>${fzDevN(v[1],lg?lg[1]:null)}</td><td>${v[0]}</td><td><b>${v[2].toFixed(2)}</b>${fzDelta(v[2],lg?lg[2]:null,inv,2)}</td><td>${v[3]}%</td><td>${v[4]==null?'—':v[4]}</td><td>${v[5]==null?'—':v[5]+'%'}</td></tr>`;};
  let rows=row(null,inv?'Man':'vs Man',S.mz.Man,L.mz.Man)+row(null,inv?'Zone':'vs Zone',S.mz.Zone,L.mz.Zone);
  rows+=fams.map(([k,v])=>row(k,CVFAM[k]||k,v,L.fam[k])).join('');
@@ -1369,7 +1368,7 @@ function rtViz(ab,side,lev){
   for(let dep=0;dep<4;dep++)for(let ci=0;ci<3;ci++){
    const v=grid[dep*3+ci];const t=(v||0)/mx;
    const yc=(yB[dep][0]+yB[dep][1])/2+3,xc=ci*50+25;
-   cells+=`<rect x="${ci*50}" y="${yB[dep][0]}" width="50" height="${yB[dep][1]-yB[dep][0]}" fill="rgba(46,84,150,${(0.03+0.6*t).toFixed(2)})" stroke="#fff" stroke-width="0.5"><title>${DEPN[dep]} ${SIDN[ci]}: ${v==null?'—':v.toFixed(1)}% of targets</title></rect>`;
+   cells+=`<rect x="${ci*50}" y="${yB[dep][0]}" width="50" height="${yB[dep][1]-yB[dep][0]}" fill="rgba(201,42,16,${(0.03+0.6*t).toFixed(2)})" stroke="#fff" stroke-width="0.5"><title>${DEPN[dep]} ${SIDN[ci]}: ${v==null?'—':v.toFixed(1)}% of targets</title></rect>`;
    cells+=`<text x="${xc}" y="${yc.toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="${t>0.85?'800':'600'}" fill="${t>0.55?'#fff':'#3a4a63'}" pointer-events="none">${v==null?'':Math.round(v)}</text>`;
   }
   const los=`<line x1="0" y1="170" x2="150" y2="170" stroke="#555" stroke-dasharray="5 3" stroke-width="1"/><text x="3" y="166" font-size="6.5" fill="#888">LOS</text><text x="3" y="17" font-size="6.5" fill="#888">20+</text><text x="3" y="78" font-size="6.5" fill="#888">10-19</text><text x="3" y="128" font-size="6.5" fill="#888">0-9</text><text x="13" y="196" font-size="6.5" fill="#888">behind</text>`;
@@ -1424,8 +1423,8 @@ function renderOverview(){
  const hol=holisticList();const hIdx=hol.findIndex(t=>t.abbr===ab);
  const [tn,tc]=tier(hol[hIdx].h);
  const rST=rankOf(hol.map(t=>t.st),hol[hIdx].st,true);
- const verdict=e=>e>=14?['Clear edge','#1e7a34']:e>=6?['Favorable','#2e7d4f']:e>-6?['Even','#6b7280']:e>-14?['Tough','#b3661a']:['Very tough','#a23b3b'];
- const rkq=r=>{const q=(32-r)/31;return q>=.6?'#1e7a34':q>=.33?'#b07d12':'#a23b3b';};
+ const verdict=e=>e>=14?['Clear edge','#1e7a34']:e>=6?['Favorable','#2e7d4f']:e>-6?['Even','#6b6a68']:e>-14?['Tough','#b3661a']:['Very tough','#c02a17'];
+ const rkq=r=>{const q=(32-r)/31;return q>=.6?'#1e7a34':q>=.33?'#b07d12':'#c02a17';};
  // --- slate verdicts (Saints only — computed vs the Saints' units & schedule) ---
  let slateCard='', slateTile='';
  if(isNO){
@@ -1443,13 +1442,13 @@ function renderOverview(){
    const[vl,vc]=verdict(x.edge);
    const flags=[x.o.proxy?'proxy O':'',x.o.defNew?'new DC':''].filter(Boolean).join(' · ');
    const key=x.top?`<b>${x.side||x.top.side}:</b> ${x.top.k.lab} ${fmt(x.top.k.v)} <span class="rk" style="color:#667">(${x.top.k.z>0?'+':''}${x.top.k.z.toFixed(1)}σ)</span>`:'—';
-   const cell=(d,ours,theirs)=>`<td style="color:${d>=6?'#1e7a34':d<=-6?'#a23b3b':'#555'};white-space:nowrap"><b>${d>0?'+':''}${d}</b> <small style="color:#98a2b3;font-weight:600">${ord(theirs)} vs ${ord(ours)}</small></td>`;
+   const cell=(d,ours,theirs)=>`<td style="color:${d>=6?'#1e7a34':d<=-6?'#c02a17':'#555'};white-space:nowrap"><b>${d>0?'+':''}${d}</b> <small style="color:#9b9797;font-weight:600">${ord(theirs)} vs ${ord(ours)}</small></td>`;
    return `<tr data-go="${x.o.abbr}" style="cursor:pointer"><td class="tl"><span class="tcell">${teamLogo(x.o.abbr,'sm')}<b>${x.o.name}</b></span>${flags?` <small class="src">⚠ ${flags}</small>`:''}</td><td><span class="tier" style="background:${vc}">${vl}</span></td><td>${x.h==null?'—':x.h.toFixed(1)}</td>${cell(x.rTO-rND,rND,x.rTO)}${cell(x.rTD-rNO,rNO,x.rTD)}<td class="tl" style="white-space:normal;min-width:240px;font-size:11.5px">${key}</td></tr>`;
   }).join('');
   slateCard=`<div class="card"><div class="sechead">The 2026 slate — matchup verdicts</div><div class="scroll"><table><thead><tr><th class="tl">Opponent</th><th>Verdict</th><th>Holistic</th><th>O edge · their O vs our D</th><th>D edge · their D vs our O</th><th class="tl">Biggest tell</th></tr></thead><tbody>${rows}</tbody></table></div><p class="note">Sorted toughest → most favorable. Edge = rank gap (their unit's league rank minus ours; <b>positive favors the Saints</b>, ±6 ≈ even). Verdict averages both edges. Tell = the most extreme tendency from the auto game-plan keys. <b>Click any row to open that opponent's full card.</b></p></div>`;
   const tally=slate.reduce((a,x)=>{const v=verdict(x.edge)[0];a[v]=(a[v]||0)+1;return a;},{});
   const tough=(tally['Tough']||0)+(tally['Very tough']||0), fav=(tally['Favorable']||0)+(tally['Clear edge']||0), evn=tally['Even']||0;
-  slateTile=`<div class="htile go" data-hgo="opponents"><span class="hl">2026 slate</span><span class="hv" style="color:${tough>=5?'#a23b3b':'#2e5496'}">${tough} tough</span><div class="hs">${evn} even · ${fav} favorable</div></div>`;
+  slateTile=`<div class="htile go" data-hgo="opponents"><span class="hl">2026 slate</span><span class="hv" style="color:${tough>=5?'#c02a17':'#c92a10'}">${tough} tough</span><div class="hs">${evn} even · ${fav} favorable</div></div>`;
  }
  const guide=[
   ['1 · Overview','this page — pick any team for its profile; the Saints get the full 2026 matchup slate.'],
@@ -1468,7 +1467,7 @@ function renderOverview(){
  ].map(x=>`<li>${x}</li>`).join('');
  // --- hero strip ---
  const sh=(window.SHARP2026&&window.SHARP2026.teams[ab])||{};
- const disc={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[sh.pen];
+ const disc={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#c92a10','B':'#c92a10','B-':'#605d5d','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#c02a17','F':'#c02a17'}[sh.pen];
  const ht=(l,v,sub,c,go)=>`<div class="htile${go?' go':''}"${go?` data-hgo="${go}"`:''}><span class="hl">${l}</span><span class="hv"${c?` style="color:${c}"`:''}>${v}</span>${sub?`<div class="hs">${sub}</div>`:''}</div>`;
  const hero=`<div class="hero">${
   ht('2025 holistic',hol[hIdx].h.toFixed(1),`${ord(hIdx+1)} of 32 · <b style="color:${tc}">${tn}</b>`,null,'ratings')+
@@ -1488,7 +1487,7 @@ function renderOverview(){
  s.innerHTML=`${pageHead('overview')}
  ${sel}
  ${hero}
- <div class="card"><div class="sechead">${whoHead} <small class="src" style="color:#dfe6f2">· holistic ${hol[hIdx].h.toFixed(1)}, ${ord(hIdx+1)} overall · <span class="tier" style="background:${tc}">${tn}</span></small></div>
+ <div class="card"><div class="sechead">${whoHead} <small class="src" style="color:#e6e3e3">· holistic ${hol[hIdx].h.toFixed(1)}, ${ord(hIdx+1)} overall · <span class="tier" style="background:${tc}">${tn}</span></small></div>
  <div class="grid2"><div><div class="sechead o">Offense</div><ul class="keys">${off.map(x=>`<li>${x}</li>`).join('')}</ul></div>
  <div><div class="sechead d">Defense</div><ul class="keys">${deff.map(x=>`<li>${x}</li>`).join('')}</ul></div></div></div>
  ${schemeCard(ab,'off')}
@@ -1538,7 +1537,7 @@ function crossPanel(ab){
   const our=noDefP.M[g], ourE=our&&our.n>=25?_epaOf(our):null;
   const d=ourE==null||noDefBase==null?null:ourE-noDefBase;
   const hit=d!=null&&((share>=10&&Math.abs(d)>=0.05)||Math.abs(d)>=0.10);
-  const v=!hit?'':d>0?chip('stress','#a23b3b','a grouping they use that our defense answers below its own average'):chip('funnel','#1e7a34','a grouping they use that our defense handles better than its average');
+  const v=!hit?'':d>0?chip('stress','#c02a17','a grouping they use that our defense answers below its own average'):chip('funnel','#1e7a34','a grouping they use that our defense handles better than its average');
   return `<tr><td class="tl">${g} personnel</td><td>${share.toFixed(0)}%</td><td>${_fmtE(tE)}</td><td>${_fmtE(ourE)}</td><td>${v}</td></tr>`;}).join('');
  // --- their passing vs coverage (what stops them) × what we actually play ---
  const tVsCov=_mixOff(ab,true), tPassBase=overall(tVsCov.M);
@@ -1546,7 +1545,7 @@ function crossPanel(ab){
  const covRows1=Object.keys(tVsCov.M).filter(c=>tVsCov.M[c].n>=15).sort((a,b)=>tVsCov.M[b].n-tVsCov.M[a].n).slice(0,5).map(c=>{
   const tE=_epaOf(tVsCov.M[c]), d=tE==null||tPassBase==null?null:tE-tPassBase;
   const ourShare=noCov.M[c]?100*noCov.M[c].n/noCov.n:0;
-  const v=d==null?'':d<=-0.07?chip('call it','#1e7a34','they are notably worse vs this family — dial it up'):d>=0.07?chip('avoid','#a23b3b','they feast on this family'):'';
+  const v=d==null?'':d<=-0.07?chip('call it','#1e7a34','they are notably worse vs this family — dial it up'):d>=0.07?chip('avoid','#c02a17','they feast on this family'):'';
   return `<tr><td class="tl">${CN[c]||c}</td><td>${_fmtE(tE)}</td><td>${100*tVsCov.M[c].n/tVsCov.n<1?'<1':(100*tVsCov.M[c].n/tVsCov.n).toFixed(0)}%</td><td>${ourShare.toFixed(0)}%</td><td>${v}</td></tr>`;}).join('');
  // --- attacking them: their coverage mix (what they allow in it) × our offense vs that coverage ---
  const dCov=_mixDef(ab,true), dCovBase=overall(dCov.M);
@@ -1554,7 +1553,7 @@ function crossPanel(ab){
  const covRows2=Object.keys(dCov.M).filter(c=>dCov.M[c].n>=20&&100*dCov.M[c].n/dCov.n>=6).sort((a,b)=>dCov.M[b].n-dCov.M[a].n).slice(0,5).map(c=>{
   const share=100*dCov.M[c].n/dCov.n, aE=_epaOf(dCov.M[c]), dTheir=aE==null||dCovBase==null?null:aE-dCovBase;
   const ours=noVsCov.M[c], oE=ours&&ours.n>=15?_epaOf(ours):null, dOurs=oE==null||noPassBase==null?null:oE-noPassBase;
-  const v=dTheir!=null&&dTheir>=0.05?chip('leak','#1e7a34','their most-played coverage leaks vs their own average'):dOurs!=null&&dOurs<=-0.07?chip('our weakness','#a23b3b','we are notably worse vs this family — expect a heavy dose'):dOurs!=null&&dOurs>=0.05?chip('we feast','#1e7a34','we beat this family above our own average'):'';
+  const v=dTheir!=null&&dTheir>=0.05?chip('leak','#1e7a34','their most-played coverage leaks vs their own average'):dOurs!=null&&dOurs<=-0.07?chip('our weakness','#c02a17','we are notably worse vs this family — expect a heavy dose'):dOurs!=null&&dOurs>=0.05?chip('we feast','#1e7a34','we beat this family above our own average'):'';
   return `<tr><td class="tl">${CN[c]||c}</td><td>${share.toFixed(0)}%</td><td>${_fmtE(aE)}</td><td>${_fmtE(oE)}</td><td>${v}</td></tr>`;}).join('');
  // --- attacking them on the ground/personnel: our groupings × their EPA allowed per grouping ---
  const noOff=_mixOff(V,false), dPers=_mixDef(ab,false), dPersBase=overall(dPers.M);
@@ -1562,7 +1561,7 @@ function crossPanel(ab){
   const share=100*noOff.M[g].n/noOff.n, oE=_epaOf(noOff.M[g]);
   const their=dPers.M[g], tE=their&&their.n>=25?_epaOf(their):null, d=tE==null||dPersBase==null?null:tE-dPersBase;
   const hit=d!=null&&((share>=10&&Math.abs(d)>=0.05)||Math.abs(d)>=0.10);
-  const v=!hit?'':d>0?chip('soft spot','#1e7a34','they defend this grouping below their own average'):chip('strength','#a23b3b','they defend this grouping better than their average');
+  const v=!hit?'':d>0?chip('soft spot','#1e7a34','they defend this grouping below their own average'):chip('strength','#c02a17','they defend this grouping better than their average');
   return `<tr><td class="tl">${g} personnel</td><td>${share.toFixed(0)}%</td><td>${_fmtE(oE)}</td><td>${_fmtE(tE)}</td><td>${v}</td></tr>`;}).join('');
  const t=(hdr,rows)=>`<div class="scroll"><table class="frecs"><thead><tr>${hdr.map((h,i)=>`<th class="${i==0?'tl':''}">${h}</th>`).join('')}</tr></thead><tbody>${rows||'<tr><td colspan="5" class="muted">not enough charted snaps</td></tr>'}</tbody></table></div>`;
  return `<div class="grid2" style="margin-top:18px">
@@ -1579,7 +1578,7 @@ function derivedMatchupHTML(ab){
  const V=(MUVS===ab)?'NO':MUVS, VN=teamName(V);
  const offL=allTeamMetricsF('off',ALLF),defL=allTeamMetricsF('def',ALLF);
  const flags=[...flagsFor(offL,defL,ab,V),...flagsFor(offL,defL,V,ab)].sort((x,y)=>y.sev-x.sev).slice(0,6);
- const flagLi=f=>{const c=f.favor==='o'?'#2e5496':f.favor==='d'?'#2e7d4f':'#8a8f98';return `<li style="border-left:3px solid ${c};padding-left:9px;margin:8px 0;list-style:none">${f.txt}</li>`;};
+ const flagLi=f=>{const c=f.favor==='o'?'#c92a10':f.favor==='d'?'#2e7d4f':'#8a8f98';return `<li style="border-left:3px solid ${c};padding-left:9px;margin:8px 0;list-style:none">${f.txt}</li>`;};
  return `<div class="card">${muTeamPicker(ab,V)}</div><div class="grid2"><div class="card"><div class="sechead o">${teamLogo(ab)}${ab} offense › ${teamLogo(V)}${VN} defense</div>${muBars(ab,V,offL,defL,ab,V)}</div><div class="card"><div class="sechead o">${teamLogo(V)}${VN} offense › ${teamLogo(ab)}${ab} defense</div>${muBars(V,ab,offL,defL,V,ab)}</div></div><div class="card"><div class="sechead">⚑ Situational mismatches vs ${VN}</div>${flags.length?`<ul class="keys" style="padding-left:2px">${flags.map(flagLi).join('')}</ul>`:'<p class="note">No extreme mismatches — an even matchup on paper.</p>'}<p class="note">Blue accent = the offense holds that edge · green = the defense. League-rank gaps ≥ ~8 plus directional/down tendencies. All-situations, 2025.</p></div><div class="card"><div class="sechead">Projected game flow</div><p style="font-size:13px;line-height:1.65">${gameFlowText(ab,V,offL,defL)}</p></div>`;
 }
 // ----- Live situational-split filters (folded in from the retired Tendencies tab) -----
@@ -1642,7 +1641,7 @@ function schemeCard(ab,side){
  const S=schemeProfiles();if(!S||!S.T[ab])return '';
  const x=S.T[ab],st=S.st,z=k=>x[k]==null?0:(x[k]-st[k].m)/st[k].sd;
  const rankOf=k=>{const a=Object.values(S.T).map(t=>t[k]).filter(v=>v!=null).sort((m,n)=>n-m);return x[k]==null?null:a.indexOf(x[k])+1;};
- const tile=(lab,k,fmt)=>{const v=x[k];if(v==null)return '';const zz=z(k);const c=zz>=1?'#2e5496':zz<=-1?'#b06a10':'#8a93a3';const r=rankOf(k);
+ const tile=(lab,k,fmt)=>{const v=x[k];if(v==null)return '';const zz=z(k);const c=zz>=1?'#c92a10':zz<=-1?'#b06a10':'#6b6a68';const r=rankOf(k);
   return `<div class="shtile"><span class="sht-l">${lab}</span><span class="sht-row"><span class="sht-v">${fmt?fmt(v):v.toFixed(1)+'%'}</span><span class="sht-r" style="color:${c}">#${r}</span></span></div>`;};
  const ph=philRow(ab);
  if(side==='def'){
@@ -1650,14 +1649,14 @@ function schemeCard(ab,side){
   return `<div class="card"><div class="sechead d">Pressure identity — ${window.SCHEME.season} <small class="src">FTN charting</small></div>
   <div class="shgrid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">${tile('Blitz rate (≥1 blitzer)','blz')}${tile('Avg pass rushers','prr',v=>v.toFixed(2))}</div>
   ${ph?`<p class="note" style="margin-top:6px"><b>Scheme lineage:</b> ${ph[5]}</p>`:''}
-  <p class="note" style="margin-top:4px">Season-level identity (not re-cut by the situational filters). #rank of 32 — <span style="color:#2e5496;font-weight:700">blue</span> = notably above league rate, <span style="color:#b06a10;font-weight:700">orange</span> = notably below.</p></div>`;
+  <p class="note" style="margin-top:4px">Season-level identity (not re-cut by the situational filters). #rank of 32 — <span style="color:#c92a10;font-weight:700">blue</span> = notably above league rate, <span style="color:#b06a10;font-weight:700">orange</span> = notably below.</p></div>`;
  }
  const f=schemeFamily(z);
  return `<div class="card"><div class="sechead o">Scheme fingerprint — ${window.SCHEME.season} <small class="src">FTN charting + play-by-play</small></div>
  <p style="margin:8px 0 2px;font-size:13.5px"><b style="color:var(--navy2)">${f.fam}</b> — ${f.why}${f.chips.length?` · <i>${f.chips.join(' · ')}</i>`:''}</p>
  ${ph?`<p class="note" style="margin:2px 0 8px"><b>Scheme lineage:</b> ${ph[4]}</p>`:''}
  <div class="shgrid">${tile('Play-action % (of dropbacks)','pa')}${tile('Out-of-pocket %','oop')}${tile('Under-center %','uc')}${tile('Outside-run % (tackle/end)','outs')}${tile('RPO % (of plays)','rpo')}${tile('Motion %','mot')}${tile('Screen %','scr')}${tile('No-huddle %','nh')}</div>
- <p class="note" style="margin-top:6px">Concept labels (flood, smash, wide zone…) aren't in public data — this reads the <b>scheme family</b> from its measurable signature: play-action, out-of-pocket &amp; under-center rates, run distribution, RPO/motion/tempo. Season-level (not re-cut by the situational filters). #rank of 32 — <span style="color:#2e5496;font-weight:700">blue</span> = notably above league rate, <span style="color:#b06a10;font-weight:700">orange</span> = notably below.</p></div>`;
+ <p class="note" style="margin-top:6px">Concept labels (flood, smash, wide zone…) aren't in public data — this reads the <b>scheme family</b> from its measurable signature: play-action, out-of-pocket &amp; under-center rates, run distribution, RPO/motion/tempo. Season-level (not re-cut by the situational filters). #rank of 32 — <span style="color:#c92a10;font-weight:700">blue</span> = notably above league rate, <span style="color:#b06a10;font-weight:700">orange</span> = notably below.</p></div>`;
 }
 // Live, situation-filterable tendency panel for a team's side. compact = tiles + rel bars + field zone only
 // (used under the curated opponent tables); full = also personnel/coverage + run/route (used for derived teams).
@@ -1678,7 +1677,7 @@ function derivedSideHTML(ab,side){return personnelLead(ab,side)+sideCutStats(ab,
 // One-line 2026 staff strip (names + NEW badges + discipline grade) for the top of opponent cards.
 function staffLine(ab){
  const S=window.SHARP2026,t=S&&S.teams[ab];if(!t)return '';
- const pcol={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[t.pen]||'#5a6675';
+ const pcol={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#c92a10','B':'#c92a10','B-':'#605d5d','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#c02a17','F':'#c02a17'}[t.pen]||'#605d5d';
  const c=(r,x)=>x&&x[0]?`${r} ${x[0]}${x[1]?' <span class="shnew">NEW</span>':''}`:'';
  const parts=[c('HC',t.hc),c('OC',t.oc),c('DC',t.dc)].filter(Boolean).join(' · ');
  return `<div class="staff">2026: ${parts}${t.pen?` · <b style="color:${pcol}">${t.pen}</b> <span class="hint">discipline</span>`:''}</div>`;
@@ -1693,11 +1692,11 @@ function sharpPanel(ab,opts){
  const coachRow=(role,c)=>c&&c[0]?`<div class="shc"><span class="shc-r">${role}</span><span class="shc-n">${c[0]}${c[1]?' <span class="shnew">NEW</span>':''}</span></div>`:'';
  const nu=[]; if(t.oc&&t.oc[1])nu.push('offensive'); if(t.dc&&t.dc[1])nu.push('defensive');
  const warn=nu.length?`<div class="shwarn">⚠ New <b>${nu.join(' &amp; ')}</b> play-caller${nu.length>1?'s':''} for 2026 — the 2025-derived tendencies on this page reflect the <b>prior</b> scheme, so read them with caution.</div>`:'';
- const pcol={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#2e5496','B':'#2e5496','B-':'#5a6675','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#a23b3b','F':'#a23b3b'}[t.pen]||'#5a6675';
- const rkC=r=>{const q=r/32;return q<=.25?'#1e7a34':q<=.5?'#2e5496':q<=.75?'#b07d12':'#a23b3b';};
+ const pcol={'A+':'#1e7a34','A':'#1e7a34','A-':'#2e7d4f','B+':'#c92a10','B':'#c92a10','B-':'#605d5d','C+':'#b07d12','C':'#b07d12','C-':'#b07d12','D':'#c02a17','F':'#c02a17'}[t.pen]||'#605d5d';
+ const rkC=r=>{const q=r/32;return q<=.25?'#1e7a34':q<=.5?'#c92a10':q<=.75?'#b07d12':'#c02a17';};
  const kv=items=>`<div class="shkv">${items.map(([l,v,rk])=>`<div><span class="shk">${l}</span><span class="shv">${v}${rk?` <span class="shrk" style="color:${rkC(rk)}">#${rk}</span>`:''}</span></div>`).join('')}</div>`;
  // uniform tile: label + statistic + rank rating (color by rank quality). badLow=true → rank #1 is bad (e.g. most-penalized).
- const qCol=q=>q>=.6?'#1e7a34':q>=.33?'#b07d12':'#a23b3b';
+ const qCol=q=>q>=.6?'#1e7a34':q>=.33?'#b07d12':'#c02a17';
  const box=(label,stat,rank,badLow,n)=>{n=n||32;let c='var(--navy2)';if(rank!=null){const q=badLow?(rank-1)/(n-1):(n-rank)/(n-1);c=qCol(q);}
   const inner = stat!=null
    ? `<span class="sht-v">${stat}</span>${rank!=null?`<span class="sht-r" style="color:${c}">#${rank}${n!==32?'/'+n:''}</span>`:''}`
@@ -1719,7 +1718,7 @@ function sharpPanel(ab,opts){
    +(t.penRanks?`<div class="fsub">Penalty tendencies <span class="hint">(rank 1 = most-penalized/worst)</span></div>`+grid((t.penRanks||[]).map(([l,r])=>box(l,null,r,true,32)).join('')):'')
    +(t.penNotes?`<ul class="note" style="margin:0;padding-left:16px">${t.penNotes.map(x=>`<li>${x}</li>`).join('')}</ul>`:'');
  }
- const coaches=opts.coaches===false?'':`<div class="shcoaches">${coachRow('Head Coach',t.hc)}${coachRow('Off. Coordinator',t.oc)}${coachRow('Def. Coordinator',t.dc)}<div class="shc"><span class="shc-r">Discipline</span><span class="shc-n" style="color:${pcol}">${t.pen} <span class="hint" style="font-weight:400;color:#8a93a3">penalty grade</span></span></div></div>`;
+ const coaches=opts.coaches===false?'':`<div class="shcoaches">${coachRow('Head Coach',t.hc)}${coachRow('Off. Coordinator',t.oc)}${coachRow('Def. Coordinator',t.dc)}<div class="shc"><span class="shc-r">Discipline</span><span class="shc-n" style="color:${pcol}">${t.pen} <span class="hint" style="font-weight:400;color:#6b6a68">penalty grade</span></span></div></div>`;
  return `<div class="card shcard"><div class="sechead">📘 2026 Outlook <span class="src" style="color:#9aa6b8">· ${S.src}</span></div>`+
   `${coaches}${warn}${rich}${rich?'':'<p class="note" style="margin:4px 0 0">Full 2026 detail (schedule, rest, scoring efficiency, unit rankings, roster) is populated for the Saints so far; rolling out to the rest of the league next.</p>'}</div>`;
 }
@@ -1758,7 +1757,7 @@ function persTag(c){const b=+c[0],te=+c[1],wr=Math.max(0,5-b-te);return c+' · '
 const QTRLAB={1:'Q1',2:'Q2',3:'Q3',4:'Q4',5:'OT'};
 function fqtrKeep(arr,ix){return FFILT.qtrs.length?arr.filter(p=>FFILT.qtrs.includes(p[ix])):arr;}
 function qtrBar(){return `<div class="qtrbar">${[1,2,3,4,5].map(q=>`<button class="qtrchip${FFILT.qtrs.includes(q)?' on':''}" data-qtr="${q}">${QTRLAB[q]}</button>`).join('')}${FFILT.qtrs.length?'<button class="qtrchip clr" data-qtr="clr" title="all quarters">✕</button>':''}</div>`;}
-function qtrChips(){return `<div class="fc-group"><label>Quarter <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0;color:#98a2b3">choose one or more</span></label>${qtrBar()}</div>`;}
+function qtrChips(){return `<div class="fc-group"><label>Quarter <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0;color:#9b9797">choose one or more</span></label>${qtrBar()}</div>`;}
 function bindQtrChips(root,rerender){(root||document).querySelectorAll('[data-qtr]').forEach(b=>b.onclick=()=>{const v=b.dataset.qtr;if(v==='clr')FFILT.qtrs=[];else{const q=+v,i=FFILT.qtrs.indexOf(q);if(i<0)FFILT.qtrs.push(q);else FFILT.qtrs.splice(i,1);}FFILT.sel=null;rerender();});}
 function qtrNote(){return FFILT.qtrs.length?FFILT.qtrs.slice().sort().map(q=>QTRLAB[q]).join(' + '):'';}
 // ---- by-game (week) filter — one game per week, labelled with the opponent ----
@@ -1778,7 +1777,7 @@ function gameBar(){
  const clr=FFILT.games.length?'<button class="gmchip clr" data-game="clr" title="all games">✕</button>':'';
  return `<div class="gmbar">${chips}${clr}</div>`;
 }
-function gameChips(){const bar=gameBar();if(!bar)return '';return `<div class="fc-group fc-wide${FFILT.games.length?' filton':''}"><label>Game <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0;color:#98a2b3">${FIELDSIDE==='def'?'opponent — ':''}one or more</span></label>${bar}</div>`;}
+function gameChips(){const bar=gameBar();if(!bar)return '';return `<div class="fc-group fc-wide${FFILT.games.length?' filton':''}"><label>Game <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0;color:#9b9797">${FIELDSIDE==='def'?'opponent — ':''}one or more</span></label>${bar}</div>`;}
 function bindGameChips(root,rerender){(root||document).querySelectorAll('[data-game]').forEach(b=>b.onclick=()=>{const v=b.dataset.game;if(v==='clr')FFILT.games=[];else{const w=+v,i=FFILT.games.indexOf(w);if(i<0)FFILT.games.push(w);else FFILT.games.splice(i,1);}FFILT.sel=null;rerender();});}
 function gameNote(){if(!FFILT.games.length)return '';const byWk={};fieldGamesList().forEach(g=>byWk[g.wk]=g.opp);return FFILT.games.slice().sort((a,b)=>a-b).map(w=>'W'+w+(byWk[w]?' '+byWk[w]:'')).join(', ');}
 let RUNBRK='poa'; // rush-tendency breakdown dimension: poa|zone|form|down
@@ -1804,11 +1803,11 @@ function runGapFan(base){
  const B=POA.map(()=>({n:0,yd:0,ep:[],td:0}));
  base.forEach(p=>{const k=keyOf(p);if(k==null)return;const b=B[k];b.n++;b.yd+=p[7]||0;if(p[8]!=null)b.ep.push(p[8]);if(p[10]===1)b.td++;});
  const eps=B.map(b=>b.ep.length?fmean(b.ep):null), maxN=Math.max(1,...B.map(b=>b.n));
- const W=720,H=468,cx=360,rbY=372, POS='#1f9d8a', NEG='#ef5a4a';
+ const W=720,H=468,cx=360,rbY=372, POS='#1e7a34', NEG='#c02a17';
  const gapX=i=>55+i*(610/6);
  const olX=[170,265,360,455,550], olLab=['LT','LG','C','RG','RT'];
  const cols=POA.map((lab,i)=>{
-  const e=eps[i], col=e==null?'#9aa3b0':((FIELDSIDE==='def'?e<0:e>=0)?POS:NEG), x=gapX(i), g=OF[i][0], d=OF[i][1], nn=B[i].n;
+  const e=eps[i], col=e==null?'#9b9797':((FIELDSIDE==='def'?e<0:e>=0)?POS:NEG), x=gapX(i), g=OF[i][0], d=OF[i][1], nn=B[i].n;
   const on = i===3 ? (FFILT.gap==='ALL'&&String(FFILT.dir)==='1') : (String(FFILT.gap)===String(g)&&String(FFILT.dir)===String(d));
   const fv=(g==='ALL'?'ALL':g)+'|'+d, sw=(2.6+5.4*nn/maxN).toFixed(1);
   const eLab=e==null?'—':(e>=0?'+':'')+e.toFixed(2);
@@ -1819,11 +1818,11 @@ function runGapFan(base){
    `<polygon points="${x.toFixed(1)},92 ${(x-6).toFixed(1)},106 ${(x+6).toFixed(1)},106" fill="${col}" opacity="${nn?0.95:0.22}"/>`+
    `<text x="${x.toFixed(1)}" y="72" text-anchor="middle" font-size="20" font-weight="800" fill="${col}">${eLab}</text>`+
    `<text x="${x.toFixed(1)}" y="428" text-anchor="middle" font-size="19" font-weight="800" fill="${col}">${nn}</text>`+
-   `<text x="${x.toFixed(1)}" y="450" text-anchor="middle" font-size="12" font-weight="700" fill="#8a94a3">${lab}</text>`+
+   `<text x="${x.toFixed(1)}" y="450" text-anchor="middle" font-size="12" font-weight="700" fill="#6b6a68">${lab}</text>`+
    `</g>`;
  }).join('');
  const ol=olX.map((x,i)=>`<circle cx="${x}" cy="250" r="26" fill="#cbb47f"/><text x="${x}" y="255" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">${olLab[i]}</text>`).join('');
- const grid=`<line x1="30" y1="176" x2="690" y2="176" stroke="#dde4e8"/><line x1="30" y1="300" x2="690" y2="300" stroke="#dde4e8"/>`;
+ const grid=`<line x1="30" y1="176" x2="690" y2="176" stroke="#d7d3d3"/><line x1="30" y1="300" x2="690" y2="300" stroke="#d7d3d3"/>`;
  const rb=`<circle cx="${cx}" cy="${rbY}" r="22" fill="#12161c"/><text x="${cx}" y="${rbY+5}" text-anchor="middle" font-size="14" font-weight="800" fill="#fff">RB</text>`;
  return `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:560px;max-width:820px;background:#eef3f5;border:1px solid var(--line);border-radius:10px">${grid}${cols}${ol}${rb}</svg></div>`;
 }
@@ -1856,7 +1855,7 @@ function routeDistRows(sel){
  if(!rKeys.length)return {html:'<p class="note">No charted routes in this cut.</p>',n:0};
  const rMax=Math.max(...rKeys.map(r=>rt[r].n),1), inv=FIELDSIDE==='def';
  const html=rKeys.map(r=>{const o=rt[r],use=100*o.n/rtot,e=fmean(o.ep),w=100*o.n/rMax,on=String(FFILT.route)===String(r);
-  const col=e==null?'#888':((inv?e<0:e>=0)?'#1e7a34':'#b23b3b');
+  const col=e==null?'#888':((inv?e<0:e>=0)?'#1e7a34':'#c02a17');
   return `<div class="rtrow clk${on?' on':''}" data-fk="route" data-fv="${r}" title="${o.n} targets · ${o.ex} explosive (15+ yds) · ${o.td} TD — tap to filter to ${RT13[r]}"><span class="rn">${RT13[r]}</span><span class="rb"><i style="width:${w.toFixed(0)}%"></i></span><span class="rv" style="color:${col}">${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</span><span class="rx${o.ex?'':' z'}">${o.ex} exp</span><span class="rtd${o.td?'':' z'}">${o.td} TD</span><span class="rk">${use.toFixed(0)}%</span></div>`;}).join('');
  return {html,n:rtot};
 }
@@ -1979,7 +1978,7 @@ function renderTendMap(){
  const mean=a=>a.length?a.reduce((s,v)=>s+v,0)/a.length:null;
  const fmtE=v=>v==null?'—':(v>0?'+':'')+v.toFixed(2);
  const inv=TMAP.side==='def'; // defense view: negative EPA allowed = good
- const eCol=v=>v==null?'#8a93a3':((v>0)!==inv?'#1e7a34':'#a23b3b');
+ const eCol=v=>v==null?'#6b6a68':((v>0)!==inv?'#1e7a34':'#c02a17');
  const topK=(cnt,tot,k,fmtK)=>Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,k).map(key=>`${fmtK?fmtK(key):key} <b>${pct(cnt[key],tot)}%</b>`);
  // one stat pack per play set — tendency + results
  const packOf=(zp,zr)=>{
@@ -2026,7 +2025,7 @@ function renderTendMap(){
  if(window.PLAYS&&!window._TMALL){const P=window.PLAYS;let lp=[],lr=[];for(const t in P){lp=lp.concat(P[t].pass);lr=lr.concat(P[t].rush);}window._TMALL={lp,lr};}
  const L=window._TMALL?packOf(ptOut(window._TMALL.lp.filter(p=>keep(p,IX.pass)),IX.pass,true),ptOut(window._TMALL.lr.filter(p=>keep(p,IX.rush)),IX.rush,false)):packOf([],[]);
  // dossier viz: value bar with a red league tick; twin stacked bars (thick=team, thin=league)
- const dCol=(D,thr)=>D==null||Math.abs(D)<thr?'':D>0?'#2e5496':'#b06a10';
+ const dCol=(D,thr)=>D==null||Math.abs(D)<thr?'':D>0?'#c92a10':'#b06a10';
  const barTick=(lab,v,lg,thr,unit,dom)=>{if(v==null)return '';dom=dom||[0,100];
   const W=x=>Math.max(0,Math.min(100,100*(x-dom[0])/(dom[1]-dom[0])));
   const fmtv=x=>unit==='y'?(+x).toFixed(1):Math.round(x)+'%';
@@ -2040,8 +2039,8 @@ function renderTendMap(){
  const splitBar=(oo,labP,labR)=>`<div class="zbar2" title="${oo.pN} ${labP||'dropbacks'} / ${oo.rN} ${labR||'runs'}"><span class="p" style="width:${oo.passRate}%"></span><span class="r" style="width:${100-oo.passRate}%"></span></div><div style="font-size:10px;color:#4c5768;margin-top:2px"><b>${oo.passRate}% pass</b> · ${100-oo.passRate}% run</div>`;
  const shareRows=(cnt,tot,lgCnt,lgTot,k,fmtK,thr)=>Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]).slice(0,k).map(key=>barTick(fmtK?fmtK(key):key,pct(cnt[key],tot),lgCnt&&lgTot?pct(lgCnt[key]||0,lgTot):null,thr||5)).join('');
  const kv=(k,v)=>`<div class="tzkv"><span class="k">${k}</span><b>${v}</b></div>`;
- const st=(v,l,c,sub)=>`<div><div class="v" style="color:${c||'var(--ink)'}">${v}</div><div class="l">${l}</div>${sub?`<div style="font-size:8.5px;color:#98a2b3;margin-top:1px">${sub}</div>`:''}</div>`;
- const lgNote=`<span style="text-transform:none;letter-spacing:0;font-weight:600;color:#a3adbd"> · red tick = league avg, same cut</span>`;
+ const st=(v,l,c,sub)=>`<div><div class="v" style="color:${c||'var(--ink)'}">${v}</div><div class="l">${l}</div>${sub?`<div style="font-size:8.5px;color:#9b9797;margin-top:1px">${sub}</div>`:''}</div>`;
+ const lgNote=`<span style="text-transform:none;letter-spacing:0;font-weight:600;color:#9b9797"> · red tick = league avg, same cut</span>`;
  // ---- THE CALLS (always expanded, vs league in the same cut) ----
  let calls;
  if(TMAP.side==='off'){
@@ -2127,7 +2126,7 @@ function renderTendMap(){
   const grpSeg=`<div class="subnav" style="margin:0 0 8px">${[['pass','Passers'],['rec','Receivers'],['rush','Rushers']].map(([v,l])=>`<button data-tm-pgroup="${v}" class="${grp===v?'on':''}">${l}</button>`).join('')}</div>`;
   const head=cols.map(c=>`<th class="${c.t?'tl':''}" data-tm-psort="${c.k}" style="cursor:pointer" title="sort">${c.l}${sk===c.k?(TMAP.pdir<0?' ▲':' ▼'):''}</th>`).join('');
   const trs=rows.map(r=>`<tr>${cols.map(c=>`<td class="${c.t?'tl':''}">${c.t?r[c.k]:(c.f?c.f(r[c.k]):(r[c.k]==null?'—':r[c.k]))}</td>`).join('')}</tr>`).join('');
-  playersHtml=`<div class="tzsec"><span class="tt">Players in this cut <span style="text-transform:none;letter-spacing:0;font-weight:600;color:#a3adbd">· tap a column to sort</span></span>${grpSeg}<div class="scroll"><table class="frecs"><thead><tr>${head}</tr></thead><tbody>${trs||'<tr><td colspan="9" class="tz-thin">no players meet the volume floor in this cut</td></tr>'}</tbody></table></div></div>`;
+  playersHtml=`<div class="tzsec"><span class="tt">Players in this cut <span style="text-transform:none;letter-spacing:0;font-weight:600;color:#9b9797">· tap a column to sort</span></span>${grpSeg}<div class="scroll"><table class="frecs"><thead><tr>${head}</tr></thead><tbody>${trs||'<tr><td colspan="9" class="tz-thin">no players meet the volume floor in this cut</td></tr>'}</tbody></table></div></div>`;
  }
  // controls
  const seg=(k,cur,opts,cap)=>{const act=String(cur)!==String(opts[0][0]);return `<div class="subgroup${act?' tmfilton':''}" style="margin:0 10px 8px 0"><span class="subcap">${cap}</span><div class="subnav" style="margin:0">${opts.map(([v,l])=>`<button data-tm-${k}="${v}" class="${String(cur)===String(v)?'on':''}">${l}</button>`).join('')}</div></div>`;};
@@ -2198,7 +2197,7 @@ function drawFZPage(){
  box.setAttribute('style',`border-top:3px solid ${teamColor(ab)}`);
  const hasCurated=DATA.coverage&&DATA.coverage.teams&&DATA.coverage.teams[ab];
  if(!hasCurated){
-  box.innerHTML=`<h2 style="margin-top:0" class="tchip">${teamLogo(ab)}${name}</h2><div class="banner" style="border-color:#cdd6e4;border-left-color:#7d93b8;background:#f3f6fb;color:#37445a">The curated zone tear sheet (route tree × field zone, coverage-charted) is built for a 17-team baseline and isn't available for ${ab}. Use the <b>Pass chart</b> and <b>Run chart</b> tabs above — they're computed live from 2025 play-by-play for all 32 teams, with full field-zone, direction, gap and route detail.</div>`;
+  box.innerHTML=`<h2 style="margin-top:0" class="tchip">${teamLogo(ab)}${name}</h2><div class="banner" style="border-color:#cfcbcb;border-left-color:#9b9797;background:#eae9e9;color:#201e1d">The curated zone tear sheet (route tree × field zone, coverage-charted) is built for a 17-team baseline and isn't available for ${ab}. Use the <b>Pass chart</b> and <b>Run chart</b> tabs above — they're computed live from 2025 play-by-play for all 32 teams, with full field-zone, direction, gap and route detail.</div>`;
   return;
  }
  const o=ab==='NO'?null:DATA.opponents.find(x=>x.abbr===ab);
@@ -2213,7 +2212,7 @@ function drawFZPage(){
 const FGEO={W:100,top:14,bot:214,perYd:2};
 const ZB=[['RED ZONE',0,20],['GREEN',20,40],['MIDFIELD',40,60],['OWN TERRITORY',60,90],['BACKED UP',90,100]];
 const ZN=['Red','Green','Midfield','Own','Backed Up'];
-const OUT={C:{c:'#1e7a34',lab:'Complete'},I:{c:'#aab2bf',lab:'Incomplete'},N:{c:'#b23b3b',lab:'Intercepted'}};
+const OUT={C:{c:'#1e7a34',lab:'Complete'},I:{c:'#aab2bf',lab:'Incomplete'},N:{c:'#c02a17',lab:'Intercepted'}};
 const DIRN=['left','middle','right'],GAPN=['guard','tackle','end'];
 let CUR_SEL=[];
 const fmean=a=>{const v=a.filter(x=>x!=null);return v.length?v.reduce((s,x)=>s+x,0)/v.length:null;};
@@ -2222,14 +2221,14 @@ const depthOf=ay=>ay==null?null:ay<0?'b':ay<=9?'s':ay<=19?'i':'d';
 const ypos=p=>FGEO.top+Math.max(-6,Math.min(100,p))*FGEO.perYd;
 function laneX(loc,i){const base=loc===0?26:loc===2?74:50;const jit=(((i*37+((loc==null?1:loc+1)*13))%19)-9);return Math.max(12,Math.min(88,base+jit));}
 function fieldDesc(yl){if(yl==null)return '';return yl<=50?('opp '+yl):('own '+(100-yl));}
-function epaColor(e){if(e==null)return '#c2c8d2';const m=Math.min(1,Math.abs(e)/0.6);return e>=0?`rgb(${Math.round(110-60*m)},${Math.round(165+15*m)},${Math.round(120-55*m)})`:`rgb(${Math.round(185+35*m)},${Math.round(115-70*m)},${Math.round(115-70*m)})`;}
+function epaColor(e){if(e==null)return '#b3afaf';const m=Math.min(1,Math.abs(e)/0.6);return e>=0?`rgb(${Math.round(110-60*m)},${Math.round(165+15*m)},${Math.round(120-55*m)})`:`rgb(${Math.round(185+35*m)},${Math.round(115-70*m)},${Math.round(115-70*m)})`;}
 function fieldBase(){
  const W=FGEO.W,T=FGEO.top,B=FGEO.bot;let m='';
  m+=`<rect x="0" y="0" width="${W}" height="${B+12}" fill="#eaf2ea"/>`;
  const tint=['#e4efe4','#edf4ed'];
  ZB.forEach(([nm,a,b],zi)=>{const y=ypos(a),h=ypos(b)-ypos(a);m+=`<rect x="0" y="${y.toFixed(1)}" width="${W}" height="${h.toFixed(1)}" fill="${tint[zi%2]}"/>`;
   m+=`<text x="${W-2.3}" y="${(y+h/2).toFixed(1)}" font-size="4.4" fill="#9bb19b" font-weight="800" text-anchor="middle" transform="rotate(90 ${W-2.3} ${(y+h/2).toFixed(1)})" letter-spacing="0.5">${nm}</text>`;});
- m+=`<rect x="0" y="0" width="${W}" height="${T}" fill="#16284a"/>`;
+ m+=`<rect x="0" y="0" width="${W}" height="${T}" fill="#201e1d"/>`;
  m+=`<rect x="0" y="${B}" width="${W}" height="12" fill="#39404d"/>`;
  m+=`<text x="${W/2}" y="9.5" font-size="6" fill="#d4bd8a" font-weight="800" text-anchor="middle" letter-spacing="1.5">▲ ATTACKING (opp goal)</text>`;
  m+=`<text x="${W/2}" y="${B+8}" font-size="5" fill="#aeb4c0" font-weight="700" text-anchor="middle" letter-spacing="1">OWN GOAL LINE</text>`;
@@ -2241,7 +2240,7 @@ function fieldBase(){
 const NFLNAMES={ARI:'Arizona Cardinals',ATL:'Atlanta Falcons',BAL:'Baltimore Ravens',BUF:'Buffalo Bills',CAR:'Carolina Panthers',CHI:'Chicago Bears',CIN:'Cincinnati Bengals',CLE:'Cleveland Browns',DAL:'Dallas Cowboys',DEN:'Denver Broncos',DET:'Detroit Lions',GB:'Green Bay Packers',HOU:'Houston Texans',IND:'Indianapolis Colts',JAX:'Jacksonville Jaguars',KC:'Kansas City Chiefs',LA:'Los Angeles Rams',LAC:'Los Angeles Chargers',LV:'Las Vegas Raiders',MIA:'Miami Dolphins',MIN:'Minnesota Vikings',NE:'New England Patriots',NO:'New Orleans Saints',NYG:'New York Giants',NYJ:'New York Jets',PHI:'Philadelphia Eagles',PIT:'Pittsburgh Steelers',SEA:'Seattle Seahawks',SF:'San Francisco 49ers',TB:'Tampa Bay Buccaneers',TEN:'Tennessee Titans',WAS:'Washington Commanders'};
 function teamName(ab){return NFLNAMES[ab]||ab;}
 const TEAMCOLORS={ARI:{p:'#97233F',s:'#000000'},ATL:{p:'#A71930',s:'#000000'},BAL:{p:'#241773',s:'#9E7C0C'},BUF:{p:'#00338D',s:'#C60C30'},CAR:{p:'#0085CA',s:'#101820'},CHI:{p:'#0B162A',s:'#C83803'},CIN:{p:'#FB4F14',s:'#000000'},CLE:{p:'#311D00',s:'#FF3C00'},DAL:{p:'#003594',s:'#869397'},DEN:{p:'#FB4F14',s:'#002244'},DET:{p:'#0076B6',s:'#B0B7BC'},GB:{p:'#203731',s:'#FFB612'},HOU:{p:'#03202F',s:'#A71930'},IND:{p:'#002C5F',s:'#A2AAAD'},JAX:{p:'#006778',s:'#D7A22A'},KC:{p:'#E31837',s:'#FFB81C'},LA:{p:'#003594',s:'#FFA300'},LAC:{p:'#0080C6',s:'#FFC20E'},LV:{p:'#000000',s:'#A5ACAF'},MIA:{p:'#008E97',s:'#FC4C02'},MIN:{p:'#4F2683',s:'#FFC62F'},NE:{p:'#002244',s:'#C60C30'},NO:{p:'#101820',s:'#D3BC8D'},NYG:{p:'#0B2265',s:'#A71930'},NYJ:{p:'#125740',s:'#000000'},PHI:{p:'#004C54',s:'#A5ACAF'},PIT:{p:'#101820',s:'#FFB612'},SEA:{p:'#002244',s:'#69BE28'},SF:{p:'#AA0000',s:'#B3995D'},TB:{p:'#D50A0A',s:'#34302B'},TEN:{p:'#0C2340',s:'#4B92DB'},WAS:{p:'#5A1414',s:'#FFB612'}};
-function teamColor(ab){return (TEAMCOLORS[ab]||{p:'#16284a'}).p;}
+function teamColor(ab){return (TEAMCOLORS[ab]||{p:'#201e1d'}).p;}
 function teamColor2(ab){return (TEAMCOLORS[ab]||{s:'#d4bd8a'}).s;}
 function teamLogo(ab,cls){return `<img class="tlogo${cls?' '+cls:''}" src="data/logos/${ab}.png" alt="${ab}" loading="lazy" onerror="this.style.visibility='hidden'">`;}
 // ---------- 2026 roster movers (Sharp churn → badges wherever the player's 2025 stats appear) ----------
@@ -2258,7 +2257,7 @@ function moversMap(){
 }
 // Badge only when the row's 2025 team matches the move direction (departures were on NO; arrivals weren't).
 function moverBadge(nm,ab){const m=moversMap()[nm];if(!m)return '';if(m.t==='out'&&ab!=='NO')return '';if(m.t==='in'&&ab==='NO')return '';
- return ` <span class="shnew" style="background:${m.t==='in'?'#1e7a34':'#a23b3b'}" title="2026 roster move — Sharp">${m.lab}</span>`;}
+ return ` <span class="shnew" style="background:${m.t==='in'?'#1e7a34':'#c02a17'}" title="2026 roster move — Sharp">${m.lab}</span>`;}
 function teamCell(ab,label){return `<span class="tcell">${teamLogo(ab,'sm')}${label==null?ab:label}</span>${label!=null?moverBadge(String(label),ab):''}`;}
 // paint a selector button in its team's colors when active; neutral otherwise
 function paintOppBtn(b,ab,on){if(on){b.style.background=teamColor(ab);b.style.borderColor=teamColor(ab);b.style.color='#fff';b.style.boxShadow='0 2px 8px '+teamColor(ab)+'55';}else{b.style.background='';b.style.borderColor='';b.style.color='';b.style.boxShadow='';}}
@@ -2327,8 +2326,8 @@ function renderFieldChart(){
  const zrows=ZN.map(nm=>{const s2=sel.filter(p=>zoneOf(p[6])===nm);return {nm,n:s2.length,e:fmean(s2.map(p=>p[10])),s:fmean(s2.map(p=>p[11]))};});
  const mx=Math.max(0.4,...zrows.map(z=>z.e==null?0:Math.abs(z.e)));
  const zoneBars=zrows.map(z=>{const on=FFILT.zone===z.nm;if(!z.n)return `<div class="fzrow clk${on?' on':''}" data-fk="zone" data-fv="${z.nm}"><span class="zl">${z.nm}</span><span class="zb"></span><span class="zv muted">—</span></div>`;
-  const w=Math.min(49,Math.abs(z.e)/mx*49),pos=z.e>=0,left=pos?50:50-w,col=(DEF?z.e<0:z.e>=0)?'#1e7a34':'#b23b3b';
-  return `<div class="fzrow clk${on?' on':''}" data-fk="zone" data-fv="${z.nm}" title="${z.n} throws · success ${z.s==null?'—':(100*z.s).toFixed(0)+'%'} — tap to filter"><span class="zl">${z.nm}</span><span class="zb"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="zv" style="color:${col}">${pos?'+':''}${z.e.toFixed(2)}</span></div>`;}).join('');
+  const w=Math.min(49,Math.abs(z.e)/mx*49),pos=z.e>=0,left=pos?50:50-w,col=(DEF?z.e<0:z.e>=0)?'#1e7a34':'#c02a17';
+  return `<div class="fzrow clk${on?' on':''}" data-fk="zone" data-fv="${z.nm}" title="${z.n} throws · success ${z.s==null?'—':(100*z.s).toFixed(0)+'%'} — tap to filter"><span class="zl">${z.nm}</span><span class="zb"><i style="left:50%;width:1.2px;background:#9b9797"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="zv" style="color:${col}">${pos?'+':''}${z.e.toFixed(2)}</span></div>`;}).join('');
  const breakdown=passBreakdown(sel);
  const tg={};sel.forEach(p=>{if(!p[3])return;const t=tg[p[3]]||(tg[p[3]]={tgt:0,rec:0,yds:0,ep:[],cp:[],td:0,drp:0,int:0});t.tgt++;if(p[12]==='C'){t.rec++;t.yds+=p[8]||0;}else if(p[12]==='N')t.int++;if(p[13]===1)t.td++;if(p[PI.drop]===1)t.drp++;if(p[10]!=null)t.ep.push(p[10]);if(p[PI.cpoe]!=null)t.cp.push(p[PI.cpoe]);});
  const trows=Object.entries(tg).sort((a,b)=>b[1].tgt-a[1].tgt).slice(0,8).map(([rec,t])=>{const e=fmean(t.ep),cp=t.cp.length?fmean(t.cp):null;return `<tr data-fk="rec" data-fv="${rec}" class="${FFILT.rec===rec?'sel':''}"><td>${rec}</td><td>${t.tgt}</td><td>${t.rec}</td><td>${t.yds}</td><td>${t.td||''}</td><td>${t.drp||''}</td><td>${t.int||''}</td><td>${cp==null?'—':(cp>0?'+':'')+cp.toFixed(1)}</td><td>${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</td></tr>`;}).join('');
@@ -2389,8 +2388,8 @@ function renderRunChart(){
  const zrows=ZN.map(nm=>{const s2=sel.filter(p=>zoneOf(p[5])===nm);return {nm,n:s2.length,e:fmean(s2.map(p=>p[8]))};});
  const mx=Math.max(0.4,...zrows.map(z=>z.e==null?0:Math.abs(z.e)));
  const zoneBars=zrows.map(z=>{const on=FFILT.zone===z.nm;if(!z.n)return `<div class="fzrow clk${on?' on':''}" data-fk="zone" data-fv="${z.nm}"><span class="zl">${z.nm}</span><span class="zb"></span><span class="zv muted">—</span></div>`;
-  const w=Math.min(49,Math.abs(z.e)/mx*49),pos=z.e>=0,left=pos?50:50-w,col=(DEF?z.e<0:z.e>=0)?'#1e7a34':'#b23b3b';
-  return `<div class="fzrow clk${on?' on':''}" data-fk="zone" data-fv="${z.nm}" title="${z.n} carries — tap to filter"><span class="zl">${z.nm}</span><span class="zb"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="zv" style="color:${col}">${pos?'+':''}${z.e.toFixed(2)}</span></div>`;}).join('');
+  const w=Math.min(49,Math.abs(z.e)/mx*49),pos=z.e>=0,left=pos?50:50-w,col=(DEF?z.e<0:z.e>=0)?'#1e7a34':'#c02a17';
+  return `<div class="fzrow clk${on?' on':''}" data-fk="zone" data-fv="${z.nm}" title="${z.n} carries — tap to filter"><span class="zl">${z.nm}</span><span class="zb"><i style="left:50%;width:1.2px;background:#9b9797"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="zv" style="color:${col}">${pos?'+':''}${z.e.toFixed(2)}</span></div>`;}).join('');
  const cg={};sel.forEach(p=>{const t=cg[p[2]]||(cg[p[2]]={c:0,y:0,ep:[],td:0});t.c++;t.y+=p[7]||0;if(p[8]!=null)t.ep.push(p[8]);if(p[10]===1)t.td++;});
  const crows=Object.entries(cg).sort((a,b)=>b[1].c-a[1].c).slice(0,8).map(([run,t])=>{const e=fmean(t.ep);return `<tr data-fk="run" data-fv="${run}" class="${FFILT.run===run?'sel':''}"><td>${run}</td><td>${t.c}</td><td>${(t.y/t.c).toFixed(1)}</td><td>${t.td}</td><td>${e==null?'—':(e>0?'+':'')+e.toFixed(2)}</td></tr>`;}).join('');
  const carTable=`<table class="frecs"><thead><tr><th>${DEF?'Opp carrier':'Carrier'}</th><th>Att</th><th>Y/C</th><th>TD</th><th>EPA</th></tr></thead><tbody>${crows||'<tr><td colspan="5" class="muted">no carries</td></tr>'}</tbody></table>`;
@@ -2434,7 +2433,7 @@ function tbl(rows,cols,noKey,rank){
  const body=rows.map((r,ri)=>`<tr class="${r[noKey]=='NO'?'no':''}">${rank?`<td class="rkc">${ri+1}</td>`:''}${cols.map((c,i)=>{let v=r[c.k];let st='';if(c.heat&&typeof v==='number'){st=condStyle(v,cvals[c.k]);}const disp=v==null?'—':(c.fmt?c.fmt(v):v);return `<td class="${i==0?'tl':''}" style="${st}">${i==0&&NFLNAMES[r[noKey]]?teamCell(r[noKey],disp):disp}</td>`}).join('')}</tr>`).join('');
  const avgRow=`<tr class="lg">${rank?'<td class="rkc"></td>':''}<td class="tl">NFL average</td>${cols.slice(1).map(c=>{const vs=rows.map(r=>r[c.k]).filter(x=>typeof x==='number');if(!vs.length)return '<td></td>';const m=vs.reduce((a,b)=>a+b,0)/vs.length;return `<td>${c.fmt?c.fmt(m):(Math.round(m*10)/10)}</td>`;}).join('')}</tr>`;
  return `<div class="scroll"><table${rank?' data-ranked="1"':''}><thead><tr>${rank?'<th data-rk="1">#</th>':''}${cols.map((c,i)=>`<th class="${i==0?'tl':''}">${c.lab}</th>`).join('')}</tr></thead><tbody>${avgRow}${body}</tbody></table></div>`;}
-function epaScatter(){const T=DATA.leagueEPA.teams,lg=DATA.leagueEPA.lgOff;const ox=T.map(t=>t.off.epa),dx=T.map(t=>t.deff.epa);const oMin=Math.min(...ox,lg),oMax=Math.max(...ox,lg),dMin=Math.min(...dx,lg),dMax=Math.max(...dx,lg);const W=760,H=500,p=58;const X=v=>p+(v-oMin)/(oMax-oMin)*(W-2*p),Y=v=>p+(v-dMin)/(dMax-dMin)*(H-2*p);const cx=X(lg).toFixed(1),cy=Y(lg).toFixed(1);const pts=T.map(t=>{const x=+X(t.off.epa),y=+Y(t.deff.epa);const no=t.abbr=='NO';const s=no?30:21;return `<image href="data/logos/${t.abbr}.png" x="${(x-s/2).toFixed(1)}" y="${(y-s/2).toFixed(1)}" width="${s}" height="${s}"${no?' style="filter:drop-shadow(0 0 2px #D3BC8D)"':''}><title>${t.name}: offense ${t.off.epa.toFixed(3)}, defense ${t.deff.epa.toFixed(3)}</title></image>`;}).join('');return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:760px;background:#fff;border:1px solid #e3e7ee;border-radius:8px"><line x1="${cx}" y1="${p}" x2="${cx}" y2="${H-p}" stroke="#cfd6e0" stroke-dasharray="4"/><line x1="${p}" y1="${cy}" x2="${W-p}" y2="${cy}" stroke="#cfd6e0" stroke-dasharray="4"/><text x="${W-p}" y="${H-p+32}" text-anchor="end" font-size="11" fill="#666">Offense EPA/play → (better)</text><text x="14" y="${p-22}" font-size="11" fill="#666">↑ Better defense</text><text x="${W-p}" y="${p-10}" text-anchor="end" font-size="10" fill="#1e7a34" font-weight="700">Good O · Good D</text>${pts}</svg>`;}
+function epaScatter(){const T=DATA.leagueEPA.teams,lg=DATA.leagueEPA.lgOff;const ox=T.map(t=>t.off.epa),dx=T.map(t=>t.deff.epa);const oMin=Math.min(...ox,lg),oMax=Math.max(...ox,lg),dMin=Math.min(...dx,lg),dMax=Math.max(...dx,lg);const W=760,H=500,p=58;const X=v=>p+(v-oMin)/(oMax-oMin)*(W-2*p),Y=v=>p+(v-dMin)/(dMax-dMin)*(H-2*p);const cx=X(lg).toFixed(1),cy=Y(lg).toFixed(1);const pts=T.map(t=>{const x=+X(t.off.epa),y=+Y(t.deff.epa);const no=t.abbr=='NO';const s=no?30:21;return `<image href="data/logos/${t.abbr}.png" x="${(x-s/2).toFixed(1)}" y="${(y-s/2).toFixed(1)}" width="${s}" height="${s}"${no?' style="filter:drop-shadow(0 0 2px #D3BC8D)"':''}><title>${t.name}: offense ${t.off.epa.toFixed(3)}, defense ${t.deff.epa.toFixed(3)}</title></image>`;}).join('');return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:760px;background:#fff;border:1px solid #d7d3d3;border-radius:8px"><line x1="${cx}" y1="${p}" x2="${cx}" y2="${H-p}" stroke="#cfcbcb" stroke-dasharray="4"/><line x1="${p}" y1="${cy}" x2="${W-p}" y2="${cy}" stroke="#cfcbcb" stroke-dasharray="4"/><text x="${W-p}" y="${H-p+32}" text-anchor="end" font-size="11" fill="#666">Offense EPA/play → (better)</text><text x="14" y="${p-22}" font-size="11" fill="#666">↑ Better defense</text><text x="${W-p}" y="${p-10}" text-anchor="end" font-size="10" fill="#1e7a34" font-weight="700">Good O · Good D</text>${pts}</svg>`;}
 function renderEPA(){const s=$('#epa');s.innerHTML=`${pageHead('epa')}<div class="subgroups" id="esub"></div><div id="ebody"></div>`;
  const groups=[
    ['Overview',[['ov','League-Wide']]],
@@ -2455,15 +2454,15 @@ function barChart(items,o){
  const W=Math.max(560,items.length*(o.bw||22)+70),H=o.h||250,p={l:48,r:10,t:16,b:o.b||30};
  const vs=items.map(i=>i.v);const mn=Math.min(0,...vs),mx=Math.max(0,...vs);
  const Y=v=>p.t+(mx-v)/(mx-mn||1)*(H-p.t-p.b);const bw=(W-p.l-p.r)/items.length;
- let ax='';for(let i=0;i<=4;i++){const v=mn+(mx-mn)*i/4;const y=Y(v);ax+=`<line x1="${p.l}" y1="${y.toFixed(1)}" x2="${W-p.r}" y2="${y.toFixed(1)}" stroke="#eef1f6"/><text x="${p.l-4}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#888">${v.toFixed(o.dec==null?2:o.dec)}</text>`;}
+ let ax='';for(let i=0;i<=4;i++){const v=mn+(mx-mn)*i/4;const y=Y(v);ax+=`<line x1="${p.l}" y1="${y.toFixed(1)}" x2="${W-p.r}" y2="${y.toFixed(1)}" stroke="#eae9e9"/><text x="${p.l-4}" y="${(y+3).toFixed(1)}" text-anchor="end" font-size="8.5" fill="#888">${v.toFixed(o.dec==null?2:o.dec)}</text>`;}
  let bars='',labs='';
  items.forEach((it,i)=>{const x=p.l+i*bw,y0=Y(0),y=Y(it.v);
-  const col=it.hl?'#D3BC8D':(it.v>=0?'#2e5496':'#b06a10');
+  const col=it.hl?'#D3BC8D':(it.v>=0?'#c92a10':'#b06a10');
   bars+=`<rect x="${(x+1).toFixed(1)}" y="${Math.min(y,y0).toFixed(1)}" width="${Math.max(1,bw-2).toFixed(1)}" height="${Math.max(1,Math.abs(y-y0)).toFixed(1)}" fill="${col}"><title>${it.title||it.lab}: ${it.v}</title></rect>`;
   const lx=x+bw/2;
   labs+=o.rot?`<text x="${lx.toFixed(1)}" y="${H-p.b+10}" transform="rotate(-52 ${lx.toFixed(1)} ${H-p.b+10})" text-anchor="end" font-size="7.5" font-weight="${it.hl?'800':'400'}" fill="${it.hl?'#7a6420':'#555'}">${it.lab}</text>`:(it.ab?`<image href="data/logos/${it.ab}.png" x="${(lx-7).toFixed(1)}" y="${H-p.b+3}" width="14" height="14"${it.hl?' style="filter:drop-shadow(0 0 1.5px #caa84e)"':''}><title>${it.title||it.lab}: ${it.v}</title></image>`:`<text x="${lx.toFixed(1)}" y="${H-p.b+10}" text-anchor="middle" font-size="8" font-weight="${it.hl?'800':'400'}" fill="${it.hl?'#7a6420':'#555'}">${it.lab}</text>`);});
  const zero=`<line x1="${p.l}" y1="${Y(0).toFixed(1)}" x2="${W-p.r}" y2="${Y(0).toFixed(1)}" stroke="#9aa3b2"/>`;
- const avg=o.avg!=null?`<line x1="${p.l}" y1="${Y(o.avg).toFixed(1)}" x2="${W-p.r}" y2="${Y(o.avg).toFixed(1)}" stroke="#a23b3b" stroke-dasharray="4 3"/><text x="${W-p.r}" y="${(Y(o.avg)-3).toFixed(1)}" text-anchor="end" font-size="8" fill="#a23b3b">lg avg</text>`:'';
+ const avg=o.avg!=null?`<line x1="${p.l}" y1="${Y(o.avg).toFixed(1)}" x2="${W-p.r}" y2="${Y(o.avg).toFixed(1)}" stroke="#c02a17" stroke-dasharray="4 3"/><text x="${W-p.r}" y="${(Y(o.avg)-3).toFixed(1)}" text-anchor="end" font-size="8" fill="#c02a17">lg avg</text>`:'';
  return `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:${Math.min(W,920)}px;background:#fff;border:1px solid var(--line);border-radius:8px"><text x="10" y="11" font-size="9.5" font-weight="700" fill="#555">${o.label||''}</text>${ax}${zero}${avg}${bars}${labs}</svg></div>`;
 }
 // Aggregate every targeted receiver across all 32 teams from window.PLAYS (+ roster position from window.RECPOS).
@@ -2741,7 +2740,7 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
      const a=Math.min(1,(Math.abs(z)-0.9)/1.6), o=(0.10+0.34*a).toFixed(2);
      return `background:rgba(${z>0?'30,122,52':'178,59,59'},${o})`;};
    const shPct=(r,g)=>{const sh=shareOf(r,g),z=shZ(r,g);
-     const col=z>=1?'#1e7a34':z<=-1?'#b23b3b':'#9aa3b0';
+     const col=z>=1?'#1e7a34':z<=-1?'#c02a17':'#9b9797';
      return `<div style="font-size:8.5px;font-weight:800;color:${col};display:block;line-height:1.1;margin-top:1px" title="league avg ${shMS[g].m.toFixed(0)}%">${sh.toFixed(0)}%</div>`;};
    const head=`<tr><th class="tl">Team</th><th>Total</th>${main.map(g=>`<th>${g}</th>`).join('')}<th>Other</th></tr>`;
    const body=rows.map(r=>{
@@ -2751,7 +2750,7 @@ function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,
         return `<td style="${shBg(r,g)}">${c?c.toLocaleString():'—'}${shPct(r,g)}</td>`;}).join('')
      }<td style="${shBg(r,'__other')}">${other?other.toLocaleString():'—'}${shPct(r,'__other')}</td></tr>`;}).join('');
    box.innerHTML=ctrls+`<div class="card"><div class="scroll"><table><thead>${head}</thead><tbody>${body}</tbody></table></div>
-    <p class="note">Snap counts, with each grouping's share of that team's charted snaps underneath. Cells shade <b style="color:#1e7a34">green</b> when a team uses that grouping more than the league does and <b style="color:#b23b3b">red</b> when they use it less — deeper = further from average; the share itself turns bold green/red once they're a full standard deviation out (hover any share for the league average). It's direction, not quality — heavy 12 personnel isn't "good", it's just a tell. Columns are the six most-used groupings league-wide; everything rarer folds into <b>Other</b>. <b>Pick a grouping above</b> for the leaderboard in it.</p></div>`;
+    <p class="note">Snap counts, with each grouping's share of that team's charted snaps underneath. Cells shade <b style="color:#1e7a34">green</b> when a team uses that grouping more than the league does and <b style="color:#c02a17">red</b> when they use it less — deeper = further from average; the share itself turns bold green/red once they're a full standard deviation out (hover any share for the league average). It's direction, not quality — heavy 12 personnel isn't "good", it's just a tell. Columns are the six most-used groupings league-wide; everything rarer folds into <b>Other</b>. <b>Pick a grouping above</b> for the leaderboard in it.</p></div>`;
   } else {
    const L=Object.keys(U).map(t=>{const o=U[t].g[PERSG];const e=o&&o.ep.length?fmean(o.ep):null;
      return {abbr:t,name:teamName(t),snaps:o?o.n:0,share:U[t].n?100*(o?o.n:0)/U[t].n:0,epa:e,passRate:o&&o.n?100*o.np/o.n:null};})
@@ -2953,7 +2952,7 @@ function fanMatchup(pl,pos,T,wk){
   add(0.7,PF.fit/0.09,'Personnel fit',`${pl.team} runs <b>${top?top.share.toFixed(0)+'% '+top.c+' personnel':'—'}</b>; vs their grouping mix ${T} allows <b>${PF.fit>0?'+':''}${PF.fit.toFixed(3)}</b> EPA/play vs its own baseline`);
  }
  const score=wsum?Math.max(1,Math.min(99,50+15*(acc/wsum))):null;
- const verdict=score==null?['—','#8a93a3']:score>=66?['START','#1e7a34']:score>=58?['Lean start','#4a8f4f']:score>=42?['Toss-up','#8a7a2a']:score>=34?['Lean sit','#b06a10']:['SIT','#a23b3b'];
+ const verdict=score==null?['—','#6b6a68']:score>=66?['START','#1e7a34']:score>=58?['Lean start','#4a8f4f']:score>=42?['Toss-up','#8a7a2a']:score>=34?['Lean sit','#b06a10']:['SIT','#c02a17'];
  return {score,verdict,ev:ev.sort((a,b)=>Math.abs(b.c)-Math.abs(a.c))};
 }
 // ---- FF dynasty rankings board (the lead view) ----
@@ -3142,7 +3141,7 @@ function drawFantasy(){
  const wkOpp=oppFor(pl.team,wk);
  const T=byWeek?(wkOpp||FAN.def):FAN.def;
  const M=fanMatchup(pl,FAN.pos,T,byWeek?wk:null), ff=ffFor(pl), PF=persFit(pl.team,T), hist=playerVsDef(pl,FAN.pos,T);
- const st=(v2,l,c,sub)=>`<div><div class="v" style="color:${c||'var(--ink)'}">${v2}</div><div class="l">${l}</div>${sub?`<div style="font-size:8.5px;color:#98a2b3;margin-top:1px">${sub}</div>`:''}</div>`;
+ const st=(v2,l,c,sub)=>`<div><div class="v" style="color:${c||'var(--ink)'}">${v2}</div><div class="l">${l}</div>${sub?`<div style="font-size:8.5px;color:#9b9797;margin-top:1px">${sub}</div>`:''}</div>`;
  // coverage filter — recuts his top line to snaps against one coverage shell
  const covIx=FAN.pos==='RB'?RI.cov:PI.cov, covAll=playerPlays(pl,FAN.pos);
  const covCnt={};covAll.forEach(p=>{const c=p[covIx];if(c)covCnt[c]=(covCnt[c]||0)+1;});
@@ -3155,14 +3154,14 @@ function drawFantasy(){
  // top line: our own pbp production for this player, plus the PFF charting extras
  const tlTiles=!TL?'':(FAN.pos==='QB'
    ? st(TL.n,'Dropbacks')+st(pc(TL.comp),'Comp %')+st(TL.yds,'Yards')+st(TL.td+' / '+TL.intc,'TD / INT')
-     +st(e3(TL.epa),'EPA/dropback',TL.epa>=0?'#1e7a34':'#a23b3b')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
+     +st(e3(TL.epa),'EPA/dropback',TL.epa>=0?'#1e7a34':'#c02a17')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
      +st(TL.cpoe==null?'—':(TL.cpoe>0?'+':'')+TL.cpoe.toFixed(1),'CPOE')+st(TL.expl,'15+ gains')
    : FAN.pos==='RB'
    ? st(TL.n,'Carries')+st(TL.yds,'Yards')+st(TL.n?(TL.yds/TL.n).toFixed(1):'—','YPC')+st(TL.td,'Rush TD')
-     +st(e3(TL.epa),'EPA/rush',TL.epa>=0?'#1e7a34':'#a23b3b')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
+     +st(e3(TL.epa),'EPA/rush',TL.epa>=0?'#1e7a34':'#c02a17')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
      +st(TL.expl,'10+ runs')+st(TL.rec+' / '+TL.recN,'Rec / Tgt')
    : st(TL.n,'Targets')+st(TL.rec,'Rec')+st(TL.yds,'Yards')+st(TL.td,'TD')
-     +st(e3(TL.epa),'EPA/target',TL.epa>=0?'#1e7a34':'#a23b3b')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
+     +st(e3(TL.epa),'EPA/target',TL.epa>=0?'#1e7a34':'#c02a17')+st(pc(TL.succ==null?null:TL.succ*100),'Success %')
      +st(TL.adot==null?'—':TL.adot.toFixed(1),'aDOT')+st(TL.expl,'15+ gains'));
  const covOn=FAN.cov!=='ALL';
  const tlCard=TL?`<div class="card"${covOn?' style="border-top:3px solid #c9901e"':''}><div class="sechead o">${teamLogo(pl.team)}${pl.name} — 2025 top line <span class="hint" style="font-weight:600">${TL.n} ${TL.lab.toLowerCase()}${covOn?` vs <b style="color:#7a5406">${COVN[FAN.cov]||FAN.cov}</b> only`:''} · from the play-by-play</span></div>
@@ -3174,9 +3173,9 @@ function drawFantasy(){
  const sfRows=SF.rows.length?SF.rows.map(r=>{
    const nm=SF.useBox?BOXN[r.k]:(COVN[r.k]||r.k);
    const thin=r.myN<5, edge=(!thin&&r.myEpa!=null&&SF.base!=null&&r.defEpa!=null&&SF.dBase!=null)
-     ? ((r.myEpa>SF.base&&r.defEpa>SF.dBase)?['edge','#1e7a34']:(r.myEpa<SF.base&&r.defEpa<SF.dBase)?['tough','#a23b3b']:['neutral','#8a93a3'])
-     : ['—','#c2c8d2'];
-   const col=r.myEpa==null?'#8a93a3':(r.myEpa>=0?'#1e7a34':'#b23b3b');
+     ? ((r.myEpa>SF.base&&r.defEpa>SF.dBase)?['edge','#1e7a34']:(r.myEpa<SF.base&&r.defEpa<SF.dBase)?['tough','#c02a17']:['neutral','#6b6a68'])
+     : ['—','#b3afaf'];
+   const col=r.myEpa==null?'#6b6a68':(r.myEpa>=0?'#1e7a34':'#c02a17');
    const w=Math.min(46,Math.abs(r.share)/Math.max(...SF.rows.map(x=>x.share))*46);
    return `<div class="fanpf"><span class="el">${nm}</span><span class="es">${r.share.toFixed(0)}% of snaps</span>`+
     `<span class="eb"><i style="left:0;width:${w.toFixed(1)}%;background:#8c96a3"></i></span>`+
@@ -3187,20 +3186,20 @@ function drawFantasy(){
  const sfCard=`<div class="card"><div class="sechead d">${pl.name} vs ${T}'s ${sfLab} diet</div>
   <p class="note" style="margin:2px 0 8px">What <b>${teamName(T)}</b> actually shows, how <b>he</b> has performed against each look, and what <b>they</b> give up in it. Bar = how often they show it.</p>
   ${sfRows}
-  ${SF.proj!=null?`<p class="note" style="margin-top:8px"><b>Weighted read:</b> against ${T}'s ${sfLab} mix he projects <b style="color:${projDelta>=0?'#1e7a34':'#b23b3b'}">${e3(SF.proj)}</b> EPA vs his <b>${e3(SF.base)}</b> season average — <b style="color:${projDelta>=0?'#1e7a34':'#b23b3b'}">${projDelta>=0?'+':''}${projDelta.toFixed(3)}</b>. Covers ${SF.cov.toFixed(0)}% of their snaps (looks where he has 5+ of his own).</p>`:'<p class="note" style="margin-top:8px">Too few of his snaps overlap their common looks to project a weighted read.</p>'}
+  ${SF.proj!=null?`<p class="note" style="margin-top:8px"><b>Weighted read:</b> against ${T}'s ${sfLab} mix he projects <b style="color:${projDelta>=0?'#1e7a34':'#c02a17'}">${e3(SF.proj)}</b> EPA vs his <b>${e3(SF.base)}</b> season average — <b style="color:${projDelta>=0?'#1e7a34':'#c02a17'}">${projDelta>=0?'+':''}${projDelta.toFixed(3)}</b>. Covers ${SF.cov.toFixed(0)}% of their snaps (looks where he has 5+ of his own).</p>`:'<p class="note" style="margin-top:8px">Too few of his snaps overlap their common looks to project a weighted read.</p>'}
   <p class="note"><b>On the data:</b> nflverse charts the <b>offense's</b> personnel per snap, not the defense's — so the defensive scheme signal here is ${SF.useBox?'<b>box count</b> (the closest public proxy for their front/package)':'<b>coverage family</b>'}, not their personnel grouping. Their <i>offensive</i>-personnel exposure is the panel below.</p></div>`;
  const plSel=`<div class="subgroup" style="margin:0 10px 8px 0"><span class="subcap">Player <span class="hint" style="font-weight:600;text-transform:none;letter-spacing:0">${pool.length} in this set</span></span><select id="fanpl" style="margin:0;min-height:36px;max-width:280px">${pool.map(p=>`<option value="${p.k}"${p.k===FAN.player?' selected':''}>${p.name} (${p.team}${byWeek&&oppFor(p.team,wk)?' vs '+oppFor(p.team,wk):''}) · ER ${p.eff==null?'—':p.eff}</option>`).join('')}</select></div>`;
  const matchSeg=modeSeg+(byWeek?wkSel:dfSel)+gmSel+tmSel;
  const byeNote=byWeek&&byes.length?`<p class="note" style="margin:2px 0 0"><b>On bye in week ${wk}:</b> ${byes.join(', ')} — their players drop out of the set.</p>`:'';
  // personnel-fit detail: their grouping mix vs how this defence fares against each
  const pfRows=(PF&&PF.rows.length)?PF.rows.slice(0,5).map(r=>{
-   const good=r.d>=0,col=good?'#1e7a34':'#b23b3b',w=Math.min(46,Math.abs(r.d)/0.25*46),left=good?50:50-w;
-   return `<div class="fanpf"><span class="el">${r.c} personnel</span><span class="es">${r.share.toFixed(0)}% of snaps</span><span class="eb"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="ev" style="color:${col}">${r.d>0?'+':''}${r.d.toFixed(3)}</span><span class="en">${r.n} snaps faced · ${T} allows ${r.epa>0?'+':''}${r.epa.toFixed(3)} here vs ${PF.base>0?'+':''}${PF.base.toFixed(3)} overall</span></div>`;
+   const good=r.d>=0,col=good?'#1e7a34':'#c02a17',w=Math.min(46,Math.abs(r.d)/0.25*46),left=good?50:50-w;
+   return `<div class="fanpf"><span class="el">${r.c} personnel</span><span class="es">${r.share.toFixed(0)}% of snaps</span><span class="eb"><i style="left:50%;width:1.2px;background:#9b9797"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="ev" style="color:${col}">${r.d>0?'+':''}${r.d.toFixed(3)}</span><span class="en">${r.n} snaps faced · ${T} allows ${r.epa>0?'+':''}${r.epa.toFixed(3)} here vs ${PF.base>0?'+':''}${PF.base.toFixed(3)} overall</span></div>`;
  }).join(''):'<p class="note">Not enough charted personnel snaps for this pairing.</p>';
- const v=M?M.verdict:['—','#8a93a3'];
+ const v=M?M.verdict:['—','#6b6a68'];
  const mx=M&&M.ev.length?Math.max(...M.ev.map(e=>Math.abs(e.c)),0.5):1;
- const evRows=M?M.ev.map(e=>{const w=Math.min(46,Math.abs(e.c)/mx*46),pos=e.c>=0,left=pos?50:50-w,col=pos?'#1e7a34':'#b23b3b';
-   return `<div class="fanev"><span class="el">${e.lab}</span><span class="eb"><i style="left:50%;width:1.2px;background:#9aa3b0"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="en">${e.note}</span></div>`;}).join(''):'';
+ const evRows=M?M.ev.map(e=>{const w=Math.min(46,Math.abs(e.c)/mx*46),pos=e.c>=0,left=pos?50:50-w,col=pos?'#1e7a34':'#c02a17';
+   return `<div class="fanev"><span class="el">${e.lab}</span><span class="eb"><i style="left:50%;width:1.2px;background:#9b9797"></i><i style="left:${left.toFixed(1)}%;width:${w.toFixed(1)}%;background:${col}"></i></span><span class="en">${e.note}</span></div>`;}).join(''):'';
  const ffCard=ff?`<div class="idrow"><span class="pill">FF Rating <b>${ff.ffr}</b></span><span class="pill">Dynasty rank <b>#${ff.rank}</b></span><span class="pill">Age <b>${ff.age}</b></span><span class="pill">Andy ${ff.andy} · Jason ${ff.jason} · Mike ${ff.mike}</span>${ff.spread!=null&&ff.spread>=15?`<span class="pill" style="background:#fdf3dc;border-color:#e6c877;color:#7a5406">⚠ analysts split by ${ff.spread}</span>`:''}</div>`:'<p class="note">Not on the Fantasy Footballers dynasty board.</p>';
  const prof=FAN.pos==='QB'?st(pl.btt==null?'—':pl.btt+'%','Big-time throw%')+st(pl.twp==null?'—':pl.twp+'%','Turnover-worthy%')+st(pl.acc==null?'—':pl.acc+'%','Accuracy%')+st(pl.ypa==null?'—':pl.ypa,'YPA')
   :FAN.pos==='RB'?st(pl.elu==null?'—':pl.elu,'Elusiveness')+st(pl.yco==null?'—':pl.yco,'Yds after contact/att')+st(pl.brk==null?'—':pl.brk+'%','Breakaway%')+st(pl.ypa==null?'—':pl.ypa,'YPC')
@@ -3213,7 +3212,7 @@ function drawFantasy(){
   <div style="display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin-bottom:6px">
    <div><div style="font-size:34px;font-weight:800;color:${v[1]};line-height:1">${M&&M.score!=null?M.score.toFixed(0):'—'}</div><div class="l" style="font-size:9px">Matchup score</div></div>
    <span class="edge" style="background:${v[1]};font-size:14px;padding:6px 16px">${v[0]}</span>
-   <div class="tchip" style="font-size:15px;font-weight:800">${teamLogo(pl.team)}${pl.name} <span class="hint" style="font-weight:600">${pl.pos} · ${pl.team}</span> <span style="color:#8a93a3">vs</span> ${teamLogo(T)}${teamName(T)}${FAN.mode==='week'&&wkOpp?`<span class="hint" style="font-weight:600"> · week ${FAN.week}</span>`:''}</div>
+   <div class="tchip" style="font-size:15px;font-weight:800">${teamLogo(pl.team)}${pl.name} <span class="hint" style="font-weight:600">${pl.pos} · ${pl.team}</span> <span style="color:#6b6a68">vs</span> ${teamLogo(T)}${teamName(T)}${FAN.mode==='week'&&wkOpp?`<span class="hint" style="font-weight:600"> · week ${FAN.week}</span>`:''}</div>
   </div>
   <div class="fsub" style="margin-top:10px">Why <span class="hint">each factor's push toward start (green) or sit (red)</span></div>${evRows}
   <div class="idrow" style="margin-top:8px">${histNote}</div>
@@ -3234,10 +3233,10 @@ function drawFantasy(){
    <div class="tzstat" style="grid-template-columns:repeat(4,1fr);margin:8px 0 10px">${
     st(dEff.eff==null?'—':dEff.eff,'Defense rating')+st(dEff.cov==null?'—':dEff.cov.toFixed(0),'Coverage')+st(dEff.rush==null?'—':dEff.rush.toFixed(0),'Pass rush')+st(dEff.run==null?'—':dEff.run.toFixed(0),'Run defense')}</div>
    <div class="tzstat" style="grid-template-columns:repeat(3,1fr)">${
-    st(dm.passEpa==null?'—':(dm.passEpa>0?'+':'')+dm.passEpa.toFixed(3),'Pass EPA allowed',dm.passEpa>0?'#a23b3b':'#1e7a34')+
-    st(dm.rushEpa==null?'—':(dm.rushEpa>0?'+':'')+dm.rushEpa.toFixed(3),'Rush EPA allowed',dm.rushEpa>0?'#a23b3b':'#1e7a34')+
+    st(dm.passEpa==null?'—':(dm.passEpa>0?'+':'')+dm.passEpa.toFixed(3),'Pass EPA allowed',dm.passEpa>0?'#c02a17':'#1e7a34')+
+    st(dm.rushEpa==null?'—':(dm.rushEpa>0?'+':'')+dm.rushEpa.toFixed(3),'Rush EPA allowed',dm.rushEpa>0?'#c02a17':'#1e7a34')+
     st(fanManRate(T)==null?'—':fanManRate(T).toFixed(0)+'%','Man coverage rate')}</div>
-   <p class="note">Ratings are PFF-derived; <b>EPA allowed</b> and <b>man rate</b> are this dashboard's own nflverse play-by-play. <a href="#" onclick="curFZTeam='${T}';FIELDSIDE='def';renderField();goSection('field');return false" style="color:#2e5496;font-weight:700">Open ${T}'s defensive field tendencies →</a></p></div>
+   <p class="note">Ratings are PFF-derived; <b>EPA allowed</b> and <b>man rate</b> are this dashboard's own nflverse play-by-play. <a href="#" onclick="curFZTeam='${T}';FIELDSIDE='def';renderField();goSection('field');return false" style="color:#c92a10;font-weight:700">Open ${T}'s defensive field tendencies →</a></p></div>
  </div>`;
  wireFanControls(box);
 }
