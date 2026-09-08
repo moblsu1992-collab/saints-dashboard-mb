@@ -498,7 +498,81 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 .yrbar button.on{background:#2e5496;color:#fff;box-shadow:0 1px 2px rgba(46,84,150,.35)}
 .yrbar button:disabled{color:#aab4c4;cursor:default}
 .yrbar .yrnote{font-size:11px;color:#8592a6}
-</style></head><body>
+/* ===== MOBILE APP (<700px) — "Modernist" design system, scoped to #mroot ===== */
+#mroot{display:none}
+@media (max-width:699.5px){
+ body>header,#nav,#yrbar,main,#totop{display:none!important}
+ #mroot{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh}
+ html,body{background:#f3f2f2}
+}
+#mroot{
+ --mbg:#f3f2f2;--msurf:#eae9e9;--mink:#201e1d;--macc:#ec3013;--macc2:#e15b47;
+ --mline:color-mix(in srgb,#201e1d 16%,transparent);--mmut:color-mix(in srgb,#201e1d 55%,transparent);
+ --mgood:#1e7a34;--mbad:#c02a17;--mgoodbg:#e2f0e5;--mbadbg:#fbe4e0;
+ --ms1:4px;--ms2:8px;--ms3:12px;--ms4:16px;
+ font-family:"Archivo",system-ui,-apple-system,sans-serif;color:var(--mink);background:var(--mbg);-webkit-text-size-adjust:100%}
+#mroot *{box-sizing:border-box}
+#mroot h2{font-family:"Archivo",system-ui,sans-serif;font-weight:800;letter-spacing:-.015em;line-height:1.12;margin:0}
+#mtop{position:sticky;top:0;z-index:20;background:var(--mbg);border-bottom:2px solid var(--mline);padding:calc(env(safe-area-inset-top,0px) + 10px) var(--ms4) 10px}
+#mtop .mbrand{font-size:16px;font-weight:800;letter-spacing:.01em}
+#mtop .msub{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--macc);font-weight:700;margin-top:3px}
+.myrs{display:flex;gap:4px;margin-top:9px}
+.myrs button{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--mline);background:transparent;color:var(--mink);padding:4px 13px;cursor:pointer}
+.myrs button.on{background:var(--macc);color:#fff;border-color:var(--macc)}
+.myrs button:disabled{opacity:.4;cursor:default}
+#mscreen{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:var(--ms4) var(--ms4) 92px}
+.mscn-kick{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--macc);font-weight:700}
+.mscn-title{font-size:23px;margin:2px 0}
+.mscn-sub{font-size:12px;color:var(--mmut);margin:2px 0 15px;line-height:1.45}
+.mcard{background:var(--msurf);padding:var(--ms3);margin-bottom:var(--ms3)}
+.mcard-h{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mmut);font-weight:700;margin-bottom:9px}
+.mchips{display:flex;gap:6px;margin-bottom:13px;flex-wrap:wrap}
+.mchip{font:inherit;font-size:12px;font-weight:700;letter-spacing:.02em;border:1px solid var(--mline);background:transparent;color:var(--mink);padding:6px 14px;cursor:pointer}
+.mchip.on{background:var(--macc);color:#fff;border-color:var(--macc)}
+.mtiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mtile{background:var(--mbg);padding:10px 12px;border:1px solid var(--mline)}
+.mtile .k{font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--mmut);font-weight:700}
+.mtile .v{font-size:24px;font-weight:800;line-height:1.05;margin-top:3px}
+.mtile .r{font-size:11px;color:var(--mmut);font-weight:700;margin-top:1px}
+.mbrow{display:grid;grid-template-columns:24px 1fr auto auto;align-items:center;gap:10px;padding:10px 6px;border-bottom:1px solid var(--mline);cursor:pointer}
+.mbrow:active{background:color-mix(in srgb,var(--mink) 5%,transparent)}
+.mbrow.mno{border-left:3px solid var(--macc);background:color-mix(in srgb,var(--macc) 6%,transparent);padding-left:3px}
+.mbrow .rk{font-size:13px;font-weight:800;color:var(--mmut);text-align:center}
+.mbrow .tm{display:flex;align-items:center;gap:8px;min-width:0}
+.mbrow .tm img{width:22px;height:22px;object-fit:contain;flex:none}
+.mbrow .tm span{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbrow .val{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums}
+.mtag{font-size:10px;letter-spacing:.03em;padding:3px 8px;font-weight:700;color:#fff;white-space:nowrap}
+.mbar-row{display:grid;grid-template-columns:78px 1fr 52px;align-items:center;gap:8px;margin-bottom:7px;font-size:12px}
+.mbar-track{height:15px;background:color-mix(in srgb,var(--mink) 8%,transparent)}
+.mbar-fill{height:100%;background:var(--macc2)}
+.mbar-row .lab{font-weight:700;font-variant-numeric:tabular-nums}
+.mbar-row .ep{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}
+.mkv{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 0;border-bottom:1px solid var(--mline);font-size:13px}
+.mkv .k{color:var(--mmut)}
+.mkv .v{font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.mkv:last-child{border-bottom:0}
+.mslate{display:flex;align-items:center;gap:12px;padding:11px 6px;border-bottom:1px solid var(--mline);cursor:pointer}
+.mslate .wk{font-size:11px;font-weight:800;color:var(--mmut);width:32px;flex:none}
+.mslate img{width:30px;height:30px;object-fit:contain;flex:none}
+.mslate .op{flex:1;min-width:0}
+.mslate .op .nm{font-size:14px;font-weight:700}
+.mslate .op .mt{font-size:11px;color:var(--mmut)}
+.mslate.bye{opacity:.5;cursor:default}
+.mqb{display:grid;grid-template-columns:1fr auto;gap:1px 10px;padding:10px 6px;border-bottom:1px solid var(--mline)}
+.mqb .nm{font-size:14px;font-weight:800}
+.mqb .tm{font-size:11px;color:var(--mmut);font-weight:700}
+.mqb .big{font-size:17px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.mqb .sm{font-size:11px;color:var(--mmut);text-align:right;font-variant-numeric:tabular-nums}
+.mgood{color:var(--mgood)}.mbad{color:var(--mbad)}
+.mpick{width:100%;font:inherit;font-size:15px;font-weight:700;padding:9px 10px;background:var(--msurf);border:1px solid var(--mline);color:var(--mink);margin-bottom:13px}
+.mnote{font-size:11px;color:var(--mmut);margin-top:12px;line-height:1.55}
+#mtabs{position:fixed;left:0;right:0;bottom:0;top:auto;z-index:30;display:flex;background:var(--mbg);border-top:2px solid var(--mline);box-shadow:none;padding:0 0 env(safe-area-inset-bottom,0px)}
+#mtabs button{flex:1;background:transparent;border:0;padding:9px 2px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--mmut);font:inherit}
+#mtabs button .ic{font-size:16px;line-height:1}
+#mtabs button .tl2{font-size:10px;font-weight:700;letter-spacing:.02em}
+#mtabs button.on{color:var(--macc)}
+</style><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&display=swap" rel="stylesheet"></head><body>
 <header><h1><span style="white-space:nowrap">⚜ <span class="g">Saints</span> NFL Scouting Dashboard</span> <span style="white-space:nowrap"><span class="g">·</span> 2025 baseline → 2026</span></h1>
 <div class="sub">2025 evidence, 2026 plan — from the whole league down to every throw. Start at Overview.</div></header>
 <nav id="nav"></nav>
@@ -512,6 +586,21 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 <section id="philosophy"></section>
 <section id="fantasy"></section>
 </main>
+<div id="mroot">
+ <div id="mtop">
+  <div class="mbrand">⚜ Saints Scouting</div>
+  <div class="msub" id="msub">2025 season · New Orleans Saints</div>
+  <div class="myrs" id="myrs"></div>
+ </div>
+ <div id="mscreen"></div>
+ <nav id="mtabs">
+  <button data-mtab="board"><span class="ic">▦</span><span class="tl2">Board</span></button>
+  <button data-mtab="team"><span class="ic">⚜</span><span class="tl2">Team</span></button>
+  <button data-mtab="scout"><span class="ic">◎</span><span class="tl2">Scout</span></button>
+  <button data-mtab="slate"><span class="ic">▤</span><span class="tl2">Slate</span></button>
+  <button data-mtab="qbs"><span class="ic">✦</span><span class="tl2">QBs</span></button>
+ </nav>
+</div>
 <script src="data/years.js"></script>
 <script src="data/plays.js"></script>
 <script src="data/tempo.js"></script>
@@ -3165,7 +3254,7 @@ let PBASE='data/plays/';
 function yearMeta(y){const ss=(window.YEARS&&window.YEARS.seasons)||[];return ss.find(s=>String(s.y)===String(y))||{y:y,label:String(y),pbase:'data/'+y+'/plays/'};}
 function yearReady(y){const d=YDATA[String(y)];return !!d&&d.PLAYS!==undefined;}
 function seedFlat(y){y=String(y);YDATA[y]=YDATA[y]||{};YKEYS.forEach(k=>{const g=(k==='DATA')?DATA:window[k];if(g!==undefined&&YDATA[y][k]===undefined)YDATA[y][k]=g;});}
-function clearYearCaches(){for(const k in PLAYCACHE)delete PLAYCACHE[k];_rushRates=null;_passRates=null;_sched=null;_fanCtx=null;_fanMZ=null;_schemeCache=null;_runMeans=null;_passComp=null;_movers=null;}
+function clearYearCaches(){for(const k in PLAYCACHE)delete PLAYCACHE[k];for(const k in DEF_CACHE)delete DEF_CACHE[k];_rushRates=null;_passRates=null;_sched=null;_fanCtx=null;_fanMZ=null;_schemeCache=null;_runMeans=null;_passComp=null;_movers=null;}
 function setYear(y){y=String(y);if(!yearReady(y))return;YEAR=y;
  const base=YDATA[BASEYEAR]||{};
  YKEYS.forEach(k=>{let v=YDATA[y][k];if(v===undefined)v=base[k];if(v===undefined)return;if(k==='DATA')DATA=v;else window[k]=v;});
@@ -3175,6 +3264,7 @@ function setYear(y){y=String(y);if(!yearReady(y))return;YEAR=y;
  renderRatings();renderEPA();renderOpponents();renderField();renderPhil();renderOverview();renderFantasy();
  if(typeof scanTables==='function')scanTables();
  paintYearPicker();
+ if(typeof mOnYear==='function')mOnYear();
 }
 function paintYearPicker(){const bar=$('#yrbar');if(!bar)return;bar.querySelectorAll('button[data-yr]').forEach(b=>{const y=b.dataset.yr;const rd=yearReady(y);b.disabled=!rd;b.classList.toggle('on',rd&&y===YEAR);b.title=rd?('Show the '+y+' season'):(y+' — not built yet');});const note=$('#yrnote');if(note){const ss=(window.YEARS&&window.YEARS.seasons)||[];const missing=ss.filter(s=>!yearReady(s.y)).length;note.textContent=missing?(missing+' season'+(missing>1?'s':'')+' pending'):'';}}
 function buildYearPicker(){const bar=$('#yrbar');if(!bar)return;const ss=(window.YEARS&&window.YEARS.seasons)||[];
@@ -3198,6 +3288,115 @@ seedFlat(BASEYEAR);
 buildYearPicker();
 injectYears();
 tryDesired();
+
+/* ============================================================
+   MOBILE APP (<700px) — Board · Team · Scout · Slate · QBs
+   Same real dataset as the desktop build; Modernist styling in #mroot.
+   ============================================================ */
+const MB={screen:'board',team:'NO',scout:'NO',boardSort:'h',active:false};
+let _mEff=null,_mQB=null;
+function mNum(v,d){return (v==null||isNaN(v))?'—':(+v).toFixed(d==null?1:d);}
+function mSigned(v,d){if(v==null||isNaN(v))return '—';return (+v>0?'+':'')+(+v).toFixed(d==null?3:d);}
+function mMeanSd(a){const x=a.filter(v=>typeof v==='number'&&!isNaN(v));if(!x.length)return{m:0,sd:0};const m=x.reduce((s,v)=>s+v,0)/x.length;const sd=Math.sqrt(x.reduce((s,v)=>s+(v-m)*(v-m),0)/x.length);return{m,sd};}
+function mOutClass(v,arr,goodHigh){if(typeof v!=='number')return '';const{m,sd}=mMeanSd(arr);if(!sd)return '';const z=(v-m)/sd;if(z>=1)return goodHigh?'mgood':'mbad';if(z<=-1)return goodHigh?'mbad':'mgood';return '';}
+function mRank(get,ab,goodHigh){const vs=DATA.ratings.teams.map(t=>({ab:t.abbr,v:get(t)})).filter(x=>typeof x.v==='number');vs.sort((a,b)=>goodHigh?b.v-a.v:a.v-b.v);const i=vs.findIndex(x=>x.ab===ab);return i<0?'—':'R'+(i+1);}
+function mTeamAgg(ab){const P=(window.PLAYS&&window.PLAYS[ab])||{pass:[],rush:[]};
+ const mean=(rows,ei,si)=>{let e=0,en=0,s=0,sn=0;rows.forEach(p=>{if(typeof p[ei]==='number'){e+=p[ei];en++;}if(p[si]===1){s++;}if(p[si]===0||p[si]===1)sn++;});return{epa:en?e/en:null,succ:sn?s/sn:null,n:en};};
+ const op=mean(P.pass||[],PI.epa,PI.succ),or=mean(P.rush||[],RI.epa,RI.succ);
+ const D=teamDefense(ab);const dp=mean(D.pass||[],PI.epa,PI.succ),dr=mean(D.rush||[],RI.epa,RI.succ);
+ const blend=(a,b)=>{const na=a.n||0,nb=b.n||0,tn=na+nb;return{epa:tn?((a.epa||0)*na+(b.epa||0)*nb)/tn:null,succN:tn}; };
+ const offEpa=((op.epa||0)*op.n+(or.epa||0)*or.n)/((op.n+or.n)||1);
+ const defEpa=((dp.epa||0)*dp.n+(dr.epa||0)*dr.n)/((dp.n+dr.n)||1);
+ // success rate over all snaps
+ const succAll=(rows,si)=>{let s=0,n=0;rows.forEach(p=>{if(p[si]===0||p[si]===1){n++;if(p[si]===1)s++;}});return{s,n};};
+ const os=succAll(P.pass||[],PI.succ),os2=succAll(P.rush||[],RI.succ);const offSucc=(os.n+os2.n)?(os.s+os2.s)/(os.n+os2.n):null;
+ const ds=succAll(D.pass||[],PI.succ),ds2=succAll(D.rush||[],RI.succ);const defSucc=(ds.n+ds2.n)?(ds.s+ds2.s)/(ds.n+ds2.n):null;
+ return{offEpa:(op.n+or.n)?offEpa:null,defEpa:(dp.n+dr.n)?defEpa:null,offSucc,defSucc};}
+function mEff(){if(_mEff)return _mEff;_mEff={};DATA.ratings.teams.forEach(t=>{_mEff[t.abbr]=mTeamAgg(t.abbr);});return _mEff;}
+function mEffRank(ab,key,goodHigh){const E=mEff();const vs=Object.keys(E).map(a=>({a,v:E[a][key]})).filter(x=>typeof x.v==='number');vs.sort((p,q)=>goodHigh?q.v-p.v:p.v-q.v);const i=vs.findIndex(x=>x.a===ab);return i<0?'—':'R'+(i+1);}
+function mTeamPicker(kind,ab){const opts=DATA.ratings.teams.map(t=>t.abbr).sort((a,b)=>teamName(a).localeCompare(teamName(b))).map(a=>`<option value="${a}"${a===ab?' selected':''}>${teamName(a)}</option>`).join('');return `<select class="mpick" data-mpick="${kind}">${opts}</select>`;}
+
+function mBoard(){
+ const M={h:{lab:'HOL',get:t=>t.h,dec:1},off:{lab:'OFF',get:t=>t.off,dec:1},def:{lab:'DEF',get:t=>t.def,dec:1},st:{lab:'ST',get:t=>t.st,dec:1}};
+ const list=holisticList();const mk=M[MB.boardSort]||M.h;
+ const arr=list.map(mk.get);const sorted=[...list].sort((a,b)=>mk.get(b)-mk.get(a));
+ const chips=Object.keys(M).map(k=>`<button class="mchip${k===MB.boardSort?' on':''}" data-bsort="${k}">${M[k].lab}</button>`).join('');
+ const rows=sorted.map((t,i)=>{const v=mk.get(t);const oc=mOutClass(v,arr,1);const tr=tier(t.h);
+  return `<div class="mbrow${t.abbr==='NO'?' mno':''}" data-goteam="${t.abbr}"><div class="rk">${i+1}</div><div class="tm">${teamLogo(t.abbr)}<span>${t.team}</span></div><div class="val ${oc}">${v.toFixed(mk.dec)}</div><div class="mtag" style="background:${tr[1]}">${tr[0]}</div></div>`;}).join('');
+ return `<div class="mscn-kick">League board</div><h2 class="mscn-title">Where all 32 stand</h2><div class="mscn-sub">0–100 composites, live from nflverse play-by-play. Tap a team for its package.</div><div class="mchips">${chips}</div>${rows}<div class="mnote">Holistic = ${W.off}% offense / ${W.def}% defense / ${W.st}% special teams. Green = +1σ, red = −1σ. Saints highlighted.</div>`;}
+
+function mTeam(){
+ const ab=MB.team;const T=DATA.ratings.teams.find(t=>t.abbr===ab)||{off:null,def:null,st:null};
+ const hl=holisticList().find(t=>t.abbr===ab)||{h:null};
+ const E=mEff()[ab]||{};const sh=(window.SHARP2026&&window.SHARP2026.teams&&window.SHARP2026.teams[ab])||null;
+ const coach=sh?`HC ${sh.hc[0]} · OC ${sh.oc[0]} · DC ${sh.dc[0]}`:'Staff n/a';
+ const tr=tier(hl.h==null?0:hl.h);
+ const L=holisticList();const hi=L.findIndex(t=>t.abbr===ab);const hlRank=hi<0?'—':'R'+(hi+1);
+ const tiles=[['Holistic',mNum(hl.h,1),hlRank],['Offense',mNum(T.off,1),mRank(t=>t.off,ab,1)],['Defense',mNum(T.def,1),mRank(t=>t.def,ab,1)],['Special teams',mNum(T.st,1),mRank(t=>t.st,ab,1)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
+ const eff=[['EPA / play',mSigned(E.offEpa,3),mEffRank(ab,'offEpa',1)],['EPA allowed',mSigned(E.defEpa,3),mEffRank(ab,'defEpa',0)],['Success %',E.offSucc==null?'—':(E.offSucc*100).toFixed(1)+'%',mEffRank(ab,'offSucc',1)],['Success allowed',E.defSucc==null?'—':(E.defSucc*100).toFixed(1)+'%',mEffRank(ab,'defSucc',0)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v" style="font-size:19px">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
+ return `<div class="mscn-kick">Team package</div><h2 class="mscn-title">${teamName(ab)}</h2><div class="mscn-sub">${coach}</div>${mTeamPicker('team',ab)}<div class="mcard"><div class="mcard-h">Standing &nbsp;<span class="mtag" style="background:${tr[1]}">${tr[0]}</span></div><div class="mtiles">${tiles}</div></div><div class="mcard"><div class="mcard-h">Efficiency · rank of 32</div><div class="mtiles">${eff}</div></div><button class="mchip" data-goscout="${ab}" style="width:100%;padding:12px;justify-content:center">Scout ${teamName(ab)} ▸</button>`;}
+
+function mScout(){
+ const ab=MB.scout;const P=(window.PLAYS&&window.PLAYS[ab])||{pass:[],rush:[]};
+ const pass=P.pass||[],rush=P.rush||[],tot=pass.length+rush.length||1;
+ const grp={};
+ pass.forEach(p=>{const k=p[PI.pers]||'??';(grp[k]=grp[k]||{n:0,e:0,en:0}).n++;if(typeof p[PI.epa]==='number'){grp[k].e+=p[PI.epa];grp[k].en++;}});
+ rush.forEach(p=>{const k=p[RI.pers]||'??';(grp[k]=grp[k]||{n:0,e:0,en:0}).n++;if(typeof p[RI.epa]==='number'){grp[k].e+=p[RI.epa];grp[k].en++;}});
+ const glist=Object.entries(grp).map(([k,v])=>({k,n:v.n,pct:100*v.n/tot,epa:v.en?v.e/v.en:0})).filter(g=>g.n>=8).sort((a,b)=>b.n-a.n);
+ const gmax=Math.max(...glist.map(g=>g.pct),1);
+ const persBars=glist.length?glist.map(g=>`<div class="mbar-row"><div class="lab">${g.k} · ${g.pct.toFixed(0)}%</div><div class="mbar-track"><div class="mbar-fill" style="width:${(g.pct/gmax*100).toFixed(1)}%"></div></div><div class="ep ${g.epa>=0?'mgood':'mbad'}">${mSigned(g.epa,2)}</div></div>`).join(''):'<div class="mnote">No play data for this team.</div>';
+ const early=[...pass.map(p=>[p[PI.dn],1]),...rush.map(p=>[p[RI.dn],0])].filter(o=>o[0]===1||o[0]===2);
+ const earlyPass=early.length?100*early.filter(o=>o[1]).length/early.length:null;
+ const paRate=pass.length?100*pass.filter(p=>p[PI.pa]===1).length/pass.length:null;
+ const forms=[...pass.map(p=>p[PI.form]),...rush.map(p=>p[RI.form])].filter(f=>f);
+ const shot=forms.length?100*forms.filter(f=>f==='S').length/forms.length:null;
+ const deep=pass.length?100*pass.filter(p=>typeof p[PI.ay]==='number'&&p[PI.ay]>=20).length/pass.length:null;
+ const tl=[...pass.map(p=>[p[PI.dn],p[PI.ytg],1]),...rush.map(p=>[p[RI.dn],p[RI.ytg],0])].filter(o=>o[0]===3&&o[1]>=7);
+ const tlPass=tl.length?100*tl.filter(o=>o[2]).length/tl.length:null;
+ const rz=[...pass.map(p=>[p[PI.yl],1]),...rush.map(p=>[p[RI.yl],0])].filter(o=>typeof o[0]==='number'&&o[0]<=20);
+ const rzPass=rz.length?100*rz.filter(o=>o[1]).length/rz.length:null;
+ const pct=(v,d)=>v==null?'—':v.toFixed(d==null?0:d)+'%';
+ const tend=[['Pass rate',pct(100*pass.length/tot)],['Neutral early-down pass',pct(earlyPass)],['Play-action rate',pct(paRate)],['Shotgun rate',pct(shot)],['Deep attempts (air ≥20)',pct(deep,1)],['3rd & 7+ pass rate',pct(tlPass)],['Red-zone pass rate',pct(rzPass)]];
+ const cov=(DATA.coverage&&DATA.coverage.teams&&DATA.coverage.teams[ab]&&DATA.coverage.teams[ab].def)||null;
+ let scheme='—';
+ if(cov&&cov.mz){const man=cov.mz.Man?cov.mz.Man[1]:0,zone=cov.mz.Zone?cov.mz.Zone[1]:0;const fam=cov.fam?Object.entries(cov.fam).sort((a,b)=>b[1][0]-a[1][0])[0]:null;scheme=`${zone>=man?'Zone':'Man'}-leaning ${(zone>=man?zone:man).toFixed(0)}%${fam?' · '+fam[0].replace('_',' '):''}`;}
+ const sh=(window.SHARP2026&&window.SHARP2026.teams&&window.SHARP2026.teams[ab])||null;
+ const tendHtml=tend.map(t=>`<div class="mkv"><span class="k">${t[0]}</span><span class="v">${t[1]}</span></div>`).join('');
+ return `<div class="mscn-kick">Opponent scouting</div><h2 class="mscn-title">${teamName(ab)}</h2><div class="mscn-sub">Personnel usage, tendencies & coverage — live from the play-by-play.</div>${mTeamPicker('scout',ab)}<div class="mcard"><div class="mcard-h">Personnel usage · EPA/play</div>${persBars}</div><div class="mcard"><div class="mcard-h">Tendencies (offense)</div>${tendHtml}</div><div class="mcard"><div class="mcard-h">Defense scheme read</div><div class="mkv"><span class="k">Coverage</span><span class="v">${scheme}</span></div>${sh?`<div class="mkv"><span class="k">DC</span><span class="v">${sh.dc[0]}</span></div>`:''}</div><div class="mnote">Personnel = backs+TE (WR = 5−backs−TE). Motion, no-huddle and PROE aren't in the play schema, so they're omitted rather than estimated.</div>`;}
+
+function mSlate(){
+ const S=schedule();const wks=S.weeks||[];const team='NO';
+ const rows=wks.map(w=>{const opp=oppFor(team,w);
+  if(!opp)return `<div class="mslate bye"><div class="wk">W${w}</div><div class="op"><div class="nm">Bye week</div></div></div>`;
+  const home=homeFor(team,w),rest=restFor(team,w),date=dateFor(team,w);
+  let dt='';if(date){const d=new Date(date+'T00:00:00');if(!isNaN(d))dt=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+  return `<div class="mslate" data-goscout="${opp}"><div class="wk">W${w}</div>${teamLogo(opp)}<div class="op"><div class="nm">${home?'vs':'@'} ${teamName(opp)}</div><div class="mt">${dt}${rest?" · "+rest+" days' rest":''}</div></div></div>`;}).join('');
+ return `<div class="mscn-kick">2026 slate</div><h2 class="mscn-title">Saints schedule</h2><div class="mscn-sub">${S.real?'Real 2026 slate from the nflverse schedule release.':'Reconstructed from play-by-play.'} Tap an opponent to scout them.</div>${rows}`;}
+
+function mQBdata(){if(_mQB)return _mQB;const P=window.PLAYS||{},M={};
+ for(const t in P){for(const p of (P[t].pass||[])){const nm=p[PI.qb];if(!nm)continue;const o=M[nm]||(M[nm]={team:t,db:0,e:0,en:0,c:0,cn:0,s:0});o.db++;if(typeof p[PI.epa]==='number'){o.e+=p[PI.epa];o.en++;}if(typeof p[PI.cpoe]==='number'){o.c+=p[PI.cpoe];o.cn++;}if(p[PI.succ]===1)o.s++;}}
+ _mQB=Object.entries(M).map(([nm,o])=>({nm,team:o.team,db:o.db,epa:o.en?o.e/o.en:0,cpoe:o.cn?o.c/o.cn:null,succ:o.db?100*o.s/o.db:0})).filter(q=>q.db>=200).sort((a,b)=>b.epa-a.epa);
+ return _mQB;}
+function mQBs(){
+ const list=mQBdata();const epas=list.map(q=>q.epa);
+ const rows=list.map(q=>{const oc=mOutClass(q.epa,epas,1);return `<div class="mqb"><div><div class="nm">${q.nm}</div><div class="tm">${q.team} · ${q.db} dropbacks</div></div><div class="big ${oc}">${mSigned(q.epa,3)}</div><div></div><div class="sm">CPOE ${q.cpoe==null?'—':mSigned(q.cpoe,1)} · succ ${q.succ.toFixed(1)}%</div></div>`;}).join('');
+ return `<div class="mscn-kick">Quarterbacks</div><h2 class="mscn-title">QB board</h2><div class="mscn-sub">EPA per dropback, min 200 dropbacks. Green = +1σ, red = −1σ.</div>${rows||'<div class="mnote">No passing data.</div>'}`;}
+
+function mScreenHtml(){switch(MB.screen){case 'team':return mTeam();case 'scout':return mScout();case 'slate':return mSlate();case 'qbs':return mQBs();default:return mBoard();}}
+function mPaintTabs(){document.querySelectorAll('#mtabs button').forEach(b=>b.classList.toggle('on',b.dataset.mtab===MB.screen));}
+function mWireScreen(){const sc=$('#mscreen');if(!sc)return;
+ sc.querySelectorAll('[data-bsort]').forEach(b=>b.onclick=()=>{MB.boardSort=b.dataset.bsort;mRender();});
+ sc.querySelectorAll('[data-goteam]').forEach(r=>r.onclick=()=>{MB.team=r.dataset.goteam;MB.screen='team';mRender();});
+ sc.querySelectorAll('[data-goscout]').forEach(r=>r.onclick=()=>{MB.scout=r.dataset.goscout;MB.screen='scout';mRender();});
+ sc.querySelectorAll('[data-mpick]').forEach(sel=>sel.onchange=()=>{if(sel.dataset.mpick==='team')MB.team=sel.value;else MB.scout=sel.value;mRender();});}
+function mRender(){const sc=$('#mscreen');if(!sc)return;sc.innerHTML=mScreenHtml();sc.scrollTop=0;mWireScreen();mPaintTabs();}
+function mSyncYears(){const box=$('#myrs');if(!box)return;const ss=(window.YEARS&&window.YEARS.seasons)||[];box.innerHTML=ss.slice().sort((a,b)=>b.y-a.y).map(s=>`<button data-myr="${s.y}"${yearReady(s.y)?'':' disabled'} class="${String(s.y)===String(YEAR)?'on':''}">${s.label||s.y}</button>`).join('');box.querySelectorAll('[data-myr]').forEach(b=>b.onclick=()=>{if(!b.disabled)setYear(b.dataset.myr);});const sub=$('#msub');if(sub)sub.textContent=(YEAR||'2025')+' season · New Orleans Saints';}
+function mOnYear(){_mEff=null;_mQB=null;mSyncYears();if(MB.active)mRender();}
+function mBoot(){const root=$('#mroot');if(!root)return;
+ document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{MB.screen=b.dataset.mtab;mRender();});
+ mSyncYears();MB.active=window.innerWidth<700;mRender();
+ let t;window.addEventListener('resize',()=>{clearTimeout(t);t=setTimeout(()=>{const n=window.innerWidth<700;if(n&&!MB.active)mRender();MB.active=n;},180);},{passive:true});}
+mBoot();
 
 // ---------- SORTABLE TABLES + DYNAMIC RANK ----------
 function srtVal(td){const t=td.textContent.trim();if(t===''||t==='—')return null;const x=parseFloat(t.replace(/[%↑↓+]/g,''));return isNaN(x)?t.toLowerCase():x;}
