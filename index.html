@@ -571,6 +571,40 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 #mtabs button .ic{font-size:16px;line-height:1}
 #mtabs button .tl2{font-size:10px;font-weight:700;letter-spacing:.02em}
 #mtabs button.on{color:var(--macc)}
+/* deep-tab additions */
+.msubbar{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px 13px;padding:0 16px 2px;scrollbar-width:none;border-bottom:1px solid var(--mline)}
+.msubbar::-webkit-scrollbar{display:none}
+.msubbar button{flex:none;font:inherit;font-size:12px;font-weight:700;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--mmut);padding:6px 2px;cursor:pointer;white-space:nowrap;margin-bottom:-1px}
+.msubbar button.on{color:var(--mink);border-bottom-color:var(--macc)}
+.mwt{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+.mwt label{font-size:11px;font-weight:700;color:var(--mmut);display:flex;justify-content:space-between}
+.mwt input{width:100%;accent-color:var(--macc)}
+.mvhead{display:flex;align-items:center;gap:14px;padding:14px;background:var(--msurf);margin-bottom:12px;border-left:4px solid var(--macc)}
+.mvhead .sc{font-size:40px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.mvhead .vd{font-size:13px;font-weight:800;color:#fff;padding:3px 10px;margin-bottom:4px;display:inline-block}
+.mvhead .vs{font-size:11px;color:var(--mmut)}
+.mev{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:9px 0;border-bottom:1px solid var(--mline)}
+.mev .el{font-size:12.5px;font-weight:700}
+.mev .ec{font-size:13px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.mev .en{grid-column:1/3;font-size:11px;color:var(--mmut);line-height:1.45}
+.mlrow{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:9px;padding:9px 4px;border-bottom:1px solid var(--mline)}
+.mlrow.mno{border-left:3px solid var(--macc);background:color-mix(in srgb,var(--macc) 6%,transparent);padding-left:2px}
+.mlrow .rk{font-size:12px;font-weight:800;color:var(--mmut);text-align:center}
+.mlrow .nm{font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mlrow .sb{font-size:11px;color:var(--mmut)}
+.mlrow .vv{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;text-align:right}
+.mlrow img{width:20px;height:20px;object-fit:contain;vertical-align:-4px;margin-right:5px}
+.mfld{width:100%;background:var(--msurf);border:1px solid var(--mline);touch-action:manipulation}
+.mfld .fdot{cursor:pointer}
+.mdet{background:var(--msurf);padding:11px 12px;margin-top:10px;min-height:20px;font-size:12.5px}
+.mdet .big{font-size:15px;font-weight:800;margin-bottom:3px}
+.mdet .muted{color:var(--mmut);font-size:11px;margin-top:3px}
+.mflegend{display:flex;gap:14px;font-size:11px;color:var(--mmut);margin:8px 0 2px;flex-wrap:wrap}
+.mflegend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:0}
+.msel{width:100%;font:inherit;font-size:14px;font-weight:600;padding:8px 10px;background:var(--msurf);border:1px solid var(--mline);color:var(--mink);margin-bottom:8px}
+.mfrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.mfrow>*{flex:1;min-width:120px}
+.mtwo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 </style><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&display=swap" rel="stylesheet"></head><body>
 <header><h1><span style="white-space:nowrap">⚜ <span class="g">Saints</span> NFL Scouting Dashboard</span> <span style="white-space:nowrap"><span class="g">·</span> 2025 baseline → 2026</span></h1>
 <div class="sub">2025 evidence, 2026 plan — from the whole league down to every throw. Start at Overview.</div></header>
@@ -596,8 +630,8 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
   <button data-mtab="board"><span class="ic">▦</span><span class="tl2">Board</span></button>
   <button data-mtab="team"><span class="ic">⚜</span><span class="tl2">Team</span></button>
   <button data-mtab="scout"><span class="ic">◎</span><span class="tl2">Scout</span></button>
-  <button data-mtab="slate"><span class="ic">▤</span><span class="tl2">Slate</span></button>
-  <button data-mtab="qbs"><span class="ic">✦</span><span class="tl2">QBs</span></button>
+  <button data-mtab="league"><span class="ic">☰</span><span class="tl2">League</span></button>
+  <button data-mtab="fantasy"><span class="ic">✦</span><span class="tl2">Fantasy</span></button>
  </nav>
 </div>
 <script src="data/years.js"></script>
@@ -3289,106 +3323,307 @@ injectYears();
 tryDesired();
 
 /* ============================================================
-   MOBILE APP (<700px) — Board · Team · Scout · Slate · QBs
-   Same real dataset as the desktop build; Modernist styling in #mroot.
+   MOBILE APP (<700px) — deep 5-tab port on the real dataset.
+   Board · Team · Scout · League · Fantasy. Modernist styling in #mroot.
+   Every screen reuses the same globals/builders the desktop uses.
    ============================================================ */
-const MB={screen:'board',team:'NO',scout:'NO',boardSort:'h',active:false};
-let _mEff=null,_mQB=null;
+const MB={screen:'board',team:'NO',scout:'NO',
+ bTab:'ratings',bMetric:'h',
+ tTab:'overview',
+ sTab:'scout',sDown:'all',sPers:'all',
+ fMode:'pass',fPers:'ALL',
+ lTab:'qb',lRecPos:'all',lDefGrp:'all',lStGrp:'team',lPersSide:'off',lPersG:'11',
+ fanTab:'rank',fanPos:'ALL',fanQ:'',ssPos:'WR',ssPlayer:'',ssTeam:'ALL',ssWk:1,ssCov:'ALL',bWk:1,bPos:'ALL',
+ active:false};
+let _mEff=null,_mQB=null,_mFieldRows=[];
 function mNum(v,d){return (v==null||isNaN(v))?'—':(+v).toFixed(d==null?1:d);}
 function mSigned(v,d){if(v==null||isNaN(v))return '—';return (+v>0?'+':'')+(+v).toFixed(d==null?3:d);}
+function mPct(v,d){return v==null||isNaN(v)?'—':(+v).toFixed(d==null?0:d)+'%';}
 function mMeanSd(a){const x=a.filter(v=>typeof v==='number'&&!isNaN(v));if(!x.length)return{m:0,sd:0};const m=x.reduce((s,v)=>s+v,0)/x.length;const sd=Math.sqrt(x.reduce((s,v)=>s+(v-m)*(v-m),0)/x.length);return{m,sd};}
 function mOutClass(v,arr,goodHigh){if(typeof v!=='number')return '';const{m,sd}=mMeanSd(arr);if(!sd)return '';const z=(v-m)/sd;if(z>=1)return goodHigh?'mgood':'mbad';if(z<=-1)return goodHigh?'mbad':'mgood';return '';}
 function mRank(get,ab,goodHigh){const vs=DATA.ratings.teams.map(t=>({ab:t.abbr,v:get(t)})).filter(x=>typeof x.v==='number');vs.sort((a,b)=>goodHigh?b.v-a.v:a.v-b.v);const i=vs.findIndex(x=>x.ab===ab);return i<0?'—':'R'+(i+1);}
 function mTeamAgg(ab){const P=(window.PLAYS&&window.PLAYS[ab])||{pass:[],rush:[]};
- const mean=(rows,ei,si)=>{let e=0,en=0,s=0,sn=0;rows.forEach(p=>{if(typeof p[ei]==='number'){e+=p[ei];en++;}if(p[si]===1){s++;}if(p[si]===0||p[si]===1)sn++;});return{epa:en?e/en:null,succ:sn?s/sn:null,n:en};};
- const op=mean(P.pass||[],PI.epa,PI.succ),or=mean(P.rush||[],RI.epa,RI.succ);
- const D=teamDefense(ab);const dp=mean(D.pass||[],PI.epa,PI.succ),dr=mean(D.rush||[],RI.epa,RI.succ);
- const blend=(a,b)=>{const na=a.n||0,nb=b.n||0,tn=na+nb;return{epa:tn?((a.epa||0)*na+(b.epa||0)*nb)/tn:null,succN:tn}; };
- const offEpa=((op.epa||0)*op.n+(or.epa||0)*or.n)/((op.n+or.n)||1);
- const defEpa=((dp.epa||0)*dp.n+(dr.epa||0)*dr.n)/((dp.n+dr.n)||1);
- // success rate over all snaps
- const succAll=(rows,si)=>{let s=0,n=0;rows.forEach(p=>{if(p[si]===0||p[si]===1){n++;if(p[si]===1)s++;}});return{s,n};};
- const os=succAll(P.pass||[],PI.succ),os2=succAll(P.rush||[],RI.succ);const offSucc=(os.n+os2.n)?(os.s+os2.s)/(os.n+os2.n):null;
- const ds=succAll(D.pass||[],PI.succ),ds2=succAll(D.rush||[],RI.succ);const defSucc=(ds.n+ds2.n)?(ds.s+ds2.s)/(ds.n+ds2.n):null;
- return{offEpa:(op.n+or.n)?offEpa:null,defEpa:(dp.n+dr.n)?defEpa:null,offSucc,defSucc};}
+ const sa=(rows,ei,si)=>{let e=0,en=0,s=0,sn=0;rows.forEach(p=>{if(typeof p[ei]==='number'){e+=p[ei];en++;}if(p[si]===0||p[si]===1){sn++;if(p[si]===1)s++;}});return{e,en,s,sn};};
+ const op=sa(P.pass||[],PI.epa,PI.succ),or=sa(P.rush||[],RI.epa,RI.succ);const D=teamDefense(ab);const dp=sa(D.pass||[],PI.epa,PI.succ),dr=sa(D.rush||[],RI.epa,RI.succ);
+ return{offEpa:(op.en+or.en)?(op.e+or.e)/(op.en+or.en):null,defEpa:(dp.en+dr.en)?(dp.e+dr.e)/(dp.en+dr.en):null,offSucc:(op.sn+or.sn)?(op.s+or.s)/(op.sn+or.sn):null,defSucc:(dp.sn+dr.sn)?(dp.s+dr.s)/(dp.sn+dr.sn):null};}
 function mEff(){if(_mEff)return _mEff;_mEff={};DATA.ratings.teams.forEach(t=>{_mEff[t.abbr]=mTeamAgg(t.abbr);});return _mEff;}
 function mEffRank(ab,key,goodHigh){const E=mEff();const vs=Object.keys(E).map(a=>({a,v:E[a][key]})).filter(x=>typeof x.v==='number');vs.sort((p,q)=>goodHigh?q.v-p.v:p.v-q.v);const i=vs.findIndex(x=>x.a===ab);return i<0?'—':'R'+(i+1);}
 function mTeamPicker(kind,ab){const opts=DATA.ratings.teams.map(t=>t.abbr).sort((a,b)=>teamName(a).localeCompare(teamName(b))).map(a=>`<option value="${a}"${a===ab?' selected':''}>${teamName(a)}</option>`).join('');return `<select class="mpick" data-mpick="${kind}">${opts}</select>`;}
+function mHdr(kick,title,sub){return `<div class="mscn-kick">${kick}</div><h2 class="mscn-title">${title}</h2>${sub?`<div class="mscn-sub">${sub}</div>`:''}`;}
+function mSubbar(items,cur,attr){return `<div class="msubbar">${items.map(([v,l])=>`<button class="${String(cur)===String(v)?'on':''}" data-${attr}="${v}">${l}</button>`).join('')}</div>`;}
+function mChips(items,cur,attr){return `<div class="mchips">${items.map(([v,l])=>`<button class="mchip${String(cur)===String(v)?' on':''}" data-${attr}="${v}">${l}</button>`).join('')}</div>`;}
 
+/* ---------------- BOARD (Team Ratings + Pace) ---------------- */
 function mBoard(){
- const M={h:{lab:'HOL',get:t=>t.h,dec:1},off:{lab:'OFF',get:t=>t.off,dec:1},def:{lab:'DEF',get:t=>t.def,dec:1},st:{lab:'ST',get:t=>t.st,dec:1}};
- const list=holisticList();const mk=M[MB.boardSort]||M.h;
- const arr=list.map(mk.get);const sorted=[...list].sort((a,b)=>mk.get(b)-mk.get(a));
- const chips=Object.keys(M).map(k=>`<button class="mchip${k===MB.boardSort?' on':''}" data-bsort="${k}">${M[k].lab}</button>`).join('');
- const rows=sorted.map((t,i)=>{const v=mk.get(t);const oc=mOutClass(v,arr,1);const tr=tier(t.h);
-  return `<div class="mbrow${t.abbr==='NO'?' mno':''}" data-goteam="${t.abbr}"><div class="rk">${i+1}</div><div class="tm">${teamLogo(t.abbr)}<span>${t.team}</span></div><div class="val ${oc}">${v.toFixed(mk.dec)}</div><div class="mtag" style="background:${tr[1]}">${tr[0]}</div></div>`;}).join('');
- return `<div class="mscn-kick">League board</div><h2 class="mscn-title">Where all 32 stand</h2><div class="mscn-sub">0–100 composites, live from nflverse play-by-play. Tap a team for its package.</div><div class="mchips">${chips}</div>${rows}<div class="mnote">Holistic = ${W.off}% offense / ${W.def}% defense / ${W.st}% special teams. Green = +1σ, red = −1σ. Saints highlighted.</div>`;}
+ const sub=mSubbar([['ratings','Ratings'],['pace','Pace & volume']],MB.bTab,'bsub');
+ let body;
+ if(MB.bTab==='pace'){
+  const T=window.TEMPO;
+  if(!T){body='<div class="mnote">Pace data (data/tempo.js) not loaded.</div>';}
+  else{const rows=Object.keys(T).map(ab=>{const t=T[ab],g=t.g||1;return{ab,team:teamName(ab),top:t.topSec/g/60,tot:(t.off+t.def)/g,sec:t.off?t.topSec/t.off:null};}).sort((a,b)=>b.top-a.top);
+   const fmtTop=v=>{const m=Math.floor(v),s=Math.round((v-m)*60);return (s===60?m+1:m)+':'+String(s===60?0:s).padStart(2,'0');};
+   const tops=rows.map(t=>t.top);
+   body=rows.map((t,i)=>`<div class="mlrow${t.ab==='NO'?' mno':''}"><div class="rk">${i+1}</div><div><div class="nm">${teamLogo(t.ab)}${t.team}</div><div class="sb">${t.tot.toFixed(1)} snaps/g · ${t.sec==null?'—':t.sec.toFixed(1)}s/snap</div></div><div class="vv ${mOutClass(t.top,tops,1)}">${fmtTop(t.top)}</div></div>`).join('');
+   body=`<div class="mnote" style="margin:0 0 8px">Time of possession per game (higher bar = ball-control offense). Sec/snap = tempo proxy (lower = faster).</div>`+body;}
+ } else {
+  const M={h:{lab:'Holistic',get:t=>t.h,dec:1},off:{lab:'Offense',get:t=>t.off,dec:1},def:{lab:'Defense',get:t=>t.def,dec:1},st:{lab:'Special T.',get:t=>t.st,dec:1}};
+  const list=holisticList();const mk=M[MB.bMetric]||M.h;const arr=list.map(mk.get);const sorted=[...list].sort((a,b)=>mk.get(b)-mk.get(a));
+  const chips=mChips([['h','HOL'],['off','OFF'],['def','DEF'],['st','ST']],MB.bMetric,'bmet');
+  const sliders=MB.bMetric==='h'?`<div class="mcard"><div class="mcard-h">Holistic weights</div>${['off','def','st'].map(k=>`<div class="mwt"><label>${k.toUpperCase()}<span>${W[k]}%</span></label><input type="range" min="0" max="100" value="${W[k]}" data-wt="${k}"></div>`).join('')}<div class="mnote" style="margin:0">Weights auto-normalize; re-ranks live.</div></div>`:'';
+  const rows=sorted.map((t,i)=>{const v=mk.get(t),oc=mOutClass(v,arr,1),tr=tier(t.h);return `<div class="mbrow${t.abbr==='NO'?' mno':''}" data-goteam="${t.abbr}"><div class="rk">${i+1}</div><div class="tm">${teamLogo(t.abbr)}<span>${t.team}</span></div><div class="val ${oc}">${v.toFixed(mk.dec)}</div><div class="mtag" style="background:${tr[1]}">${tr[0]}</div></div>`;}).join('');
+  body=chips+sliders+rows+`<div class="mnote">Holistic = ${W.off}/${W.def}/${W.st} off/def/ST. Green = +1σ, red = −1σ. Tap a team for its package.</div>`;
+ }
+ return mHdr('League board','Where all 32 stand','0–100 composites from nflverse play-by-play.')+sub+body;
+}
 
+/* ---------------- TEAM (Overview + Staff) ---------------- */
+function mSharpDetail(ab){
+ const sh=(window.SHARP2026&&window.SHARP2026.teams&&window.SHARP2026.teams[ab])||null;
+ if(!sh)return '';
+ let h='';
+ if(sh.forecast||sh.sos||sh.rest){
+  const tiles=[];
+  if(sh.forecast)tiles.push(['2026 win total',sh.forecast.wins,'']);
+  if(sh.sos)tiles.push(['Schedule','R'+sh.sos.rank,'strength']);
+  if(sh.rest)tiles.push(['Net rest edge','R'+sh.rest.net,'']);
+  h+=`<div class="mcard"><div class="mcard-h">Sharp 2026 outlook</div><div class="mtiles">${tiles.map(t=>`<div class="mtile"><div class="k">${t[0]}</div><div class="v">${t[1]}</div><div class="r">${t[2]}</div></div>`).join('')}</div>${sh.sos&&sh.sos.note?`<div class="mnote">${sh.sos.note}</div>`:''}${sh.rest&&sh.rest.note?`<div class="mnote" style="margin-top:4px">${sh.rest.note}</div>`:''}</div>`;
+ }
+ if(sh.units&&sh.units.length){
+  h+=`<div class="mcard"><div class="mcard-h">Unit rankings (Sharp)</div>${sh.units.map(u=>`<div class="mkv"><span class="k">${u[0]}</span><span class="v">R${u[1]}</span></div>`).join('')}</div>`;
+ }
+ const sc=(arr,title)=>arr&&arr.length?`<div class="mcard"><div class="mcard-h">${title}</div>${arr.map(r=>`<div class="mkv"><span class="k">${r[0]}</span><span class="v">${r[1]} · R${r[2]}</span></div>`).join('')}</div>`:'';
+ h+=sc(sh.scoringOff,'Scoring — offense')+sc(sh.scoringDef,'Scoring — defense');
+ if(sh.roster){const R=sh.roster,list=(a)=>a&&a.length?a.map(x=>`<li>${x}</li>`).join(''):'<li>—</li>';
+  h+=`<div class="mcard"><div class="mcard-h">Roster moves</div><div class="mnote" style="color:var(--mink);font-weight:700;margin:0 0 3px">Added</div><ul style="margin:0 0 8px 16px;font-size:12px">${list(R.add)}</ul><div class="mnote" style="color:var(--mink);font-weight:700;margin:0 0 3px">Lost</div><ul style="margin:0 0 8px 16px;font-size:12px">${list(R.lost)}</ul>${R.draft?`<div class="mnote" style="color:var(--mink);font-weight:700;margin:0 0 3px">Draft</div><ul style="margin:0 0 0 16px;font-size:12px">${list(R.draft)}</ul>`:''}</div>`;}
+ if(sh.penNotes&&sh.penNotes.length){h+=`<div class="mcard"><div class="mcard-h">Penalty discipline · grade ${sh.pen||'—'}</div>${sh.penNotes.map(n=>`<div class="mnote" style="margin:0 0 4px">• ${n}</div>`).join('')}</div>`;}
+ return h;
+}
+function mSlateList(team){
+ const S=schedule(),wks=S.weeks||[];
+ return wks.map(w=>{const opp=oppFor(team,w);
+  if(!opp)return `<div class="mslate bye"><div class="wk">W${w}</div><div class="op"><div class="nm">Bye week</div></div></div>`;
+  const home=homeFor(team,w),rest=restFor(team,w),date=dateFor(team,w);let dt='';if(date){const d=new Date(date+'T00:00:00');if(!isNaN(d))dt=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+  return `<div class="mslate" data-goscout="${opp}"><div class="wk">W${w}</div>${teamLogo(opp)}<div class="op"><div class="nm">${home?'vs':'@'} ${teamName(opp)}</div><div class="mt">${dt}${rest?" · "+rest+" days' rest":''}</div></div></div>`;}).join('');
+}
 function mTeam(){
- const ab=MB.team;const T=DATA.ratings.teams.find(t=>t.abbr===ab)||{off:null,def:null,st:null};
+ const ab=MB.team;const sub=mSubbar([['overview','Overview'],['staff','Staff & scheme'],['slate','Slate']],MB.tTab,'tsub');
+ const T=DATA.ratings.teams.find(t=>t.abbr===ab)||{off:null,def:null,st:null};
  const hl=holisticList().find(t=>t.abbr===ab)||{h:null};
- const E=mEff()[ab]||{};const sh=(window.SHARP2026&&window.SHARP2026.teams&&window.SHARP2026.teams[ab])||null;
+ const sh=(window.SHARP2026&&window.SHARP2026.teams&&window.SHARP2026.teams[ab])||null;
  const coach=sh?`HC ${sh.hc[0]} · OC ${sh.oc[0]} · DC ${sh.dc[0]}`:'Staff n/a';
- const tr=tier(hl.h==null?0:hl.h);
- const L=holisticList();const hi=L.findIndex(t=>t.abbr===ab);const hlRank=hi<0?'—':'R'+(hi+1);
- const tiles=[['Holistic',mNum(hl.h,1),hlRank],['Offense',mNum(T.off,1),mRank(t=>t.off,ab,1)],['Defense',mNum(T.def,1),mRank(t=>t.def,ab,1)],['Special teams',mNum(T.st,1),mRank(t=>t.st,ab,1)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
- const eff=[['EPA / play',mSigned(E.offEpa,3),mEffRank(ab,'offEpa',1)],['EPA allowed',mSigned(E.defEpa,3),mEffRank(ab,'defEpa',0)],['Success %',E.offSucc==null?'—':(E.offSucc*100).toFixed(1)+'%',mEffRank(ab,'offSucc',1)],['Success allowed',E.defSucc==null?'—':(E.defSucc*100).toFixed(1)+'%',mEffRank(ab,'defSucc',0)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v" style="font-size:19px">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
- return `<div class="mscn-kick">Team package</div><h2 class="mscn-title">${teamName(ab)}</h2><div class="mscn-sub">${coach}</div>${mTeamPicker('team',ab)}<div class="mcard"><div class="mcard-h">Standing &nbsp;<span class="mtag" style="background:${tr[1]}">${tr[0]}</span></div><div class="mtiles">${tiles}</div></div><div class="mcard"><div class="mcard-h">Efficiency · rank of 32</div><div class="mtiles">${eff}</div></div><button class="mchip" data-goscout="${ab}" style="width:100%;padding:12px;justify-content:center">Scout ${teamName(ab)} ▸</button>`;}
+ let body;
+ if(MB.tTab==='slate'){
+  body=`<div class="mnote" style="margin:0 0 8px">${teamName(ab)==='New Orleans Saints'?'':teamName(ab)+' — '}2026 slate. Tap an opponent to scout them.</div>`+mSlateList(ab);
+ } else if(MB.tTab==='staff'){
+  const cov=(DATA.coverage&&DATA.coverage.teams&&DATA.coverage.teams[ab]&&DATA.coverage.teams[ab].def)||null;
+  let scheme='—';if(cov&&cov.mz){const man=cov.mz.Man?cov.mz.Man[1]:0,zone=cov.mz.Zone?cov.mz.Zone[1]:0;const fam=cov.fam?Object.entries(cov.fam).sort((a,b)=>b[1][0]-a[1][0])[0]:null;scheme=`${zone>=man?'Zone':'Man'}-leaning ${(zone>=man?zone:man).toFixed(0)}%${fam?' · '+fam[0].replace('_',' '):''}`;}
+  const roleRow=(r,who)=>who?`<div class="mkv"><span class="k">${r}</span><span class="v">${who[0]}${who[1]?' <span style="color:var(--macc);font-size:10px">NEW</span>':''}</span></div>`:'';
+  body=`<div class="mcard"><div class="mcard-h">2026 coaching staff</div>${sh?roleRow('Head coach',sh.hc)+roleRow('Off. coordinator',sh.oc)+roleRow('Def. coordinator',sh.dc):'<div class="mnote">Staff data not available.</div>'}</div>
+  <div class="mcard"><div class="mcard-h">Defensive scheme read</div><div class="mkv"><span class="k">Coverage</span><span class="v">${scheme}</span></div><div class="mnote">nflverse charts the offense's personnel per snap, so coverage family + man/zone rate are the defensive scheme signal.</div></div>`;
+ } else {
+  const E=mEff()[ab]||{};const tr=tier(hl.h==null?0:hl.h);const L=holisticList();const hi=L.findIndex(t=>t.abbr===ab);const hlRank=hi<0?'—':'R'+(hi+1);
+  const tiles=[['Holistic',mNum(hl.h,1),hlRank],['Offense',mNum(T.off,1),mRank(t=>t.off,ab,1)],['Defense',mNum(T.def,1),mRank(t=>t.def,ab,1)],['Special teams',mNum(T.st,1),mRank(t=>t.st,ab,1)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
+  const eff=[['EPA / play',mSigned(E.offEpa,3),mEffRank(ab,'offEpa',1)],['EPA allowed',mSigned(E.defEpa,3),mEffRank(ab,'defEpa',0)],['Success %',E.offSucc==null?'—':(E.offSucc*100).toFixed(1)+'%',mEffRank(ab,'offSucc',1)],['Success allowed',E.defSucc==null?'—':(E.defSucc*100).toFixed(1)+'%',mEffRank(ab,'defSucc',0)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v" style="font-size:19px">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
+  body=`<div class="mcard"><div class="mcard-h">Standing &nbsp;<span class="mtag" style="background:${tr[1]}">${tr[0]}</span></div><div class="mtiles">${tiles}</div></div>
+  <div class="mcard"><div class="mcard-h">Efficiency · rank of 32</div><div class="mtiles">${eff}</div></div>`+mSharpDetail(ab)+`<button class="mchip" data-goscout="${ab}" style="width:100%;padding:12px;justify-content:center">Scout ${teamName(ab)} ▸</button>`;
+ }
+ return mHdr('Team package',teamName(ab),coach)+mTeamPicker('team',ab)+sub+body;
+}
 
-function mScout(){
+/* ---------------- SCOUT (Opponent + Field) ---------------- */
+function mScoutMain(){
  const ab=MB.scout;const P=(window.PLAYS&&window.PLAYS[ab])||{pass:[],rush:[]};
- const pass=P.pass||[],rush=P.rush||[],tot=pass.length+rush.length||1;
- const grp={};
- pass.forEach(p=>{const k=p[PI.pers]||'??';(grp[k]=grp[k]||{n:0,e:0,en:0}).n++;if(typeof p[PI.epa]==='number'){grp[k].e+=p[PI.epa];grp[k].en++;}});
- rush.forEach(p=>{const k=p[RI.pers]||'??';(grp[k]=grp[k]||{n:0,e:0,en:0}).n++;if(typeof p[RI.epa]==='number'){grp[k].e+=p[RI.epa];grp[k].en++;}});
- const glist=Object.entries(grp).map(([k,v])=>({k,n:v.n,pct:100*v.n/tot,epa:v.en?v.e/v.en:0})).filter(g=>g.n>=8).sort((a,b)=>b.n-a.n);
+ let pass=P.pass||[],rush=P.rush||[];
+ // down filter
+ if(MB.sDown!=='all'){const dn=MB.sDown;const keepP=p=>dn==='e'?(p[PI.dn]===1||p[PI.dn]===2):dn==='3'?p[PI.dn]===3:p[PI.dn]===4;const keepR=p=>dn==='e'?(p[RI.dn]===1||p[RI.dn]===2):dn==='3'?p[RI.dn]===3:p[RI.dn]===4;pass=pass.filter(keepP);rush=rush.filter(keepR);}
+ const tot=pass.length+rush.length||1;
+ const grp={};pass.forEach(p=>{const k=p[PI.pers]||'??';(grp[k]=grp[k]||{n:0,e:0,en:0}).n++;if(typeof p[PI.epa]==='number'){grp[k].e+=p[PI.epa];grp[k].en++;}});rush.forEach(p=>{const k=p[RI.pers]||'??';(grp[k]=grp[k]||{n:0,e:0,en:0}).n++;if(typeof p[RI.epa]==='number'){grp[k].e+=p[RI.epa];grp[k].en++;}});
+ const glist=Object.entries(grp).map(([k,v])=>({k,n:v.n,pct:100*v.n/tot,epa:v.en?v.e/v.en:0})).filter(g=>g.n>=6).sort((a,b)=>b.n-a.n);
  const gmax=Math.max(...glist.map(g=>g.pct),1);
- const persBars=glist.length?glist.map(g=>`<div class="mbar-row"><div class="lab">${g.k} · ${g.pct.toFixed(0)}%</div><div class="mbar-track"><div class="mbar-fill" style="width:${(g.pct/gmax*100).toFixed(1)}%"></div></div><div class="ep ${g.epa>=0?'mgood':'mbad'}">${mSigned(g.epa,2)}</div></div>`).join(''):'<div class="mnote">No play data for this team.</div>';
+ const persBars=glist.length?glist.map(g=>`<div class="mbar-row"><div class="lab">${g.k} · ${g.pct.toFixed(0)}%</div><div class="mbar-track"><div class="mbar-fill" style="width:${(g.pct/gmax*100).toFixed(1)}%"></div></div><div class="ep ${g.epa>=0?'mgood':'mbad'}">${mSigned(g.epa,2)}</div></div>`).join(''):'<div class="mnote">No plays for this cut.</div>';
  const early=[...pass.map(p=>[p[PI.dn],1]),...rush.map(p=>[p[RI.dn],0])].filter(o=>o[0]===1||o[0]===2);
  const earlyPass=early.length?100*early.filter(o=>o[1]).length/early.length:null;
  const paRate=pass.length?100*pass.filter(p=>p[PI.pa]===1).length/pass.length:null;
- const forms=[...pass.map(p=>p[PI.form]),...rush.map(p=>p[RI.form])].filter(f=>f);
- const shot=forms.length?100*forms.filter(f=>f==='S').length/forms.length:null;
+ const forms=[...pass.map(p=>p[PI.form]),...rush.map(p=>p[RI.form])].filter(f=>f);const shot=forms.length?100*forms.filter(f=>f==='S').length/forms.length:null;
  const deep=pass.length?100*pass.filter(p=>typeof p[PI.ay]==='number'&&p[PI.ay]>=20).length/pass.length:null;
- const tl=[...pass.map(p=>[p[PI.dn],p[PI.ytg],1]),...rush.map(p=>[p[RI.dn],p[RI.ytg],0])].filter(o=>o[0]===3&&o[1]>=7);
- const tlPass=tl.length?100*tl.filter(o=>o[2]).length/tl.length:null;
- const rz=[...pass.map(p=>[p[PI.yl],1]),...rush.map(p=>[p[RI.yl],0])].filter(o=>typeof o[0]==='number'&&o[0]<=20);
- const rzPass=rz.length?100*rz.filter(o=>o[1]).length/rz.length:null;
- const pct=(v,d)=>v==null?'—':v.toFixed(d==null?0:d)+'%';
- const tend=[['Pass rate',pct(100*pass.length/tot)],['Neutral early-down pass',pct(earlyPass)],['Play-action rate',pct(paRate)],['Shotgun rate',pct(shot)],['Deep attempts (air ≥20)',pct(deep,1)],['3rd & 7+ pass rate',pct(tlPass)],['Red-zone pass rate',pct(rzPass)]];
- const cov=(DATA.coverage&&DATA.coverage.teams&&DATA.coverage.teams[ab]&&DATA.coverage.teams[ab].def)||null;
- let scheme='—';
+ const tl=[...pass.map(p=>[p[PI.dn],p[PI.ytg],1]),...rush.map(p=>[p[RI.dn],p[RI.ytg],0])].filter(o=>o[0]===3&&o[1]>=7);const tlPass=tl.length?100*tl.filter(o=>o[2]).length/tl.length:null;
+ const rz=[...pass.map(p=>[p[PI.yl],1]),...rush.map(p=>[p[RI.yl],0])].filter(o=>typeof o[0]==='number'&&o[0]<=20);const rzPass=rz.length?100*rz.filter(o=>o[1]).length/rz.length:null;
+ const tend=[['Pass rate',mPct(100*pass.length/tot)],['Neutral early-down pass',mPct(earlyPass)],['Play-action rate',mPct(paRate)],['Shotgun rate',mPct(shot)],['Deep attempts (air ≥20)',mPct(deep,1)],['3rd & 7+ pass rate',mPct(tlPass)],['Red-zone pass rate',mPct(rzPass)]];
+ const cov=(DATA.coverage&&DATA.coverage.teams&&DATA.coverage.teams[ab]&&DATA.coverage.teams[ab].def)||null;let scheme='—';
  if(cov&&cov.mz){const man=cov.mz.Man?cov.mz.Man[1]:0,zone=cov.mz.Zone?cov.mz.Zone[1]:0;const fam=cov.fam?Object.entries(cov.fam).sort((a,b)=>b[1][0]-a[1][0])[0]:null;scheme=`${zone>=man?'Zone':'Man'}-leaning ${(zone>=man?zone:man).toFixed(0)}%${fam?' · '+fam[0].replace('_',' '):''}`;}
- const sh=(window.SHARP2026&&window.SHARP2026.teams&&window.SHARP2026.teams[ab])||null;
- const tendHtml=tend.map(t=>`<div class="mkv"><span class="k">${t[0]}</span><span class="v">${t[1]}</span></div>`).join('');
- return `<div class="mscn-kick">Opponent scouting</div><h2 class="mscn-title">${teamName(ab)}</h2><div class="mscn-sub">Personnel usage, tendencies & coverage — live from the play-by-play.</div>${mTeamPicker('scout',ab)}<div class="mcard"><div class="mcard-h">Personnel usage · EPA/play</div>${persBars}</div><div class="mcard"><div class="mcard-h">Tendencies (offense)</div>${tendHtml}</div><div class="mcard"><div class="mcard-h">Defense scheme read</div><div class="mkv"><span class="k">Coverage</span><span class="v">${scheme}</span></div>${sh?`<div class="mkv"><span class="k">DC</span><span class="v">${sh.dc[0]}</span></div>`:''}</div><div class="mnote">Personnel = backs+TE (WR = 5−backs−TE). Motion, no-huddle and PROE aren't in the play schema, so they're omitted rather than estimated.</div>`;}
+ const downChips=mChips([['all','All downs'],['e','Early'],['3','3rd'],['4','4th']],MB.sDown,'sdown');
+ return downChips+`<div class="mcard"><div class="mcard-h">Personnel usage · EPA/play</div>${persBars}</div><div class="mcard"><div class="mcard-h">Tendencies (offense)</div>${tend.map(t=>`<div class="mkv"><span class="k">${t[0]}</span><span class="v">${t[1]}</span></div>`).join('')}</div><div class="mcard"><div class="mcard-h">Defense scheme read</div><div class="mkv"><span class="k">Coverage</span><span class="v">${scheme}</span></div></div><div class="mnote">Motion, no-huddle and PROE aren't in the play schema, so they're omitted rather than estimated.</div>`;
+}
+function mField(){
+ const ab=MB.scout;const P=(window.PLAYS&&window.PLAYS[ab])||{pass:[],rush:[]};
+ const isPass=MB.fMode==='pass';
+ let rows=isPass?(P.pass||[]):(P.rush||[]);
+ // personnel chips
+ const pc={};rows.forEach(p=>{const k=p[isPass?PI.pers:RI.pers];if(k)pc[k]=(pc[k]||0)+1;});
+ const persOpts=[['ALL','All pers']].concat(Object.entries(pc).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k])=>[k,k]));
+ if(MB.fPers!=='ALL')rows=rows.filter(p=>p[isPass?PI.pers:RI.pers]===MB.fPers);
+ _mFieldRows=rows;
+ const epaK=isPass?PI.epa:RI.epa;const eps=rows.map(p=>p[epaK]).filter(x=>typeof x==='number');
+ const meanE=eps.length?eps.reduce((a,b)=>a+b,0)/eps.length:null;
+ const succK=isPass?PI.succ:RI.succ;const sc=rows.map(p=>p[succK]).filter(x=>x===0||x===1);const succ=sc.length?100*sc.filter(x=>x===1).length/sc.length:null;
+ let svg;
+ if(isPass){
+  const W=320,H=430,los=330;const xOf=loc=>({0:70,1:160,2:250}[loc]!=null?{0:70,1:160,2:250}[loc]:160);
+  const yOf=ay=>{const a=Math.max(-8,Math.min(45,ay==null?0:ay));return los-(a+8)/53*(los-30);};
+  const dots=rows.map((p,i)=>{const x=xOf(p[PI.loc])+(Math.random()*36-18),y=yOf(p[PI.ay])+(Math.random()*8-4),e=p[PI.epa],out=p[PI.out];const col=out==='N'?'#c02a17':(e==null?'#b3afaf':epaColor(e));return `<circle class="fdot" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" fill="${col}" fill-opacity="0.82"/>`;}).join('');
+  const ylines=[0,10,20,30,40].map(a=>{const y=yOf(a);return `<line x1="18" y1="${y.toFixed(1)}" x2="${W-6}" y2="${y.toFixed(1)}" stroke="#d7d3d3"/><text x="20" y="${(y-3).toFixed(1)}" font-size="9" fill="#9b9797">${a}</text>`;}).join('');
+  svg=`<svg class="mfld" viewBox="0 0 ${W} ${H}" style="height:430px"><line x1="18" y1="${los}" x2="${W-6}" y2="${los}" stroke="#201e1d" stroke-width="2"/><text x="20" y="${los+14}" font-size="9" fill="#6b6a68">LOS · air yards ↑</text>${ylines}${dots}</svg>`;
+ } else {
+  const W=320,H=300;const xOf=dir=>({0:75,1:160,2:245}[dir]!=null?{0:75,1:160,2:245}[dir]:160);const yOf=gap=>({0:230,1:160,2:90}[gap]!=null?{0:230,1:160,2:90}[gap]:160);
+  const dots=rows.map((p,i)=>{const x=xOf(p[RI.dir])+(Math.random()*54-27),y=yOf(p[RI.gap])+(Math.random()*44-22),e=p[RI.epa],col=e==null?'#b3afaf':epaColor(e);return `<circle class="fdot" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" fill="${col}" fill-opacity="0.82"/>`;}).join('');
+  const labs=[[75,'Left'],[160,'Middle'],[245,'Right']].map(l=>`<text x="${l[0]}" y="${H-8}" font-size="10" fill="#6b6a68" text-anchor="middle">${l[1]}</text>`).join('')+[[230,'Guard'],[160,'Tackle'],[90,'End']].map(l=>`<text x="6" y="${l[0]+3}" font-size="9" fill="#9b9797">${l[1]}</text>`).join('');
+  svg=`<svg class="mfld" viewBox="0 0 ${W} ${H}" style="height:300px"><line x1="60" y1="${H-24}" x2="60" y2="20" stroke="#d7d3d3"/>${labs}${dots}</svg>`;
+ }
+ const legend=`<div class="mflegend"><span><i style="background:#1e7a34"></i>positive EPA</span><span><i style="background:#c02a17"></i>negative EPA</span><span>tap a dot for the play</span></div>`;
+ return mChips([['pass','Pass chart'],['run','Run chart']],MB.fMode,'fmode')+
+  mChips(persOpts,MB.fPers,'fpers')+
+  `<div class="mcard" style="padding:8px"><div class="mtiles" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:8px"><div class="mtile"><div class="k">Plays</div><div class="v" style="font-size:20px">${rows.length}</div></div><div class="mtile"><div class="k">EPA/play</div><div class="v ${meanE>=0?'mgood':'mbad'}" style="font-size:20px">${mSigned(meanE,2)}</div></div><div class="mtile"><div class="k">Success</div><div class="v" style="font-size:20px">${mPct(succ)}</div></div></div>${svg}${legend}<div class="mdet" id="mfdet">Tap any dot to see the play.</div></div>`;
+}
+function mScout(){
+ const ab=MB.scout;const sub=mSubbar([['scout','Scouting'],['field','Field charts']],MB.sTab,'ssub');
+ const body=MB.sTab==='field'?mField():mScoutMain();
+ return mHdr('Opponent scouting',teamName(ab),'Personnel, tendencies, coverage & every throw/carry — live from the play-by-play.')+mTeamPicker('scout',ab)+sub+body;
+}
 
-function mSlate(){
- const S=schedule();const wks=S.weeks||[];const team='NO';
- const rows=wks.map(w=>{const opp=oppFor(team,w);
-  if(!opp)return `<div class="mslate bye"><div class="wk">W${w}</div><div class="op"><div class="nm">Bye week</div></div></div>`;
-  const home=homeFor(team,w),rest=restFor(team,w),date=dateFor(team,w);
-  let dt='';if(date){const d=new Date(date+'T00:00:00');if(!isNaN(d))dt=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
-  return `<div class="mslate" data-goscout="${opp}"><div class="wk">W${w}</div>${teamLogo(opp)}<div class="op"><div class="nm">${home?'vs':'@'} ${teamName(opp)}</div><div class="mt">${dt}${rest?" · "+rest+" days' rest":''}</div></div></div>`;}).join('');
- return `<div class="mscn-kick">2026 slate</div><h2 class="mscn-title">Saints schedule</h2><div class="mscn-sub">${S.real?'Real 2026 slate from the nflverse schedule release.':'Reconstructed from play-by-play.'} Tap an opponent to scout them.</div>${rows}`;}
+/* ---------------- LEAGUE (QB / Rec / RB / Def / ST / Personnel) ---------------- */
+function mLeagueRows(arr,fmtMain,fmtSub,mainVals,goodHigh){
+ return arr.map((x,i)=>`<div class="mlrow${x.team==='NO'||x.tm==='NO'?' mno':''}"><div class="rk">${i+1}</div><div><div class="nm">${x.name}</div><div class="sb">${fmtSub(x)}</div></div><div class="vv ${mainVals?mOutClass(fmtMain(x).v,mainVals,goodHigh!==false):''}">${fmtMain(x).t}</div></div>`).join('');
+}
+function mLeague(){
+ const sub=mSubbar([['qb','QBs'],['rec','Receivers'],['rb','Rushers'],['def','Defense'],['st','Special T.'],['pers','Personnel']],MB.lTab,'lsub');
+ let body='';
+ if(MB.lTab==='qb'){
+  const RM=qbRushMap(),PX=qbPassExtras();const base=DATA.leagueEPA.qbs.map(q=>{const r=RM[q.qb]||{yds:0,td:0},x=PX[q.qb]||{att:0,expl:0};return {...q,name:q.qb,rushProd:r.yds+20*r.td,expl:x.att?100*x.expl/x.att:null};});
+  const R=zComposite(base,[['epa',1.5],['cpoe',0.75],['succ',0.75],['expl',0.5],['rushProd',0.75,true],['db',0.5]]).sort((a,b)=>(b.comp==null?-99:b.comp)-(a.comp==null?-99:a.comp)).slice(0,40);
+  const cv=R.map(q=>q.comp);
+  body=mLeagueRows(R,x=>({v:x.comp,t:mSigned(x.comp,2)}),x=>`${x.team} · ${x.db} db · ${mSigned(x.epa,3)} EPA · CPOE ${mSigned(x.cpoe,1)}`,cv)+`<div class="mnote">QB value = weighted z-composite (EPA×1.5, CPOE/success/rush ×0.75, explosive & volume ×0.5). Min 200 dropbacks.</div>`;
+ } else if(MB.lTab==='rec'){
+  let pool=buildReceivers().filter(x=>x.pos==='WR'||x.pos==='TE');pool=pool.filter(x=>MB.lRecPos==='all'||x.pos===MB.lRecPos).filter(x=>x.tgt>=25);
+  const R=zComposite(pool,[['epaTgt',1],['yds',1],['cpoe',0.75],['td',0.75],['expl',0.5],['tgtShare',0.5],['drop',-0.4]]).sort((a,b)=>(b.comp==null?-99:b.comp)-(a.comp==null?-99:a.comp)).slice(0,40);
+  const cv=R.map(x=>x.comp);
+  body=mChips([['all','WR + TE'],['WR','WR'],['TE','TE']],MB.lRecPos,'lrecpos')+mLeagueRows(R,x=>({v:x.comp,t:mSigned(x.comp,2)}),x=>`${x.team} ${x.pos} · ${x.tgt} tgt · ${x.yds} yds · ${x.td} TD`,cv)+`<div class="mnote">Receiver value = z-composite of EPA/tgt, yards, CPOE, TDs, explosive, target share, minus drops. Min 25 targets.</div>`;
+ } else if(MB.lTab==='rb'){
+  let pool=buildRB().filter(x=>x.pos==='RB'&&x.att>=40);
+  const R=zComposite(pool,[['epaRush',1],['yacAtt',0.75],['mtfAtt',0.75],['succ',0.75],['tdVal',0.75],['recEpa',0.6],['touches',0.5],['fum',-0.4]]).sort((a,b)=>(b.comp==null?-99:b.comp)-(a.comp==null?-99:a.comp)).slice(0,40);
+  const cv=R.map(x=>x.comp);
+  body=mLeagueRows(R,x=>({v:x.comp,t:mSigned(x.comp,2)}),x=>`${x.team} · ${x.touches} touch · ${x.ypc==null?'—':x.ypc.toFixed(1)} YPC · ${x.tdTot} TD`,cv)+`<div class="mnote">RB value = z-composite of EPA/rush, YACO/att, MTF/att, success, scoring, receiving, touches, minus fumbles. Min 40 carries.</div>`;
+ } else if(MB.lTab==='def'){
+  const P=window.DEFPLAYERS||[];const grp=MB.lDefGrp;let pool=P.filter(x=>(grp==='all'||x.grp===grp)&&x.snaps>=150);
+  let main,sub2,gh=true;
+  if(grp==='DB'){pool=pool.filter(x=>x.tgt>=25).sort((a,b)=>(a.rtg==null?999:a.rtg)-(b.rtg==null?999:b.rtg)).slice(0,40);main=x=>({v:x.rtg,t:x.rtg==null?'—':x.rtg.toFixed(1)});sub2=x=>`${x.tm} ${x.pos} · ${x.tgt} tgt · ${x.cmpPct==null?'—':x.cmpPct.toFixed(0)}% comp`;gh=false;}
+  else{pool=pool.sort((a,b)=>b.prs-a.prs).slice(0,40);main=x=>({v:x.prs,t:String(x.prs)});sub2=x=>`${x.tm} ${x.pos} · ${x.sack} sk · ${x.qbh} QBH · ${x.tfl} stuffs`;}
+  const cv=pool.map(x=>main(x).v);
+  body=mChips([['all','All'],['DL','DL'],['LB','LB/Edge'],['DB','DB']],MB.lDefGrp,'ldefgrp')+mLeagueRows(pool,main,sub2,cv,gh)+`<div class="mnote">${grp==='DB'?'Cornerbacks/safeties by passer rating allowed (min 25 targets, lower is better).':'Defenders by total pressures (min 150 snaps).'}</div>`;
+ } else if(MB.lTab==='st'){
+  const S=window.SPECIALTEAMS;
+  if(!S){body='<div class="mnote">Special-teams data not loaded.</div>';}
+  else if(MB.lStGrp==='team'){
+   const R=S.teams.map(t=>({name:teamName(t.abbr),tm:t.abbr,...t})).sort((a,b)=>(b.stEpa==null?-99:b.stEpa)-(a.stEpa==null?-99:a.stEpa));const cv=R.map(x=>x.stEpa);
+   body=mChips([['team','Teams'],['place','Kickers'],['kickoff','Kickoff'],['punt','Punters'],['kret','KR'],['pret','PR']],MB.lStGrp,'lstgrp')+mLeagueRows(R,x=>({v:x.stEpa,t:mSigned(x.stEpa,3)}),x=>`${x.tm} · FG ${x.fgM}/${x.fgA} (${x.fgPct}%) · KO ${mSigned(x.koEpa,2)}`,cv)+`<div class="mnote">Team special-teams EPA per play (all ST snaps, team's perspective). Higher = better.</div>`;
+  } else {
+   const CFG={place:{k:'place',q:x=>x.fga>=10,sub:x=>`${x.team} · ${x.fgm}/${x.fga} (${x.fgPct==null?'—':x.fgPct.toFixed(0)}%) · long ${x.long}`,lab:'FG kickers (min 10 att)'},kickoff:{k:'kickoff',q:x=>x.n>=20,sub:x=>`${x.team} · ${x.n} KO · ${x.dist==null?'—':x.dist.toFixed(1)} avg`,lab:'Kickoff legs (min 20)'},punt:{k:'punt',q:x=>x.n>=15,sub:x=>`${x.team} · ${x.n} punts · ${x.gross==null?'—':x.gross.toFixed(1)} gross · ${x.in20} in20`,lab:'Punters (min 15)'},kret:{k:'kret',q:x=>x.n>=8,sub:x=>`${x.team} · ${x.n} ret · ${x.avg==null?'—':x.avg.toFixed(1)} avg`,lab:'Kick returners (min 8)'},pret:{k:'pret',q:x=>x.n>=8,sub:x=>`${x.team} · ${x.n} ret · ${x.avg==null?'—':x.avg.toFixed(1)} avg`,lab:'Punt returners (min 8)'}}[MB.lStGrp];
+   const pool=((S.players&&S.players[CFG.k])||[]).filter(CFG.q).sort((a,b)=>(b.epa==null?-99:b.epa)-(a.epa==null?-99:a.epa)).slice(0,40);const cv=pool.map(x=>x.epa);
+   body=mChips([['team','Teams'],['place','Kickers'],['kickoff','Kickoff'],['punt','Punters'],['kret','KR'],['pret','PR']],MB.lStGrp,'lstgrp')+mLeagueRows(pool,x=>({v:x.epa,t:mSigned(x.epa,3)}),CFG.sub,cv)+`<div class="mnote">${CFG.lab}. Ranked by EPA per kick/punt/return.</div>`;
+  }
+ } else if(MB.lTab==='pers'){
+  const U=persUsage(MB.lPersSide);const codes={};Object.values(U).forEach(o=>{Object.keys(o.g).forEach(c=>{if(/^\d\d$/.test(c))codes[c]=(codes[c]||0)+o.g[c].n;});});
+  const codeOpts=Object.keys(codes).sort((a,b)=>codes[b]-codes[a]).slice(0,6);if(!codeOpts.includes(MB.lPersG))MB.lPersG=codeOpts[0]||'11';
+  const g=MB.lPersG;const rows=Object.keys(U).map(t=>{const o=U[t],cell=o.g[g];return{tm:t,name:teamName(t),pct:o.n?100*((cell?cell.n:0))/o.n:0,n:cell?cell.n:0,epa:cell&&cell.ep.length?cell.ep.reduce((a,b)=>a+b,0)/cell.ep.length:null};}).sort((a,b)=>b.pct-a.pct);const cv=rows.map(x=>x.pct);
+  body=mChips([['off','Offense'],['def','Defense faced']],MB.lPersSide,'lpersside')+mChips(codeOpts.map(c=>[c,c]),g,'lpersg')+
+   `<div class="mnote" style="margin:0 0 6px">${g} = ${persDesc(g)} · usage share, ${MB.lPersSide==='off'?'run by each offense':'faced by each defense'}. EPA/play in that grouping.</div>`+
+   mLeagueRows(rows,x=>({v:x.pct,t:x.pct.toFixed(0)+'%'}),x=>`${x.tm} · ${x.n} snaps · ${mSigned(x.epa,2)} EPA`,cv);
+ }
+ return mHdr('League leaders','Every board','Ranked from the play-by-play, PFF-derived charting and rosters.')+sub+body;
+}
 
-function mQBdata(){if(_mQB)return _mQB;const P=window.PLAYS||{},M={};
- for(const t in P){for(const p of (P[t].pass||[])){const nm=p[PI.qb];if(!nm)continue;const o=M[nm]||(M[nm]={team:t,db:0,e:0,en:0,c:0,cn:0,s:0});o.db++;if(typeof p[PI.epa]==='number'){o.e+=p[PI.epa];o.en++;}if(typeof p[PI.cpoe]==='number'){o.c+=p[PI.cpoe];o.cn++;}if(p[PI.succ]===1)o.s++;}}
- _mQB=Object.entries(M).map(([nm,o])=>({nm,team:o.team,db:o.db,epa:o.en?o.e/o.en:0,cpoe:o.cn?o.c/o.cn:null,succ:o.db?100*o.s/o.db:0})).filter(q=>q.db>=200).sort((a,b)=>b.epa-a.epa);
- return _mQB;}
-function mQBs(){
- const list=mQBdata();const epas=list.map(q=>q.epa);
- const rows=list.map(q=>{const oc=mOutClass(q.epa,epas,1);return `<div class="mqb"><div><div class="nm">${q.nm}</div><div class="tm">${q.team} · ${q.db} dropbacks</div></div><div class="big ${oc}">${mSigned(q.epa,3)}</div><div></div><div class="sm">CPOE ${q.cpoe==null?'—':mSigned(q.cpoe,1)} · succ ${q.succ.toFixed(1)}%</div></div>`;}).join('');
- return `<div class="mscn-kick">Quarterbacks</div><h2 class="mscn-title">QB board</h2><div class="mscn-sub">EPA per dropback, min 200 dropbacks. Green = +1σ, red = −1σ.</div>${rows||'<div class="mnote">No passing data.</div>'}`;}
+/* ---------------- FANTASY (Rankings / Start-Sit / Week board) ---------------- */
+function mFanRank(){
+ if(!window.FFX)return '<div class="mnote">FF rankings not loaded.</div>';
+ ffPosRanks();
+ let pool=window.FFX.players.slice();
+ if(MB.fanPos!=='ALL')pool=pool.filter(p=>p.pos===MB.fanPos);
+ if(MB.fanQ){const q=MB.fanQ.toLowerCase();pool=pool.filter(p=>p.name.toLowerCase().includes(q)||(p.team||'').toLowerCase().includes(q));}
+ pool=pool.sort((a,b)=>a.rank-b.rank).slice(0,120);
+ const rows=pool.map(p=>`<div class="mlrow"><div class="rk">${p.rank}</div><div><div class="nm">${p.name}</div><div class="sb">${p.team} ${p.pos}${p.posRank?' · '+p.pos+p.posRank:''} · A${p.andy} J${p.jason} M${p.mike}${p.spread!=null?' · split '+p.spread:''}</div></div><div class="vv">${p.ffr}</div></div>`).join('');
+ return mChips([['ALL','All'],['QB','QB'],['RB','RB'],['WR','WR'],['TE','TE']],MB.fanPos,'fanpos')+
+  `<input class="msel" type="search" placeholder="Search player or team" value="${MB.fanQ}" data-fanq>`+
+  (rows||'<div class="mnote">No players match.</div>')+`<div class="mnote">FF Rating (0–100) from the Fantasy Footballers dynasty startup consensus; A/J/M = Andy/Jason/Mike individual ranks; split = how far they disagree.</div>`;
+}
+function mFanStartSit(){
+ const pool=fanPool(MB.ssPos)||[];
+ const teams=[...new Set(pool.map(p=>p.team))].sort();
+ let list=pool.filter(p=>MB.ssTeam==='ALL'||p.team===MB.ssTeam).sort((a,b)=>(b.eff||0)-(a.eff||0));
+ if(!list.find(p=>p.k===MB.ssPlayer))MB.ssPlayer=list[0]?list[0].k:'';
+ const pl=pool.find(p=>p.k===MB.ssPlayer)||list[0];
+ const wks=(schedule().weeks)||[1];if(!wks.includes(MB.ssWk))MB.ssWk=wks[0];
+ const opp=pl?oppFor(pl.team,MB.ssWk):null;
+ const posSel=mChips([['QB','QB'],['RB','RB'],['WR','WR'],['TE','TE']],MB.ssPos,'sspos');
+ const teamSel=`<select class="msel" data-ssteam><option value="ALL"${MB.ssTeam==='ALL'?' selected':''}>All teams</option>${teams.map(t=>`<option value="${t}"${MB.ssTeam===t?' selected':''}>${teamName(t)}</option>`).join('')}</select>`;
+ const playerSel=`<select class="msel" data-ssplayer>${list.map(p=>`<option value="${p.k}"${(pl&&p.k===pl.k)?' selected':''}>${p.name} (${p.team}${p.eff!=null?' · '+p.eff:''})</option>`).join('')}</select>`;
+ const ssT=pl?pl.team:'NO';const wkSel=`<select class="msel" data-sswk>${wks.map(w=>`<option value="${w}"${MB.ssWk===w?' selected':''}>Week ${w}${(()=>{const o=oppFor(ssT,w);return o?' · '+(homeFor(ssT,w)?'vs ':'@ ')+o:' · bye';})()}</option>`).join('')}</select>`;
+ let analysis='';
+ if(!pl){analysis='<div class="mnote">Pick a player.</div>';}
+ else if(!opp){analysis=`<div class="mnote">${pl.name} — ${pl.team} is on bye in Week ${MB.ssWk}. Pick another week.</div>`;}
+ else{
+  const M=fanMatchup(pl,MB.ssPos,opp,MB.ssWk);
+  const covChips=mChips([['ALL','All coverages'],['C1','Cover 1'],['C2','Cover 2'],['C3','Cover 3'],['C4','Cover 4'],['2M','2-Man']],MB.ssCov,'sscov');
+  const tl=playerTopline(pl,MB.ssPos,MB.ssCov);
+  let head='';
+  if(M){head=`<div class="mvhead"><div class="sc" style="color:${M.verdict[1]}">${M.score==null?'—':M.score.toFixed(0)}</div><div><div class="vd" style="background:${M.verdict[1]}">${M.verdict[0]}</div><div class="vs">${pl.name} (${pl.team} ${MB.ssPos}) ${homeFor(pl.team,MB.ssWk)?'vs':'@'} ${teamName(opp)} · Wk ${MB.ssWk}</div></div></div>`;}
+  let tlHtml='';
+  if(tl){const tiles=[[tl.lab,tl.n],['EPA/'+(MB.ssPos==='RB'?'rush':MB.ssPos==='QB'?'db':'tgt'),mSigned(tl.epa,3)],['Success',mPct(tl.succ*100,0)],['Yards',tl.yds],['TD',tl.td],['Explosive',tl.expl]];
+   tlHtml=`<div class="mcard"><div class="mcard-h">2025 production${MB.ssCov!=='ALL'?' vs '+(COVN[MB.ssCov]||MB.ssCov):''}</div><div class="mtiles" style="grid-template-columns:1fr 1fr 1fr">${tiles.map(t=>`<div class="mtile"><div class="k">${t[0]}</div><div class="v" style="font-size:18px">${t[1]==null?'—':t[1]}</div></div>`).join('')}</div>${tl.n<15?'<div class="mnote" style="color:var(--macc)">Thin sample — under 15 plays in this cut.</div>':''}</div>`;}
+  let evHtml='';
+  if(M&&M.ev&&M.ev.length){evHtml=`<div class="mcard"><div class="mcard-h">Why — matchup components</div>${M.ev.map(e=>`<div class="mev"><div class="el">${e.lab}</div><div class="ec ${e.c>=0?'mgood':'mbad'}">${e.c>=0?'+':''}${e.c.toFixed(2)}</div><div class="en">${e.note}</div></div>`).join('')}</div>`;}
+  analysis=head+covChips+tlHtml+evHtml;
+ }
+ return posSel+`<div class="mtwo">${teamSel}${wkSel}</div>`+playerSel+analysis;
+}
+function mFanBoard(){
+ const SC=schedule(),wks=SC.weeks,w=MB.bWk;if(!wks.includes(w))MB.bWk=w=wks[0];
+ const rows=[];['QB','RB','WR','TE'].forEach(pos=>{if(MB.bPos!=='ALL'&&MB.bPos!==pos)return;fanPool(pos).forEach(pl=>{const opp=oppFor(pl.team,w);if(!opp)return;const M=fanMatchup(pl,pos,opp,w);if(!M||M.score==null)return;rows.push({pl,pos,opp,score:M.score,verdict:M.verdict});});});
+ rows.sort((a,b)=>b.score-a.score);
+ const wkChips=mChips(wks.map(x=>[x,'W'+x]),w,'bwk');
+ const posChips=mChips([['ALL','All'],['QB','QB'],['RB','RB'],['WR','WR'],['TE','TE']],MB.bPos,'bpos');
+ const row=r=>`<div class="mlrow${r.pl.team==='NO'?' mno':''}"><div class="rk"></div><div><div class="nm">${r.pl.name}</div><div class="sb">${r.pl.team} ${r.pos} ${homeFor(r.pl.team,w)?'vs':'@'} ${r.opp}</div></div><div style="text-align:right"><div class="vv" style="color:${r.verdict[1]}">${r.score.toFixed(0)}</div><div class="sb" style="color:${r.verdict[1]};font-weight:700">${r.verdict[0]}</div></div></div>`;
+ const starts=rows.slice(0,15),fades=rows.slice(-10).reverse();
+ return wkChips+posChips+`<div class="mnote" style="margin:0 0 6px">Week ${w} — ${rows.length} qualified players, same matchup model as Start/Sit.</div>`+
+  `<div class="mcard-h" style="color:var(--mgood)">▲ Top starts</div>${starts.map(row).join('')}`+
+  `<div class="mcard-h" style="color:var(--mbad);margin-top:14px">▼ Top fades</div>${fades.map(row).join('')}`;
+}
+function mFantasy(){
+ if(!window.FFX&&!window.PFFX)return mHdr('Fantasy','Not loaded','Needs data/ff.js & data/pff.js.');
+ const sub=mSubbar([['rank','Rankings'],['startsit','Start / Sit'],['board','Week board']],MB.fanTab,'fansub');
+ let body,kick,title,note;
+ if(MB.fanTab==='startsit'){kick='Start / sit';title='Matchup analysis';note='Score blends player quality, opportunity, defense strength, EPA allowed, personnel & man/zone fit, OL and rest.';body=mFanStartSit();}
+ else if(MB.fanTab==='board'){kick='Week board';title='Top starts & fades';note='';body=mFanBoard();}
+ else{kick='Dynasty';title='FF rankings';note='';body=mFanRank();}
+ return mHdr(kick,title,note)+sub+body;
+}
 
-function mScreenHtml(){switch(MB.screen){case 'team':return mTeam();case 'scout':return mScout();case 'slate':return mSlate();case 'qbs':return mQBs();default:return mBoard();}}
+/* ---------------- controller ---------------- */
+const MB_KEYS={bsub:'bTab',bmet:'bMetric',tsub:'tTab',ssub:'sTab',sdown:'sDown',fmode:'fMode',fpers:'fPers',lsub:'lTab',lrecpos:'lRecPos',ldefgrp:'lDefGrp',lstgrp:'lStGrp',lpersside:'lPersSide',lpersg:'lPersG',fansub:'fanTab',fanpos:'fanPos',sspos:'ssPos',sscov:'ssCov',bpos:'bPos'};
+function mScreenHtml(){switch(MB.screen){case 'team':return mTeam();case 'scout':return mScout();case 'league':return mLeague();case 'fantasy':return mFantasy();default:return mBoard();}}
 function mPaintTabs(){document.querySelectorAll('#mtabs button').forEach(b=>b.classList.toggle('on',b.dataset.mtab===MB.screen));}
 function mWireScreen(){const sc=$('#mscreen');if(!sc)return;
- sc.querySelectorAll('[data-bsort]').forEach(b=>b.onclick=()=>{MB.boardSort=b.dataset.bsort;mRender();});
- sc.querySelectorAll('[data-goteam]').forEach(r=>r.onclick=()=>{MB.team=r.dataset.goteam;MB.screen='team';mRender();});
+ Object.entries(MB_KEYS).forEach(([attr,key])=>{sc.querySelectorAll('[data-'+attr+']').forEach(b=>b.onclick=()=>{MB[key]=b.getAttribute('data-'+attr);mRender();});});
+ sc.querySelectorAll('[data-goteam]').forEach(r=>r.onclick=()=>{MB.team=r.dataset.goteam;MB.screen='team';MB.tTab='overview';mRender();});
  sc.querySelectorAll('[data-goscout]').forEach(r=>r.onclick=()=>{MB.scout=r.dataset.goscout;MB.screen='scout';mRender();});
- sc.querySelectorAll('[data-mpick]').forEach(sel=>sel.onchange=()=>{if(sel.dataset.mpick==='team')MB.team=sel.value;else MB.scout=sel.value;mRender();});}
-function mRender(){const sc=$('#mscreen');if(!sc)return;sc.innerHTML=mScreenHtml();sc.scrollTop=0;mWireScreen();mPaintTabs();}
+ sc.querySelectorAll('[data-mpick]').forEach(s=>s.onchange=()=>{if(s.dataset.mpick==='team')MB.team=s.value;else MB.scout=s.value;mRender();});
+ sc.querySelectorAll('[data-wt]').forEach(s=>s.oninput=()=>{W[s.dataset.wt]=+s.value;mRender();});
+ const q=sc.querySelector('[data-fanq]');if(q)q.oninput=()=>{MB.fanQ=q.value;const rows=mFanRank();/* light: re-render */mRender();setTimeout(()=>{const el=sc.querySelector('[data-fanq]');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0);};
+ sc.querySelectorAll('[data-ssteam]').forEach(s=>s.onchange=()=>{MB.ssTeam=s.value;MB.ssPlayer='';mRender();});
+ sc.querySelectorAll('[data-ssplayer]').forEach(s=>s.onchange=()=>{MB.ssPlayer=s.value;mRender();});
+ sc.querySelectorAll('[data-sswk]').forEach(s=>s.onchange=()=>{MB.ssWk=+s.value;mRender();});
+ sc.querySelectorAll('[data-bwk]').forEach(b=>b.onclick=()=>{MB.bWk=+b.dataset.bwk;mRender();});
+ const fld=sc.querySelector('.mfld');if(fld)fld.addEventListener('click',ev=>{const c=ev.target.closest('.fdot');if(!c)return;const i=+c.dataset.i,p=_mFieldRows[i];if(!p)return;const d=sc.querySelector('#mfdet');if(d)d.innerHTML=MB.fMode==='pass'?passDetail(p):runDetail(p);sc.querySelectorAll('.fdot').forEach(x=>x.setAttribute('r','4.2'));c.setAttribute('r','6.5');});
+}
+function mRender(){const sc=$('#mscreen');if(!sc)return;const st=sc.scrollTop;sc.innerHTML=mScreenHtml();sc.scrollTop=(MB.screen==='fantasy'&&MB.fanTab==='rank')?st:0;mWireScreen();mPaintTabs();}
 function mSyncYears(){const box=$('#myrs');if(!box)return;const ss=(window.YEARS&&window.YEARS.seasons)||[];box.innerHTML=ss.slice().sort((a,b)=>b.y-a.y).map(s=>`<button data-myr="${s.y}"${yearReady(s.y)?'':' disabled'} class="${String(s.y)===String(YEAR)?'on':''}">${s.label||s.y}</button>`).join('');box.querySelectorAll('[data-myr]').forEach(b=>b.onclick=()=>{if(!b.disabled)setYear(b.dataset.myr);});const sub=$('#msub');if(sub)sub.textContent=(YEAR||'2025')+' season · New Orleans Saints';}
 function mOnYear(){_mEff=null;_mQB=null;mSyncYears();if(MB.active)mRender();}
 function mBoot(){const root=$('#mroot');if(!root)return;
