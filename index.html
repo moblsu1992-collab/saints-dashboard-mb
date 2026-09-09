@@ -3466,23 +3466,22 @@ function mField(){
  const epaK=isPass?PI.epa:RI.epa;const eps=rows.map(p=>p[epaK]).filter(x=>typeof x==='number');
  const meanE=eps.length?eps.reduce((a,b)=>a+b,0)/eps.length:null;
  const succK=isPass?PI.succ:RI.succ;const sc=rows.map(p=>p[succK]).filter(x=>x===0||x===1);const succ=sc.length?100*sc.filter(x=>x===1).length/sc.length:null;
- let svg;
+ // dots on the REAL vertical field (same geometry as the desktop chart)
+ let dots,legend;
  if(isPass){
-  const W=320,H=430,los=330;const xOf=loc=>({0:70,1:160,2:250}[loc]!=null?{0:70,1:160,2:250}[loc]:160);
-  const yOf=ay=>{const a=Math.max(-8,Math.min(45,ay==null?0:ay));return los-(a+8)/53*(los-30);};
-  const dots=rows.map((p,i)=>{const x=xOf(p[PI.loc])+(Math.random()*36-18),y=yOf(p[PI.ay])+(Math.random()*8-4),e=p[PI.epa],out=p[PI.out];const col=out==='N'?'#c02a17':(e==null?'#b3afaf':epaColor(e));return `<circle class="fdot" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" fill="${col}" fill-opacity="0.82"/>`;}).join('');
-  const ylines=[0,10,20,30,40].map(a=>{const y=yOf(a);return `<line x1="18" y1="${y.toFixed(1)}" x2="${W-6}" y2="${y.toFixed(1)}" stroke="#d7d3d3"/><text x="20" y="${(y-3).toFixed(1)}" font-size="9" fill="#9b9797">${a}</text>`;}).join('');
-  svg=`<svg class="mfld" viewBox="0 0 ${W} ${H}" style="height:430px"><line x1="18" y1="${los}" x2="${W-6}" y2="${los}" stroke="#201e1d" stroke-width="2"/><text x="20" y="${los+14}" font-size="9" fill="#6b6a68">LOS · air yards ↑</text>${ylines}${dots}</svg>`;
+  dots=rows.map((p,i)=>{const tp=p[PI.yl]-(p[PI.ay]==null?0:p[PI.ay]);const x=laneX(p[PI.loc],i),y=ypos(tp);const td=p[PI.td]===1;const col=(OUT[p[PI.out]]||{c:'#9b9797'}).c;return `<circle class="fdot" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${td?3.6:2.6}" fill="${col}" fill-opacity="0.85"${td?' stroke="#caa84e" stroke-width="1.2"':''}/>`;}).join('');
+  legend=`<div class="mflegend"><span><i style="background:#1e7a34"></i>complete</span><span><i style="background:#aab2bf"></i>incomplete</span><span><i style="background:#c02a17"></i>INT</span><span><i style="background:#fff;box-shadow:0 0 0 1.4px #caa84e inset"></i>TD</span></div>`;
  } else {
-  const W=320,H=300;const xOf=dir=>({0:75,1:160,2:245}[dir]!=null?{0:75,1:160,2:245}[dir]:160);const yOf=gap=>({0:230,1:160,2:90}[gap]!=null?{0:230,1:160,2:90}[gap]:160);
-  const dots=rows.map((p,i)=>{const x=xOf(p[RI.dir])+(Math.random()*54-27),y=yOf(p[RI.gap])+(Math.random()*44-22),e=p[RI.epa],col=e==null?'#b3afaf':epaColor(e);return `<circle class="fdot" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" fill="${col}" fill-opacity="0.82"/>`;}).join('');
-  const labs=[[75,'Left'],[160,'Middle'],[245,'Right']].map(l=>`<text x="${l[0]}" y="${H-8}" font-size="10" fill="#6b6a68" text-anchor="middle">${l[1]}</text>`).join('')+[[230,'Guard'],[160,'Tackle'],[90,'End']].map(l=>`<text x="6" y="${l[0]+3}" font-size="9" fill="#9b9797">${l[1]}</text>`).join('');
-  svg=`<svg class="mfld" viewBox="0 0 ${W} ${H}" style="height:300px"><line x1="60" y1="${H-24}" x2="60" y2="20" stroke="#d7d3d3"/>${labs}${dots}</svg>`;
+  dots=rows.map((p,i)=>{const x=laneX(p[RI.dir],i),y=ypos(p[RI.yl]);const td=p[RI.td]===1;const col=p[RI.epa]==null?'#9b9797':epaColor(p[RI.epa]);return `<circle class="fdot" data-i="${i}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${td?3.6:2.6}" fill="${col}" fill-opacity="0.88"${td?' stroke="#caa84e" stroke-width="1.2"':''}/>`;}).join('');
+  legend=`<div class="mflegend"><span><i style="background:${epaColor(0.6)}"></i>+ EPA carry</span><span><i style="background:${epaColor(-0.6)}"></i>− EPA carry</span><span><i style="background:#fff;box-shadow:0 0 0 1.4px #caa84e inset"></i>TD</span></div>`;
  }
- const legend=`<div class="mflegend"><span><i style="background:#1e7a34"></i>positive EPA</span><span><i style="background:#c02a17"></i>negative EPA</span><span>tap a dot for the play</span></div>`;
+ const field=`<svg class="ffield mfld" viewBox="0 0 100 ${FGEO.bot+12}" preserveAspectRatio="xMidYMid meet">${fieldBase()}${dots}</svg>`;
+ let fan='';
+ if(!isPass){const _fs=FIELDSIDE;FIELDSIDE='off';fan=`<div class="mcard"><div class="mcard-h">EPA per rush by run gap</div>${runGapFan(rows).replace('min-width:560px','min-width:0')}<div class="mnote">Every located carry fanned to its point of attack (gap × direction; <b>M</b> folds central runs). Arrow &amp; number = EPA (green = value gained, red = lost); thickness ≈ carry volume. Chart form after raycarp.com.</div></div>`;FIELDSIDE=_fs;}
+ const tiles=`<div class="mtiles" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:8px"><div class="mtile"><div class="k">${isPass?'Throws':'Carries'}</div><div class="v" style="font-size:20px">${rows.length}</div></div><div class="mtile"><div class="k">EPA/play</div><div class="v ${meanE>=0?'mgood':'mbad'}" style="font-size:20px">${mSigned(meanE,2)}</div></div><div class="mtile"><div class="k">Success</div><div class="v" style="font-size:20px">${mPct(succ)}</div></div></div>`;
  return mChips([['pass','Pass chart'],['run','Run chart']],MB.fMode,'fmode')+
   mChips(persOpts,MB.fPers,'fpers')+
-  `<div class="mcard" style="padding:8px"><div class="mtiles" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:8px"><div class="mtile"><div class="k">Plays</div><div class="v" style="font-size:20px">${rows.length}</div></div><div class="mtile"><div class="k">EPA/play</div><div class="v ${meanE>=0?'mgood':'mbad'}" style="font-size:20px">${mSigned(meanE,2)}</div></div><div class="mtile"><div class="k">Success</div><div class="v" style="font-size:20px">${mPct(succ)}</div></div></div>${svg}${legend}<div class="mdet" id="mfdet">Tap any dot to see the play.</div></div>`;
+  `<div class="mcard" style="padding:10px">${tiles}${field}${legend}<div class="mdet" id="mfdet">Tap any ${isPass?'throw':'carry'} to see the play.</div></div>`+fan;
 }
 function mScout(){
  const ab=MB.scout;const sub=mSubbar([['scout','Scouting'],['field','Field charts']],MB.sTab,'ssub');
