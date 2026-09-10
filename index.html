@@ -605,6 +605,12 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 .mfrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .mfrow>*{flex:1;min-width:120px}
 .mtwo{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mmurow{margin-bottom:13px}
+.mmulab{font-size:12px;font-weight:700;display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.mmutrack{position:relative;height:24px;background:color-mix(in srgb,var(--mink) 6%,transparent)}
+.mmuline{position:absolute;top:11px;height:3px}
+.mmudot{position:absolute;top:2px;width:20px;height:20px;border-radius:50%;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;transform:translateX(-50%);border:1.5px solid #fff;box-shadow:0 1px 2px rgba(45,43,43,.3)}
+.mmuscale{font-size:10px;color:var(--mmut);text-align:center;margin:-3px 0 9px;letter-spacing:.02em}
 </style><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&display=swap" rel="stylesheet"></head><body>
 <header><h1><span style="white-space:nowrap">⚜ <span class="g">Saints</span> NFL Scouting Dashboard</span> <span style="white-space:nowrap"><span class="g">·</span> 2025 baseline → 2026</span></h1>
 <div class="sub">2025 evidence, 2026 plan — from the whole league down to every throw. Start at Overview.</div></header>
@@ -3330,18 +3336,18 @@ tryDesired();
 const MB={screen:'board',team:'NO',scout:'NO',
  bTab:'ratings',bMetric:'h',
  tTab:'overview',
- sTab:'scout',sDown:'all',sPers:'all',
+ sTab:'scout',sDown:'all',sPers:'all',muB:'ATL',
  fMode:'pass',fPers:'ALL',
  lTab:'qb',lRecPos:'all',lDefGrp:'all',lStGrp:'team',lPersSide:'off',lPersG:'11',
  fanTab:'rank',fanPos:'ALL',fanQ:'',ssPos:'WR',ssPlayer:'',ssTeam:'ALL',ssWk:1,ssCov:'ALL',bWk:1,bPos:'ALL',
  active:false};
-let _mEff=null,_mQB=null,_mFieldRows=[];
+let _mEff=null,_mQB=null,_mFieldRows=[],_mOffL=null,_mDefL=null;
 function mNum(v,d){return (v==null||isNaN(v))?'—':(+v).toFixed(d==null?1:d);}
 function mSigned(v,d){if(v==null||isNaN(v))return '—';return (+v>0?'+':'')+(+v).toFixed(d==null?3:d);}
 function mPct(v,d){return v==null||isNaN(v)?'—':(+v).toFixed(d==null?0:d)+'%';}
 function mMeanSd(a){const x=a.filter(v=>typeof v==='number'&&!isNaN(v));if(!x.length)return{m:0,sd:0};const m=x.reduce((s,v)=>s+v,0)/x.length;const sd=Math.sqrt(x.reduce((s,v)=>s+(v-m)*(v-m),0)/x.length);return{m,sd};}
 function mOutClass(v,arr,goodHigh){if(typeof v!=='number')return '';const{m,sd}=mMeanSd(arr);if(!sd)return '';const z=(v-m)/sd;if(z>=1)return goodHigh?'mgood':'mbad';if(z<=-1)return goodHigh?'mbad':'mgood';return '';}
-function mRank(get,ab,goodHigh){const vs=DATA.ratings.teams.map(t=>({ab:t.abbr,v:get(t)})).filter(x=>typeof x.v==='number');vs.sort((a,b)=>goodHigh?b.v-a.v:a.v-b.v);const i=vs.findIndex(x=>x.ab===ab);return i<0?'—':'R'+(i+1);}
+function mbRank(get,ab,goodHigh){const vs=DATA.ratings.teams.map(t=>({ab:t.abbr,v:get(t)})).filter(x=>typeof x.v==='number');vs.sort((a,b)=>goodHigh?b.v-a.v:a.v-b.v);const i=vs.findIndex(x=>x.ab===ab);return i<0?'—':'R'+(i+1);}
 function mTeamAgg(ab){const P=(window.PLAYS&&window.PLAYS[ab])||{pass:[],rush:[]};
  const sa=(rows,ei,si)=>{let e=0,en=0,s=0,sn=0;rows.forEach(p=>{if(typeof p[ei]==='number'){e+=p[ei];en++;}if(p[si]===0||p[si]===1){sn++;if(p[si]===1)s++;}});return{e,en,s,sn};};
  const op=sa(P.pass||[],PI.epa,PI.succ),or=sa(P.rush||[],RI.epa,RI.succ);const D=teamDefense(ab);const dp=sa(D.pass||[],PI.epa,PI.succ),dr=sa(D.rush||[],RI.epa,RI.succ);
@@ -3422,7 +3428,7 @@ function mTeam(){
   <div class="mcard"><div class="mcard-h">Defensive scheme read</div><div class="mkv"><span class="k">Coverage</span><span class="v">${scheme}</span></div><div class="mnote">nflverse charts the offense's personnel per snap, so coverage family + man/zone rate are the defensive scheme signal.</div></div>`;
  } else {
   const E=mEff()[ab]||{};const tr=tier(hl.h==null?0:hl.h);const L=holisticList();const hi=L.findIndex(t=>t.abbr===ab);const hlRank=hi<0?'—':'R'+(hi+1);
-  const tiles=[['Holistic',mNum(hl.h,1),hlRank],['Offense',mNum(T.off,1),mRank(t=>t.off,ab,1)],['Defense',mNum(T.def,1),mRank(t=>t.def,ab,1)],['Special teams',mNum(T.st,1),mRank(t=>t.st,ab,1)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
+  const tiles=[['Holistic',mNum(hl.h,1),hlRank],['Offense',mNum(T.off,1),mbRank(t=>t.off,ab,1)],['Defense',mNum(T.def,1),mbRank(t=>t.def,ab,1)],['Special teams',mNum(T.st,1),mbRank(t=>t.st,ab,1)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
   const eff=[['EPA / play',mSigned(E.offEpa,3),mEffRank(ab,'offEpa',1)],['EPA allowed',mSigned(E.defEpa,3),mEffRank(ab,'defEpa',0)],['Success %',E.offSucc==null?'—':(E.offSucc*100).toFixed(1)+'%',mEffRank(ab,'offSucc',1)],['Success allowed',E.defSucc==null?'—':(E.defSucc*100).toFixed(1)+'%',mEffRank(ab,'defSucc',0)]].map(r=>`<div class="mtile"><div class="k">${r[0]}</div><div class="v" style="font-size:19px">${r[1]}</div><div class="r">${r[2]}</div></div>`).join('');
   body=`<div class="mcard"><div class="mcard-h">Standing &nbsp;<span class="mtag" style="background:${tr[1]}">${tr[0]}</span></div><div class="mtiles">${tiles}</div></div>
   <div class="mcard"><div class="mcard-h">Efficiency · rank of 32</div><div class="mtiles">${eff}</div></div>`+mSharpDetail(ab)+`<button class="mchip" data-goscout="${ab}" style="width:100%;padding:12px;justify-content:center">Scout ${teamName(ab)} ▸</button>`;
@@ -3483,8 +3489,49 @@ function mField(){
   mChips(persOpts,MB.fPers,'fpers')+
   `<div class="mcard" style="padding:10px">${tiles}${field}${legend}<div class="mdet" id="mfdet">Tap any ${isPass?'throw':'carry'} to see the play.</div></div>`+fan;
 }
+function mMU_L(){if(!_mOffL){_mOffL=allTeamMetricsF('off',ALLF);_mDefL=allTeamMetricsF('def',ALLF);}return[_mOffL,_mDefL];}
+function mMuBars(O,D,offL,defL,oAb,dAb){
+ const specs=[['epa','EPA/play'],['succ','Success %'],['passEpa','Pass EPA'],['rushEpa','Rush EPA'],['expl','Explosive %']];
+ const rows=specs.map(([k,lab])=>{
+  const orank=mRank(offL,O,k,true), drank=mRank(defL,D,k,false);
+  const ax=orank==null?null:muPos(orank), bx=drank==null?null:muPos(drank);
+  let ec='var(--mmut)',et='even',etc='var(--mmut)';
+  if(orank!=null&&drank!=null){const g=drank-orank;if(g>=6){et=oAb+' O';ec=teamColor(oAb);etc='var(--mgood)';}else if(g<=-6){et=dAb+' D';ec=teamColor(dAb);etc='var(--mbad)';}}
+  const line=(ax!=null&&bx!=null)?`<div class="mmuline" style="left:${Math.min(ax,bx)}%;width:${Math.abs(ax-bx)}%;background:${ec}"></div>`:'';
+  const da=orank==null?'':`<div class="mmudot" style="left:${ax}%;background:${teamColor(oAb)}" title="${oAb} offense — ${ord(orank)} of 32">${orank}</div>`;
+  const db=drank==null?'':`<div class="mmudot" style="left:${bx}%;background:${teamColor(dAb)};z-index:3" title="${dAb} defense — ${ord(drank)} of 32">${drank}</div>`;
+  return `<div class="mmurow"><div class="mmulab"><span>${lab}</span><span style="color:${etc};font-size:11px;font-weight:800">${et==='even'?'even':'edge · '+et}</span></div><div class="mmutrack">${line}${da}${db}</div></div>`;
+ }).join('');
+ return `<div class="mcard"><div class="mcard-h" style="display:flex;justify-content:space-between;align-items:center"><span style="color:${teamColor(oAb)}">${teamLogo(oAb)} ${oAb} offense</span><span style="color:${teamColor(dAb)}">${dAb} defense ${teamLogo(dAb)}</span></div><div class="mmuscale">◄ 1st / better &nbsp;·&nbsp; league rank &nbsp;·&nbsp; 32nd / worse ►</div>${rows}</div>`;
+}
+function mMuPers(t){
+ const P=cutF(t,'off',ALLF);const g={};const add=(c,e)=>{if(c==null)return;const k=String(c);const o=g[k]||(g[k]={n:0,ep:[]});o.n++;if(e!=null)o.ep.push(e);};
+ P.pass.forEach(p=>add(p[PI.pers],p[PI.epa]));P.rush.forEach(p=>add(p[RI.pers],p[RI.epa]));
+ const tot=Object.values(g).reduce((s,o)=>s+o.n,0)||1;
+ const rows=Object.entries(g).sort((a,b)=>b[1].n-a[1].n).slice(0,4).map(([k,o])=>{const use=100*o.n/tot,epa=fmean(o.ep);return `<div class="mbar-row"><div class="lab">${k} · ${use.toFixed(0)}%</div><div class="mbar-track"><div class="mbar-fill" style="width:${use.toFixed(0)}%"></div></div><div class="ep ${epa>=0?'mgood':'mbad'}">${mSigned(epa,2)}</div></div>`;}).join('');
+ return `<div class="mcard"><div class="mcard-h">${teamLogo(t)} ${teamName(t)} offense — personnel</div>${rows}</div>`;
+}
+function mMatchup(){
+ const A=MB.scout,B=MB.muB;
+ const teams=DATA.ratings.teams.map(t=>t.abbr).sort((a,b)=>teamName(a).localeCompare(teamName(b)));
+ const pick=(kind,cur)=>`<select class="msel" data-${kind} style="margin:0">${teams.map(t=>`<option value="${t}"${t===cur?' selected':''}>${teamName(t)}</option>`).join('')}</select>`;
+ const picker=`<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px"><div style="flex:1;min-width:0">${pick('mua',A)}</div><button class="mchip" data-muswap style="padding:9px 12px">⇄</button><div style="flex:1;min-width:0">${pick('mub',B)}</div></div>`;
+ const [offL,defL]=mMU_L();
+ const et=(L,t,k,better)=>{const r=mRank(L,t,k,better);return r==null?'—':ord(r);};
+ const tile=(lab,val,rk)=>`<div class="mtile"><div class="k">${lab}</div><div class="v" style="font-size:17px">${val}</div><div class="r">${rk}</div></div>`;
+ const summary=`<div class="mcard"><div class="mcard-h">EPA/play — the four units</div><div class="mtiles" style="grid-template-columns:1fr 1fr">${tile(A+' offense',offL[A]?mSigned(offL[A].epa,3):'—',et(offL,A,'epa',true))}${tile(B+' defense',defL[B]?mSigned(defL[B].epa,3):'—',et(defL,B,'epa',false))}${tile(B+' offense',offL[B]?mSigned(offL[B].epa,3):'—',et(offL,B,'epa',true))}${tile(A+' defense',defL[A]?mSigned(defL[A].epa,3):'—',et(defL,A,'epa',false))}</div></div>`;
+ const flags=[...flagsFor(offL,defL,A,B),...flagsFor(offL,defL,B,A)].sort((x,y)=>y.sev-x.sev).slice(0,6);
+ const flagLi=f=>{const c=f.favor==='o'?'#c92a10':f.favor==='d'?'#1e7a34':'var(--mmut)';return `<div style="border-left:3px solid ${c};padding:6px 0 6px 10px;margin-bottom:9px;font-size:12.5px;line-height:1.5">${f.txt}</div>`;};
+ const mismatch=`<div class="mcard"><div class="mcard-h">⚑ Situational mismatches</div>${flags.length?flags.map(flagLi).join(''):'<div class="mnote" style="margin:0">No extreme mismatches — an even matchup on paper.</div>'}</div>`;
+ const flow=`<div class="mcard"><div class="mcard-h">Projected game flow</div><div style="font-size:13px;line-height:1.6">${gameFlowText(A,B,offL,defL)}</div></div>`;
+ return picker+summary+mMuBars(A,B,offL,defL,A,B)+mMuBars(B,A,offL,defL,B,A)+mMuPers(A)+mMuPers(B)+mismatch+flow;
+}
 function mScout(){
- const ab=MB.scout;const sub=mSubbar([['scout','Scouting'],['field','Field charts']],MB.sTab,'ssub');
+ const ab=MB.scout;const sub=mSubbar([['scout','Scouting'],['matchup','Matchup'],['field','Field charts']],MB.sTab,'ssub');
+ if(MB.sTab==='matchup'){
+  if(MB.muB===ab)MB.muB=DATA.ratings.teams.map(t=>t.abbr).find(t=>t!==ab)||'ATL';
+  return mHdr('Matchup',teamName(ab)+' vs '+teamName(MB.muB),'Offense vs defense both ways, tendencies, personnel & the mismatches — all-situations, from the play-by-play.')+sub+mMatchup();
+ }
  const body=MB.sTab==='field'?mField():mScoutMain();
  return mHdr('Opponent scouting',teamName(ab),'Personnel, tendencies, coverage & every throw/carry — live from the play-by-play.')+mTeamPicker('scout',ab)+sub+body;
 }
@@ -3614,6 +3661,9 @@ function mWireScreen(){const sc=$('#mscreen');if(!sc)return;
  sc.querySelectorAll('[data-goteam]').forEach(r=>r.onclick=()=>{MB.team=r.dataset.goteam;MB.screen='team';MB.tTab='overview';mRender();});
  sc.querySelectorAll('[data-goscout]').forEach(r=>r.onclick=()=>{MB.scout=r.dataset.goscout;MB.screen='scout';mRender();});
  sc.querySelectorAll('[data-mpick]').forEach(s=>s.onchange=()=>{if(s.dataset.mpick==='team')MB.team=s.value;else MB.scout=s.value;mRender();});
+ sc.querySelectorAll('[data-mua]').forEach(s=>s.onchange=()=>{MB.scout=s.value;if(MB.muB===MB.scout)MB.muB=DATA.ratings.teams.map(t=>t.abbr).find(t=>t!==MB.scout)||'ATL';mRender();});
+ sc.querySelectorAll('[data-mub]').forEach(s=>s.onchange=()=>{MB.muB=s.value;if(MB.muB===MB.scout)MB.scout=DATA.ratings.teams.map(t=>t.abbr).find(t=>t!==MB.muB)||'NO';mRender();});
+ sc.querySelectorAll('[data-muswap]').forEach(b=>b.onclick=()=>{const t=MB.scout;MB.scout=MB.muB;MB.muB=t;mRender();});
  sc.querySelectorAll('[data-wt]').forEach(s=>s.oninput=()=>{W[s.dataset.wt]=+s.value;mRender();});
  const q=sc.querySelector('[data-fanq]');if(q)q.oninput=()=>{MB.fanQ=q.value;const rows=mFanRank();/* light: re-render */mRender();setTimeout(()=>{const el=sc.querySelector('[data-fanq]');if(el){el.focus();el.setSelectionRange(el.value.length,el.value.length);}},0);};
  sc.querySelectorAll('[data-ssteam]').forEach(s=>s.onchange=()=>{MB.ssTeam=s.value;MB.ssPlayer='';mRender();});
@@ -3624,7 +3674,7 @@ function mWireScreen(){const sc=$('#mscreen');if(!sc)return;
 }
 function mRender(){const sc=$('#mscreen');if(!sc)return;const st=sc.scrollTop;sc.innerHTML=mScreenHtml();sc.scrollTop=(MB.screen==='fantasy'&&MB.fanTab==='rank')?st:0;mWireScreen();mPaintTabs();}
 function mSyncYears(){const box=$('#myrs');if(!box)return;const ss=(window.YEARS&&window.YEARS.seasons)||[];box.innerHTML=ss.slice().sort((a,b)=>b.y-a.y).map(s=>`<button data-myr="${s.y}"${yearReady(s.y)?'':' disabled'} class="${String(s.y)===String(YEAR)?'on':''}">${s.label||s.y}</button>`).join('');box.querySelectorAll('[data-myr]').forEach(b=>b.onclick=()=>{if(!b.disabled)setYear(b.dataset.myr);});const sub=$('#msub');if(sub)sub.textContent=(YEAR||'2025')+' season · New Orleans Saints';}
-function mOnYear(){_mEff=null;_mQB=null;mSyncYears();if(MB.active)mRender();}
+function mOnYear(){_mEff=null;_mQB=null;_mOffL=null;_mDefL=null;mSyncYears();if(MB.active)mRender();}
 function mBoot(){const root=$('#mroot');if(!root)return;
  document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{MB.screen=b.dataset.mtab;mRender();});
  mSyncYears();MB.active=window.innerWidth<700;mRender();
