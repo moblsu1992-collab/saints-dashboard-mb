@@ -653,6 +653,7 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 <script src="data/pff.js"></script>
 <script src="data/ff.js"></script>
 <script src="data/sched.js"></script>
+<script src="data/snaps.js"></script>
 <script>
 /* ---------- YEAR REGISTRY ---------- */
 window.YDATA=window.YDATA||{};
@@ -2478,7 +2479,7 @@ function renderEPA(){const s=$('#epa');s.innerHTML=`${pageHead('epa')}<div class
  const groups=[
    ['Overview',[['ov','League-Wide']]],
    ['Rankings',[['off','Offense Ranking'],['def','Defense Ranking'],['st','Special Teams']]],
-   ['Personnel & Advanced Defense',[['persuse','Personnel Usage'],['qb','Quarterbacks'],['rec','Receivers'],['rb','Running Backs'],['specialist','Specialists'],['advdef','Advanced Defense']]],
+   ['Personnel & Advanced Defense',[['persuse','Personnel Usage'],['snaproles','Snap Roles (Pass/Run)'],['qb','Quarterbacks'],['rec','Receivers'],['rb','Running Backs'],['specialist','Specialists'],['advdef','Advanced Defense']]],
    ['Additional Advanced Metrics',[['passid','Pass Identity'],['fourth','Fourth Downs'],['luck','Luck'],['series','Series Success']]]
  ];
  const es=$('#esub');let firstBtn=true;
@@ -2671,11 +2672,46 @@ function wireSplitNav(box,id){
  box.querySelectorAll('[data-rbspg]').forEach(b=>b.onclick=()=>{RBSPLITGROUP=b.dataset.rbspg;drawEPA(id);});
  box.querySelectorAll('[data-rbjump]').forEach(b=>b.onclick=()=>{RBSPLITGROUP=b.dataset.rbjump;drawEPA(id);});
 }
+// ---- pass/run on-field snap split (window.SNAPX from data/snaps.js), shared desktop+mobile ----
+let SNAPTEAM='NO', SNAPPERS='all';
+function POSCOL(p){return p==='RB'?'#c02a17':p==='TE'?'#b07d12':'#201e1d';}
+function snapCut(team,pers){const S=window.SNAPX;if(!S||!S.teams||!S.teams[team])return [];
+ return S.teams[team].map(pl=>{let p,r;if(pers==='all'){p=pl.p;r=pl.r;}else{const c=pl.g[pers];p=c?c[0]:0;r=c?c[1]:0;}const tot=p+r;return {n:pl.n,pos:pl.pos,p,r,tot,pass:tot?100*p/tot:null};})
+  .filter(x=>x.tot>=(pers==='all'?25:10)).sort((a,b)=>b.pass-a.pass);}
+function snapPersOpts(team){const S=window.SNAPX,codes={};if(S&&S.teams&&S.teams[team])S.teams[team].forEach(pl=>{for(const c in pl.g){const cc=pl.g[c];codes[c]=(codes[c]||0)+cc[0]+cc[1];}});return Object.keys(codes).filter(c=>/^\d\d$/.test(c)).sort((a,b)=>codes[b]-codes[a]);}
+function snapBarsHTML(rows){if(!rows.length)return '<p class="note" style="margin:0">No players meet the snap threshold for this cut.</p>';
+ return rows.map(x=>{const pp=x.pass==null?0:x.pass;return `<div style="display:grid;grid-template-columns:98px 1fr 66px;align-items:center;gap:8px;padding:5px 2px;border-bottom:1px solid #e6e3e3">`+
+  `<div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"><span style="display:inline-block;width:22px;font-size:9px;font-weight:800;color:${POSCOL(x.pos)}">${x.pos}</span>${x.n}</div>`+
+  `<div style="height:15px;display:flex;background:#eae9e9;overflow:hidden" title="${pp.toFixed(0)}% pass · ${x.tot} snaps"><div style="width:${pp.toFixed(1)}%;background:#1e7a34"></div><div style="width:${(100-pp).toFixed(1)}%;background:#c3bdb6"></div></div>`+
+  `<div style="font-size:11px;text-align:right;font-variant-numeric:tabular-nums;line-height:1.25"><b>${pp.toFixed(0)}%</b><br><span style="color:#6b6a68">${x.tot} snp</span></div></div>`;}).join('');}
+function snapScatterSVG(rows){if(!rows.length)return '';
+ const W=340,H=230,pL=32,pB=24,pT=8,pR=10,maxT=Math.max(...rows.map(r=>r.tot),1);
+ const X=p=>pL+(p/100)*(W-pL-pR), Y=t=>H-pB-(t/maxT)*(H-pB-pT);
+ const xg=[0,25,50,75,100].map(p=>`<line x1="${X(p).toFixed(1)}" y1="${pT}" x2="${X(p).toFixed(1)}" y2="${H-pB}" stroke="#eae9e9"/><text x="${X(p).toFixed(1)}" y="${H-pB+11}" font-size="8" fill="#9b9797" text-anchor="middle">${p}%</text>`).join('');
+ const yg=[0,0.5,1].map(f=>{const t=Math.round(maxT*f);return `<line x1="${pL}" y1="${Y(t).toFixed(1)}" x2="${W-pR}" y2="${Y(t).toFixed(1)}" stroke="#eae9e9"/><text x="${pL-3}" y="${(Y(t)+3).toFixed(1)}" font-size="8" fill="#9b9797" text-anchor="end">${t}</text>`;}).join('');
+ const dots=rows.map(r=>{const pp=r.pass==null?0:r.pass;return `<circle cx="${X(pp).toFixed(1)}" cy="${Y(r.tot).toFixed(1)}" r="4" fill="${POSCOL(r.pos)}" fill-opacity="0.82"><title>${r.n} (${r.pos}) — ${pp.toFixed(0)}% pass · ${r.tot} snaps</title></circle>`;}).join('');
+ return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;background:#fff;border:1px solid #d7d3d3;display:block">${xg}${yg}${dots}<text x="${(W/2).toFixed(0)}" y="${H-1}" font-size="8" fill="#6b6a68" text-anchor="middle">← run-game &nbsp; pass-snap % &nbsp; pass-game →</text></svg>`;}
 function drawEPA(id){const L=DATA.leagueEPA;const box=$('#ebody');const mm=(arr,k)=>{const v=arr.map(x=>x[k]).filter(x=>typeof x==='number');return [Math.min(...v),Math.max(...v)];};
  if(id=='ov'){box.innerHTML=`<div class="card">${epaScatter()}<p class="note">Both sides of the ball on one view — right and high is good. Single-variable breakdowns (with sortable tables) live in the Offense, Defense and Quarterbacks tabs.</p></div>`;}
  else
  if(id=='off'){const R=zComposite(L.teams.map(t=>({name:t.name,abbr:t.abbr,...t.off,cpoe:(PRO[t.abbr]?PRO[t.abbr].cpoe:null)})),['passEPA','rushEPA','cpoe','succ','edEPA']).sort((a,b)=>(b.comp==null?-99:b.comp)-(a.comp==null?-99:a.comp));box.innerHTML=`<div class="card">${barChart(R.map(t=>({lab:t.abbr,ab:t.abbr,v:t.comp==null?0:+t.comp.toFixed(2),hl:t.abbr=='NO',title:t.name+' — Pass EPA '+t.passEPA.toFixed(3)+' · Rush EPA '+t.rushEPA.toFixed(3)+' · CPOE '+(t.cpoe>0?'+':'')+t.cpoe+' · Succ '+t.succ+'% · ED EPA '+t.edEPA.toFixed(3)})),{avg:0,label:'Offense composite (Pass EPA + Rush EPA + CPOE + Success% + Early-down EPA) — sorted best → worst',dec:2})}</div><div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'comp',lab:'Off composite',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'epa',lab:'EPA/play',fmt:v=>v.toFixed(3),heat:1},{k:'passEPA',lab:'Pass EPA',fmt:v=>v.toFixed(3),heat:1},{k:'rushEPA',lab:'Rush EPA',fmt:v=>v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(1),heat:1},{k:'succ',lab:'Success %',heat:1},{k:'edEPA',lab:'Early-down EPA',fmt:v=>v.toFixed(3),heat:1}],'abbr')}<p class="note"><b>Off composite</b> = average of five standardized inputs — Pass EPA, Rush EPA, CPOE, Success % and early-down EPA — in SDs above/below league average. Blending efficiency (EPA), sustainability (success rate, early downs) and accuracy (CPOE) keeps any single stat from skewing the ranking. Bar chart plots this composite.</p></div>`;}
  else if(id=='def'){const R=L.teams.map(t=>({name:t.name,abbr:t.abbr,...t.deff})).sort((a,b)=>a.epa-b.epa);const e=mm(R,'epa');box.innerHTML=`<div class="card">${barChart(R.map(t=>({lab:t.abbr,ab:t.abbr,v:t.epa,hl:t.abbr=='NO',title:t.name})),{avg:L.lgOff,label:'Defense EPA/play allowed — sorted best → worst (lower is better)',dec:2})}</div><div class="card">${tbl(R,[{k:'name',lab:'Team'},{k:'epa',lab:'EPA/play allowed',fmt:v=>v.toFixed(3),heat:[e[1],e[0]]},{k:'succ',lab:'Success % allowed'},{k:'passEPA',lab:'Pass EPA',fmt:v=>v.toFixed(3)},{k:'rushEPA',lab:'Rush EPA',fmt:v=>v.toFixed(3)},{k:'edEPA',lab:'Early-down EPA',fmt:v=>v.toFixed(3)}],'abbr')}<p class="note">Defensive EPA per play allowed; lower = better.</p></div>`;}
+ else if(id=='snaproles'){
+  const S=window.SNAPX;
+  if(!S||!S.teams){box.innerHTML='<div class="card banner">Snap-split data not loaded — needs data/snaps.js.</div>';return;}
+  const teams=Object.keys(S.teams).sort((a,b)=>teamName(a).localeCompare(teamName(b)));
+  if(!S.teams[SNAPTEAM])SNAPTEAM=teams[0];
+  const persOpts=snapPersOpts(SNAPTEAM);
+  if(SNAPPERS!=='all'&&!persOpts.includes(SNAPPERS))SNAPPERS='all';
+  const rows=snapCut(SNAPTEAM,SNAPPERS);
+  const teamSel=`<select id="snapteam">${teams.map(t=>`<option value="${t}"${t===SNAPTEAM?' selected':''}>${teamName(t)}</option>`).join('')}</select>`;
+  const persSel=`<select id="snappers"><option value="all"${SNAPPERS==='all'?' selected':''}>All personnel</option>${persOpts.map(c=>`<option value="${c}"${c===SNAPPERS?' selected':''}>${c} — ${persDesc(c)}</option>`).join('')}</select>`;
+  const legend=`<div class="flegend"><span class="lgchip" style="cursor:default"><span class="lgdot" style="background:#1e7a34"></span>pass snaps</span><span class="lgchip" style="cursor:default"><span class="lgdot" style="background:#c3bdb6"></span>run snaps</span><span class="lgchip" style="cursor:default"><b style="color:#c02a17">RB</b> · <b style="color:#201e1d">WR</b> · <b style="color:#b07d12">TE</b></span></div>`;
+  box.innerHTML=`<div class="card"><div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:6px"><label style="font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center">Team ${teamSel}</label><label style="font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center">Personnel ${persSel}</label></div>${legend}<p class="note" style="margin:6px 0 0">On-field <b>pass vs run snap split</b> for every RB / WR / TE — who's on the field for the pass game vs the run game. Sorted by pass-snap %. ${SNAPPERS==='all'?'All personnel groupings.':'<b>'+SNAPPERS+'</b> ('+persDesc(SNAPPERS)+') only.'} Built from participation (who's on the field per snap) × play-by-play, ${S.season||2025}.</p></div>
+  <div class="grid2"><div class="card"><div class="sechead">${teamLogo(SNAPTEAM)}Pass / run snap split — ${teamName(SNAPTEAM)}</div>${snapBarsHTML(rows)}</div><div class="card"><div class="sechead">Role × volume</div>${snapScatterSVG(rows)}<p class="note">Each dot is a player. <b>X = pass-snap %</b> (right = pass-game specialist, left = run-game / blocker); <b>Y = total snaps</b> (higher = every-down). Colored by position.</p></div></div>`;
+  const ts=$('#snapteam');if(ts)ts.onchange=e=>{SNAPTEAM=e.target.value;SNAPPERS='all';drawEPA('snaproles');};
+  const ps=$('#snappers');if(ps)ps.onchange=e=>{SNAPPERS=e.target.value;drawEPA('snaproles');};
+ }
  else if(id=='qb'){const qbv=segRow('qbview',QBVIEW,[['value','Value board'],['route','Route tree'],['zone','Field zones'],['rz','Red zone']],'margin:0','View');
   if(QBVIEW!=='value'&&window.PLAYS){const vnote=QBVIEW==='rz'?'Red-zone command — every throw and keeper from inside the opponent 20: conversion rate, accuracy and total TDs.':`QB efficiency by ${QBVIEW==='route'?'the route thrown':'area of the field (throw depth × side)'} — pick a metric, then tap any ${QBVIEW==='route'?'route':'zone'} for its top 50.`;box.innerHTML=`<div class="card">${qbv}<p class="note" style="margin:6px 0 0">${vnote}</p></div>`+(QBVIEW==='rz'?renderRZBoard('qb'):renderPassSplits('qb',QBVIEW));wireSplitNav(box,'qb');box.querySelectorAll('[data-qbview]').forEach(b=>b.onclick=()=>{QBVIEW=b.dataset.qbview;SPLITGROUP='all';drawEPA('qb');});return;}
   const RM=qbRushMap();const PX=qbPassExtras();const base=L.qbs.map(q=>{const r=RM[q.qb]||{att:0,yds:0,td:0,rzTd:0};const x=PX[q.qb]||{att:0,expl:0,rzTd:0};return {...q,rushYds:r.yds,rushTd:r.td,rushAtt:r.att,rushProd:r.yds+20*r.td,expl:x.att?100*x.expl/x.att:null,rzTd:x.rzTd+r.rzTd};});const R=zComposite(base,[['epa',1.5],['cpoe',0.75],['succ',0.75],['expl',0.5],['rushProd',0.75,true],['db',0.5]]).sort((a,b)=>b.comp-a.comp);box.innerHTML=`<div class="card">${qbv}</div><div class="card">${barChart(R.map(q=>({lab:q.qb,v:+q.comp.toFixed(2),hl:q.team=='NO',title:q.qb+' ('+q.team+') — EPA/db '+q.epa.toFixed(3)+' · CPOE '+(q.cpoe>0?'+':'')+q.cpoe+' · '+q.db+' dropbacks · '+q.rushYds+' rush yds / '+q.rushTd+' TD'})),{avg:0,label:'QB Value composite (min 200 dropbacks) — sorted best → worst',dec:2,rot:1,b:56,h:280,bw:19})}</div><div class="card">${tbl(R,[{k:'qb',lab:'Quarterback'},{k:'team',lab:'Tm'},{k:'comp',lab:'QB value',fmt:v=>v==null?'—':(v>0?'+':'')+v.toFixed(2),heat:1},{k:'epa',lab:'EPA/dropback',fmt:v=>v.toFixed(3),heat:1},{k:'cpoe',lab:'CPOE',fmt:v=>(v>0?'+':'')+v.toFixed(1),heat:1},{k:'succ',lab:'Success %',heat:1},{k:'expl',lab:'Expl%',fmt:v=>v==null?'—':v.toFixed(1)+'%',heat:1},{k:'db',lab:'Dropbacks',heat:1},{k:'rzTd',lab:'RZ TD',heat:1},{k:'rushYds',lab:'Rush yds',heat:1},{k:'rushTd',lab:'Rush TD',heat:1}],'team',true)}<p class="note"><b>QB value</b> = <b>weighted</b> blend of standardized inputs — the bottom-line result leads: <b>EPA/dropback</b> (efficiency — the germane QB rate, already counting sacks &amp; scrambles) at ×1.5, then <b>CPOE</b> (accuracy — a supporting input), <b>Success %</b> and <b>rushing production</b> (rush yds + 20×rush TD) at ×0.75, <b>Explosive%</b> (15+ yd completions per dropback — big-play creation) at ×0.5, and <b>Dropbacks — usage/volume — at ×0.5</b>. <b>RZ TD</b> (passing + rushing TDs from inside the opponent 20) is shown for context, not in the rating — the full red-zone board lives under the <b>Red zone</b> view. Rushing is <b>bonus-only</b> (it can add value for mobile QBs but never penalizes a pocket passer). So a QB with elite EPA but average CPOE (e.g. high-end results driven differently) still ranks on his production. Bars &amp; values are SDs vs the QB average. Rush from play-by-play (kneels/aborted snaps excluded); passing EPA is per dropback. Min 200 dropbacks.</p></div>`;box.querySelectorAll('[data-qbview]').forEach(b=>b.onclick=()=>{QBVIEW=b.dataset.qbview;SPLITGROUP='all';drawEPA('qb');});}
@@ -3288,7 +3324,7 @@ renderRatings();renderEPA();renderOpponents();renderField();renderPhil();renderO
  * additional seasons ship as self-registering bundles under data/<year>/ and are
  * injected on load. Missing datasets for a season fall back to the baseline. */
 const BASEYEAR=String((window.YEARS&&window.YEARS.default)||2025);
-const YKEYS=['DATA','PLAYS','SCHED','DEFTEAM','DEFPLAYERS','PFFX','FFX','SCHEME','SPECIALTEAMS','TEMPO','RBADV','RECPOS','SHARP2026'];
+const YKEYS=['DATA','PLAYS','SCHED','DEFTEAM','DEFPLAYERS','PFFX','FFX','SCHEME','SPECIALTEAMS','TEMPO','RBADV','RECPOS','SHARP2026','SNAPX'];
 let PBASE='data/plays/';
 function yearMeta(y){const ss=(window.YEARS&&window.YEARS.seasons)||[];return ss.find(s=>String(s.y)===String(y))||{y:y,label:String(y),pbase:'data/'+y+'/plays/'};}
 function yearReady(y){const d=YDATA[String(y)];return !!d&&d.PLAYS!==undefined;}
@@ -3336,7 +3372,7 @@ tryDesired();
 const MB={screen:'board',team:'NO',scout:'NO',
  bTab:'ratings',bMetric:'h',
  tTab:'overview',
- sTab:'scout',sDown:'all',sPers:'all',muB:'ATL',
+ sTab:'scout',sDown:'all',sPers:'all',muB:'ATL',snapPers:'all',
  fMode:'pass',fPers:'ALL',
  lTab:'qb',lRecPos:'all',lDefGrp:'all',lStGrp:'team',lPersSide:'off',lPersG:'11',
  fanTab:'rank',fanPos:'ALL',fanQ:'',ssPos:'WR',ssPlayer:'',ssTeam:'ALL',ssWk:1,ssCov:'ALL',bWk:1,bPos:'ALL',
@@ -3526,13 +3562,24 @@ function mMatchup(){
  const flow=`<div class="mcard"><div class="mcard-h">Projected game flow</div><div style="font-size:13px;line-height:1.6">${gameFlowText(A,B,offL,defL)}</div></div>`;
  return picker+summary+mMuBars(A,B,offL,defL,A,B)+mMuBars(B,A,offL,defL,B,A)+mMuPers(A)+mMuPers(B)+mismatch+flow;
 }
+function mSnapRoles(){
+ const ab=MB.scout,S=window.SNAPX;
+ if(!S||!S.teams||!S.teams[ab])return '<div class="mnote">Snap-split data not available for this team.</div>';
+ const persOpts=snapPersOpts(ab);if(MB.snapPers!=='all'&&!persOpts.includes(MB.snapPers))MB.snapPers='all';
+ const rows=snapCut(ab,MB.snapPers);
+ const chips=mChips([['all','All pers']].concat(persOpts.slice(0,6).map(c=>[c,c])),MB.snapPers,'snappers');
+ return chips+
+  `<div class="mcard"><div class="mcard-h">Role × volume</div>${snapScatterSVG(rows)}<div class="mflegend"><span><i style="background:#c02a17"></i>RB</span><span><i style="background:#201e1d"></i>WR</span><span><i style="background:#b07d12"></i>TE</span></div><div class="mnote">X = pass-snap % (right = pass-game) · Y = total snaps (higher = every-down).</div></div>`+
+  `<div class="mcard"><div class="mcard-h">Pass / run split — sorted by pass %</div><div class="mflegend" style="margin-top:0"><span><i style="background:#1e7a34"></i>pass snaps</span><span><i style="background:#c3bdb6"></i>run snaps</span></div>${snapBarsHTML(rows)}</div>`+
+  `<div class="mnote">On-field snaps for every RB/WR/TE — who's out there for the pass vs run game. From participation × play-by-play${MB.snapPers==='all'?'':' · '+MB.snapPers+' ('+persDesc(MB.snapPers)+')'}.</div>`;
+}
 function mScout(){
- const ab=MB.scout;const sub=mSubbar([['scout','Scouting'],['matchup','Matchup'],['field','Field charts']],MB.sTab,'ssub');
+ const ab=MB.scout;const sub=mSubbar([['scout','Scouting'],['matchup','Matchup'],['snaps','Snap roles'],['field','Field charts']],MB.sTab,'ssub');
  if(MB.sTab==='matchup'){
   if(MB.muB===ab)MB.muB=DATA.ratings.teams.map(t=>t.abbr).find(t=>t!==ab)||'ATL';
   return mHdr('Matchup',teamName(ab)+' vs '+teamName(MB.muB),'Offense vs defense both ways, tendencies, personnel & the mismatches — all-situations, from the play-by-play.')+sub+mMatchup();
  }
- const body=MB.sTab==='field'?mField():mScoutMain();
+ const body=MB.sTab==='field'?mField():MB.sTab==='snaps'?mSnapRoles():mScoutMain();
  return mHdr('Opponent scouting',teamName(ab),'Personnel, tendencies, coverage & every throw/carry — live from the play-by-play.')+mTeamPicker('scout',ab)+sub+body;
 }
 
@@ -3653,7 +3700,7 @@ function mFantasy(){
 }
 
 /* ---------------- controller ---------------- */
-const MB_KEYS={bsub:'bTab',bmet:'bMetric',tsub:'tTab',ssub:'sTab',sdown:'sDown',fmode:'fMode',fpers:'fPers',lsub:'lTab',lrecpos:'lRecPos',ldefgrp:'lDefGrp',lstgrp:'lStGrp',lpersside:'lPersSide',lpersg:'lPersG',fansub:'fanTab',fanpos:'fanPos',sspos:'ssPos',sscov:'ssCov',bpos:'bPos'};
+const MB_KEYS={bsub:'bTab',bmet:'bMetric',tsub:'tTab',ssub:'sTab',sdown:'sDown',snappers:'snapPers',fmode:'fMode',fpers:'fPers',lsub:'lTab',lrecpos:'lRecPos',ldefgrp:'lDefGrp',lstgrp:'lStGrp',lpersside:'lPersSide',lpersg:'lPersG',fansub:'fanTab',fanpos:'fanPos',sspos:'ssPos',sscov:'ssCov',bpos:'bPos'};
 function mScreenHtml(){switch(MB.screen){case 'team':return mTeam();case 'scout':return mScout();case 'league':return mLeague();case 'fantasy':return mFantasy();default:return mBoard();}}
 function mPaintTabs(){document.querySelectorAll('#mtabs button').forEach(b=>b.classList.toggle('on',b.dataset.mtab===MB.screen));}
 function mWireScreen(){const sc=$('#mscreen');if(!sc)return;

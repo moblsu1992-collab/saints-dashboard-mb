@@ -56,11 +56,13 @@ jobs:
             ./build_plays.ps1  -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir . -Year $S
             ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir . -Year $S
             ./build_st.ps1     -Gz pbp.csv.gz -OutDir . -Year $S
+            ./build_snaps.ps1  -Pbp pbp.csv.gz -Part part.csv -Roster roster.csv -OutDir . -Year $S
           } else {
             New-Item -ItemType Directory -Force stage/data | Out-Null
             ./build_plays.ps1  -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir ./stage -Year $S
             ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir ./stage -Year $S
             ./build_st.ps1     -Gz pbp.csv.gz -OutDir ./stage -Year $S
+            ./build_snaps.ps1  -Pbp pbp.csv.gz -Part part.csv -Roster roster.csv -OutDir ./stage -Year $S
             ./build_years.ps1  -Bundle $S -StageDir ./stage
           }
 
