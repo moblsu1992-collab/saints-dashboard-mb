@@ -72,6 +72,7 @@ Write-Host "participation plays: $($PMAP.Count)"
 # ---- 3. pbp: for each pass/run play, credit every on-field RB/WR/TE ----
 # ACC: team -> gsis -> @{p;r;g=@{code->[p,r]}}
 $ACC=@{}
+$TTOT=@{}  # team -> pers -> [pass,run]  (team totals per personnel, one credit per PLAY)
 function Bump($team,$gid,$isPass,$pers){
   if(-not $ACC.ContainsKey($team)){ $ACC[$team]=@{} }
   $t=$ACC[$team]; if(-not $t.ContainsKey($gid)){ $t[$gid]=@{p=0;r=0;g=@{}} }
@@ -91,6 +92,7 @@ while(-not $bf.EndOfData){
   if($ty -ne 'pass' -and $ty -ne 'run'){continue}
   $pe=$PMAP[[string]$g[$B_g]+'|'+[string]$g[$B_p]]; if(-not $pe){continue}
   $isPass = ($ty -eq 'pass'); $team=$pe.team; $pers=$pe.pers
+  if($pers -and $team){ if(-not $TTOT.ContainsKey($team)){$TTOT[$team]=@{}}; if(-not $TTOT[$team].ContainsKey($pers)){$TTOT[$team][$pers]=@(0,0)}; if($isPass){$TTOT[$team][$pers][0]++}else{$TTOT[$team][$pers][1]++} }
   foreach($id in $pe.off){ if($id -and $ROST.ContainsKey($id)){ Bump $team $id $isPass $pers } }
   $np++
 }
@@ -114,6 +116,15 @@ foreach($team in ($ACC.Keys | Sort-Object)){
   $players = $players | Sort-Object -Property tot -Descending
   if(-not $tfirst){ [void]$sb.Append(",`n") }; $tfirst=$false
   [void]$sb.Append('"'+$team+'":['+([string]::Join(',',($players | ForEach-Object { $_.js })))+']')
+}
+[void]$sb.Append("`n},`n")
+# team totals per personnel (denominator for on/off-field "tell" calc)
+[void]$sb.Append('"tot":{'+"`n")
+$tfirst=$true
+foreach($team in ($TTOT.Keys | Sort-Object)){
+  $cj=@(); foreach($code in ($TTOT[$team].Keys | Sort-Object)){ $cj += '"'+$code+'":['+$TTOT[$team][$code][0]+','+$TTOT[$team][$code][1]+']' }
+  if(-not $tfirst){ [void]$sb.Append(",`n") }; $tfirst=$false
+  [void]$sb.Append('"'+$team+'":{'+([string]::Join(',',$cj))+'}')
 }
 [void]$sb.Append("`n}};`n")
 [System.IO.File]::WriteAllText((Join-Path $OutDir 'data/snaps.js'),$sb.ToString(),[System.Text.UTF8Encoding]::new($false))
