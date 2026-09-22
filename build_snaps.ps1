@@ -23,6 +23,16 @@ param(
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName Microsoft.VisualBasic
 
+# No participation (e.g. nflverse hasn't published it for this season) -> emit an empty SNAPX
+# sentinel so the dashboard shows "no data" for snap roles/tells instead of falling back to a
+# prior season. Snap counts alone can't reconstruct the per-play on/off-field split.
+if(-not (Test-Path $Part)){
+  $gen=(Get-Date).ToString('yyyy-MM-dd')
+  [System.IO.File]::WriteAllText((Join-Path $OutDir 'data/snaps.js'),'window.SNAPX={"season":'+$Year+',"gen":"'+$gen+'","teams":{},"tot":{}};'+"`n",[System.Text.UTF8Encoding]::new($false))
+  Write-Host "build_snaps: no participation at '$Part' -> wrote empty SNAPX sentinel for $Year"
+  return
+}
+
 function PersGroup($s){
   if([string]::IsNullOrEmpty($s)){ return $null }
   $rb=0;$fb=0;$te=0

@@ -14,10 +14,13 @@ on:
   workflow_dispatch:        # lets you run it on demand from the Actions tab
 
 env:
-  # Bump to 2026 once the 2026 regular season kicks off (Sept 2026). Because 2025 is the
-  # flat baseline (data/*.js), any SEASON != 2025 is auto-written to data/<SEASON>/ as a
-  # namespaced bundle and added to the Year toggle — the 2025 baseline stays frozen.
-  SEASON: "2025"
+  # The season the weekly refresh rebuilds. 2025 is the flat baseline (data/*.js); any
+  # SEASON != 2025 is auto-written to data/<SEASON>/ as a namespaced bundle and added to the
+  # Year toggle (2025 stays frozen). NOTE: participation (personnel/coverage/snaps/tells) is
+  # not published by nflverse for 2026 — those features stay empty for 2026 until it appears;
+  # the partial-season banner explains it. To make 2026 the DEFAULT view once it's complete,
+  # add `-Preferred 2026` to the build_years calls below.
+  SEASON: "2026"
 
 jobs:
   refresh:
@@ -33,13 +36,18 @@ jobs:
           set -e
           base="https://github.com/nflverse/nflverse-data/releases/download"
           curl -sSL --retry 3 -o pbp.csv.gz "$base/pbp/play_by_play_${SEASON}.csv.gz"
-          curl -sSL --retry 3 -o part.csv    "$base/pbp_participation/pbp_participation_${SEASON}.csv"
+          # Participation is optional — nflverse may not publish it for a season. -f so a 404
+          # fails the fetch; the || branch then removes the file so build_plays/build_snaps see
+          # it as absent (personnel/coverage/snaps/tells stay empty) rather than parsing a 404 page.
+          curl -fsSL --retry 3 -o part.csv   "$base/pbp_participation/pbp_participation_${SEASON}.csv" || { echo "participation not published for ${SEASON}"; rm -f part.csv; }
           curl -sSL --retry 3 -o ftn.csv     "$base/ftn_charting/ftn_charting_${SEASON}.csv"
           curl -sSL --retry 3 -o roster.csv  "$base/weekly_rosters/roster_weekly_${SEASON}.csv"
           curl -sSL --retry 3 -o pfrrush.csv "$base/pfr_advstats/advstats_week_rush_${SEASON}.csv"
           curl -sSL --retry 3 -o pfrdef.csv  "$base/pfr_advstats/advstats_week_def_${SEASON}.csv"
+          curl -sSL --retry 3 -o snaps.csv   "$base/snap_counts/snap_counts_${SEASON}.csv"
           curl -sSL --retry 3 -o games.csv   "$base/schedules/games.csv"
-          ls -lh pbp.csv.gz part.csv ftn.csv roster.csv pfrrush.csv pfrdef.csv games.csv
+          ls -lh pbp.csv.gz ftn.csv roster.csv pfrrush.csv pfrdef.csv snaps.csv games.csv
+          ls -lh part.csv 2>/dev/null || echo "(no participation this season)"
 
       # Play data, scheme aggregates and special teams for SEASON.
       # For the flat BASELINE season these overwrite data/*.js in place (the app loads
@@ -52,25 +60,28 @@ jobs:
         run: |
           $S = [int]$env:SEASON
           $BASE = 2025
+          # -Snaps back-fills player snap totals from PFR snap_counts when participation is
+          # absent (2026+). -Part is optional: if part.csv is missing, build_plays runs without
+          # personnel/coverage and build_snaps writes an empty SNAPX sentinel.
           if ($S -eq $BASE) {
-            ./build_plays.ps1  -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir . -Year $S
+            ./build_plays.ps1  -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -Snaps snaps.csv -OutDir . -Year $S
             ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir . -Year $S
             ./build_st.ps1     -Gz pbp.csv.gz -OutDir . -Year $S
             ./build_snaps.ps1  -Pbp pbp.csv.gz -Part part.csv -Roster roster.csv -OutDir . -Year $S
           } else {
             New-Item -ItemType Directory -Force stage/data | Out-Null
-            ./build_plays.ps1  -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -OutDir ./stage -Year $S
+            ./build_plays.ps1  -Gz pbp.csv.gz -Part part.csv -Ftn ftn.csv -Roster roster.csv -Pfr pfrrush.csv -Pdef pfrdef.csv -Snaps snaps.csv -OutDir ./stage -Year $S
             ./build_scheme.ps1 -Gz pbp.csv.gz -Ftn ftn.csv -OutDir ./stage -Year $S
             ./build_st.ps1     -Gz pbp.csv.gz -OutDir ./stage -Year $S
             ./build_snaps.ps1  -Pbp pbp.csv.gz -Part part.csv -Roster roster.csv -OutDir ./stage -Year $S
             ./build_years.ps1  -Bundle $S -StageDir ./stage
           }
 
-      # Schedule for the UPCOMING season (matchups + rest for the fantasy start/sit + week board),
-      # which is one year ahead of the play-data SEASON until that season kicks off.
+      # Schedule for the fantasy start/sit + week board. In-season this is the current
+      # season (SEASON); pre-kickoff the offseason build points a year ahead by hand.
       - name: Rebuild schedule
         shell: pwsh
-        run: ./build_sched.ps1 -Games games.csv -OutDir . -Year ([int]$env:SEASON + 1)
+        run: ./build_sched.ps1 -Games games.csv -OutDir . -Year ([int]$env:SEASON)
 
       # Regenerate the Year-toggle manifest from whatever seasons now exist on disk.
       - name: Regenerate season manifest
