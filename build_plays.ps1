@@ -23,7 +23,8 @@ param(
   [string]$Roster = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/roster2025.csv",
   [string]$Pfr = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/pfrrush.csv",
   [string]$Pdef = "C:/Users/miles/AppData/Local/Temp/claude/C--Users-miles--claude/43c60d0d-1058-41de-8b01-6569684d112c/scratchpad/pfrdef.csv",
-  [string]$OutDir = "C:/Users/miles/AppData/Local/Packages/Claude_pzs8sxrjxfjjc/LocalCache/Roaming/Claude/local-agent-mode-sessions/eb2236da-4f45-4faf-848a-e61ff1c5f82e/1e19824b-7456-46d5-a988-785586ae0cbb/local_97362316-1558-446f-8479-3a400f8303cf/outputs",
+  [string]$Snaps = "",    # optional snap_counts (PFR) csv — fallback for player snaps when participation is absent (2026+)
+  [string]$OutDir ="C:/Users/miles/AppData/Local/Packages/Claude_pzs8sxrjxfjjc/LocalCache/Roaming/Claude/local-agent-mode-sessions/eb2236da-4f45-4faf-848a-e61ff1c5f82e/1e19824b-7456-46d5-a988-785586ae0cbb/local_97362316-1558-446f-8479-3a400f8303cf/outputs",
   [int]$Year = 2025,      # season written into plays_index.json
   [int]$Limit = 0,        # 0 = all rows; >0 = stop early (validation)
   [switch]$DryRun         # parse + summarize but do not write files
@@ -141,6 +142,20 @@ if(Test-Path $Roster){
   while(-not $rfs.EndOfData){ $g=$rfs.ReadFields(); $id=$g[$R_id]; if($id){ $RPOS[$id]=$g[$R_pos]; if($null -ne $R_pfr){ $pf=$g[$R_pfr]; if($pf){ $G2PFR[$id]=$pf } } } }
   $rfs.Close()
   Write-Host "roster positions: $($RPOS.Count) | gsis->pfr: $($G2PFR.Count)"
+}
+# snap_counts (PFR) -> pfr_id => {off,def} season snaps. Fallback for player snaps when participation
+# is absent (2026+): fills SNAPCT/DSNAP only for gsis not already covered, so participation stays authoritative.
+$SNAPPFR=@{}
+if($Snaps -and (Test-Path $Snaps)){
+  $sfs=New-Object Microsoft.VisualBasic.FileIO.TextFieldParser($Snaps)
+  $sfs.SetDelimiters(@(",")); $sfs.HasFieldsEnclosedInQuotes=$true
+  $sh=$sfs.ReadFields(); $six=@{}; for($i=0;$i -lt $sh.Length;$i++){ $six[$sh[$i]]=$i }
+  $S_pid=$six['pfr_player_id']; $S_off=$six['offense_snaps']; $S_def=$six['defense_snaps']
+  while(-not $sfs.EndOfData){ $g=$sfs.ReadFields(); $spid=[string]$g[$S_pid]; if(-not $spid){continue}; if(-not $SNAPPFR.ContainsKey($spid)){$SNAPPFR[$spid]=@{off=0;def=0}}; $o=$SNAPPFR[$spid]; $ov=$g[$S_off]; if($ov){$o.off+=[int]$ov}; $dv=$g[$S_def]; if($dv){$o.def+=[int]$dv} }
+  $sfs.Close()
+  $addO=0;$addD=0
+  foreach($gid in $G2PFR.Keys){ $pf=$G2PFR[$gid]; if($SNAPPFR.ContainsKey($pf)){ $sp=$SNAPPFR[$pf]; if($sp.off -gt 0 -and -not $SNAPCT.ContainsKey($gid)){ $SNAPCT[$gid]=$sp.off; $addO++ }; if($sp.def -gt 0 -and -not $DSNAP.ContainsKey($gid)){ $DSNAP[$gid]=$sp.def; $addD++ } } }
+  Write-Host "snap_counts: $($SNAPPFR.Count) pfr ids | filled off $addO / def $addD from PFR snaps"
 }
 # PFR advanced rushing (weekly) -> pfr_id => season totals {carries, yds before/after contact, broken tackles}
 $PFRADV=@{}

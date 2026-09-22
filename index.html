@@ -497,6 +497,10 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
 .yrbar button.on{background:var(--gold);color:#fff;box-shadow:none}
 .yrbar button:disabled{color:var(--faint);cursor:default}
 .yrbar .yrnote{font-size:11px;color:var(--muted)}
+.yrbanner{flex-basis:100%;margin-top:8px;background:var(--warnbg,#f3ebd8);border:1px solid #e4cf9a;border-left:3px solid var(--warn);border-radius:0;padding:7px 11px;font-size:11.5px;line-height:1.5;color:#5a4a12}
+.yrbanner b{color:#3a3007}
+.mybanner{margin-top:9px;background:#f3ebd8;border-left:3px solid #a9760f;padding:7px 9px;font-size:11px;line-height:1.45;color:#5a4a12}
+.mybanner b{color:#3a3007}
 /* ===== MOBILE APP (<700px) — "Modernist" design system, scoped to #mroot ===== */
 #mroot{display:none}
 @media (max-width:699.5px){
@@ -630,6 +634,7 @@ th:hover::after{content:" ⇅";font-size:8.5px;opacity:.65}
   <div class="mbrand">⚜ Saints Scouting</div>
   <div class="msub" id="msub">2025 season · New Orleans Saints</div>
   <div class="myrs" id="myrs"></div>
+  <div class="mybanner" id="mybanner" hidden></div>
  </div>
  <div id="mscreen"></div>
  <nav id="mtabs">
@@ -3359,11 +3364,15 @@ function setYear(y){y=String(y);if(!yearReady(y))return;YEAR=y;
  paintYearPicker();
  if(typeof mOnYear==='function')mOnYear();
 }
-function paintYearPicker(){const bar=$('#yrbar');if(!bar)return;bar.querySelectorAll('button[data-yr]').forEach(b=>{const y=b.dataset.yr;const rd=yearReady(y);b.disabled=!rd;b.classList.toggle('on',rd&&y===YEAR);b.title=rd?('Show the '+y+' season'):(y+' — not built yet');});const note=$('#yrnote');if(note){const ss=(window.YEARS&&window.YEARS.seasons)||[];const missing=ss.filter(s=>!yearReady(s.y)).length;note.textContent=missing?(missing+' season'+(missing>1?'s':'')+' pending'):'';}}
+function yearMaxWeek(){let m=0;const P=window.PLAYS||{};for(const t in P){['pass','rush'].forEach(k=>{(P[t][k]||[]).forEach(p=>{if(p[0]>m)m=p[0];});});}return m;}
+// A non-baseline season with no snap-split data is "partial" — participation (personnel/coverage/routes/snaps/tells) wasn't published for it.
+function yearPartial(){return String(YEAR)!==BASEYEAR && !(window.SNAPX&&window.SNAPX.teams&&Object.keys(window.SNAPX.teams).length);}
+function yearBannerText(){if(!yearPartial())return '';const w=yearMaxWeek();return `⚑ <b>${YEAR} — partial season${w?' (through Week '+w+')':''}.</b> Play-level boards (Field Tendencies, QB/WR/RB, Special Teams, Matchup, tendencies) use ${YEAR} games. Personnel groupings, coverage, routes, snap roles &amp; the tell-finder need participation data — <b>not yet published by nflverse for ${YEAR}</b>. Team Ratings, League EPA rankings, Fantasy &amp; coaching remain the ${BASEYEAR} baseline.`;}
+function paintYearPicker(){const bar=$('#yrbar');if(!bar)return;bar.querySelectorAll('button[data-yr]').forEach(b=>{const y=b.dataset.yr;const rd=yearReady(y);b.disabled=!rd;b.classList.toggle('on',rd&&y===YEAR);b.title=rd?('Show the '+y+' season'):(y+' — not built yet');});const note=$('#yrnote');if(note){const ss=(window.YEARS&&window.YEARS.seasons)||[];const missing=ss.filter(s=>!yearReady(s.y)).length;note.textContent=missing?(missing+' season'+(missing>1?'s':'')+' pending'):'';}const bn=$('#yrbanner');if(bn){const t=yearBannerText();bn.innerHTML=t;bn.hidden=!t;}}
 function buildYearPicker(){const bar=$('#yrbar');if(!bar)return;const ss=(window.YEARS&&window.YEARS.seasons)||[];
  let h='<span class="yrlab">Season</span><span class="yrgroup">';
  ss.slice().sort((a,b)=>b.y-a.y).forEach(s=>{h+=`<button data-yr="${s.y}">${s.label||s.y}</button>`;});
- h+='</span><span class="yrnote" id="yrnote"></span>';
+ h+='</span><span class="yrnote" id="yrnote"></span><div class="yrbanner" id="yrbanner" hidden></div>';
  bar.innerHTML=h;
  bar.querySelectorAll('button[data-yr]').forEach(b=>b.onclick=()=>{if(!b.disabled)setYear(b.dataset.yr);});
  paintYearPicker();
@@ -3739,7 +3748,7 @@ function mWireScreen(){const sc=$('#mscreen');if(!sc)return;
  const fld=sc.querySelector('.mfld');if(fld)fld.addEventListener('click',ev=>{const c=ev.target.closest('.fdot');if(!c)return;const i=+c.dataset.i,p=_mFieldRows[i];if(!p)return;const d=sc.querySelector('#mfdet');if(d)d.innerHTML=MB.fMode==='pass'?passDetail(p):runDetail(p);sc.querySelectorAll('.fdot').forEach(x=>x.setAttribute('r','4.2'));c.setAttribute('r','6.5');});
 }
 function mRender(){const sc=$('#mscreen');if(!sc)return;const st=sc.scrollTop;sc.innerHTML=mScreenHtml();sc.scrollTop=(MB.screen==='fantasy'&&MB.fanTab==='rank')?st:0;mWireScreen();mPaintTabs();}
-function mSyncYears(){const box=$('#myrs');if(!box)return;const ss=(window.YEARS&&window.YEARS.seasons)||[];box.innerHTML=ss.slice().sort((a,b)=>b.y-a.y).map(s=>`<button data-myr="${s.y}"${yearReady(s.y)?'':' disabled'} class="${String(s.y)===String(YEAR)?'on':''}">${s.label||s.y}</button>`).join('');box.querySelectorAll('[data-myr]').forEach(b=>b.onclick=()=>{if(!b.disabled)setYear(b.dataset.myr);});const sub=$('#msub');if(sub)sub.textContent=(YEAR||'2025')+' season · New Orleans Saints';}
+function mSyncYears(){const box=$('#myrs');if(!box)return;const ss=(window.YEARS&&window.YEARS.seasons)||[];box.innerHTML=ss.slice().sort((a,b)=>b.y-a.y).map(s=>`<button data-myr="${s.y}"${yearReady(s.y)?'':' disabled'} class="${String(s.y)===String(YEAR)?'on':''}">${s.label||s.y}</button>`).join('');box.querySelectorAll('[data-myr]').forEach(b=>b.onclick=()=>{if(!b.disabled)setYear(b.dataset.myr);});const sub=$('#msub');if(sub)sub.textContent=(YEAR||'2025')+' season · New Orleans Saints';const bn=$('#mybanner');if(bn){const t=(typeof yearBannerText==='function')?yearBannerText():'';bn.innerHTML=t;bn.hidden=!t;}}
 function mOnYear(){_mEff=null;_mQB=null;_mOffL=null;_mDefL=null;mSyncYears();if(MB.active)mRender();}
 function mBoot(){const root=$('#mroot');if(!root)return;
  document.querySelectorAll('#mtabs button').forEach(b=>b.onclick=()=>{MB.screen=b.dataset.mtab;mRender();});

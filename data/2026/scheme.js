@@ -1,0 +1,37 @@
+regData(2026,"// Per-team scheme-fingerprint counts - FTN charting x nflverse pbp, 2026 regular season.
+// Offense: db/ru denominators; pa/scr/oop over dropbacks, rpo/mot/nh over all plays, snk over rushes.
+// Defense: db faced; blz", snaps with >=1 blitzer; prr/prN -> avg pass rushers.
+window.SCHEME={season:2026,src:"FTN charting via nflverse",teams:{
+ ARI:{db:76,ru:46,pa:6,scr:2,rpo:2,mot:46,nh:5,oop:4,snk:2,dDb:68,dBlz:7,dPrr:163,dPrN:39},
+ ATL:{db:69,ru:60,pa:4,scr:5,rpo:1,mot:44,nh:2,oop:2,snk:0,dDb:87,dBlz:8,dPrr:192,dPrN:46},
+ BAL:{db:71,ru:50,pa:11,scr:1,rpo:5,mot:46,nh:1,oop:7,snk:0,dDb:77,dBlz:8,dPrr:149,dPrN:35},
+ BUF:{db:78,ru:48,pa:24,scr:4,rpo:7,mot:84,nh:4,oop:24,snk:5,dDb:94,dBlz:29,dPrr:405,dPrN:94},
+ CAR:{db:86,ru:47,pa:9,scr:1,rpo:4,mot:42,nh:5,oop:11,snk:0,dDb:81,dBlz:15,dPrr:176,dPrN:40},
+ CHI:{db:84,ru:64,pa:13,scr:3,rpo:2,mot:42,nh:4,oop:15,snk:2,dDb:71,dBlz:16,dPrr:207,dPrN:46},
+ CIN:{db:74,ru:48,pa:5,scr:3,rpo:6,mot:31,nh:3,oop:5,snk:2,dDb:103,dBlz:8,dPrr:161,dPrN:38},
+ CLE:{db:68,ru:39,pa:8,scr:2,rpo:2,mot:16,nh:3,oop:11,snk:0,dDb:68,dBlz:3,dPrr:99,dPrN:24},
+ DAL:{db:78,ru:35,pa:6,scr:3,rpo:3,mot:38,nh:6,oop:7,snk:0,dDb:79,dBlz:9,dPrr:142,dPrN:33},
+ DEN:{db:68,ru:41,pa:8,scr:5,rpo:2,mot:18,nh:3,oop:8,snk:0,dDb:70,dBlz:15,dPrr:154,dPrN:34},
+ DET:{db:87,ru:55,pa:27,scr:3,rpo:2,mot:74,nh:4,oop:8,snk:0,dDb:107,dBlz:44,dPrr:497,dPrN:107},
+ GB:{db:84,ru:43,pa:9,scr:1,rpo:1,mot:37,nh:10,oop:5,snk:1,dDb:82,dBlz:15,dPrr:150,dPrN:33},
+ HOU:{db:112,ru:46,pa:11,scr:3,rpo:4,mot:34,nh:7,oop:9,snk:1,dDb:72,dBlz:6,dPrr:151,dPrN:36},
+ IND:{db:70,ru:49,pa:7,scr:3,rpo:3,mot:38,nh:7,oop:6,snk:0,dDb:84,dBlz:13,dPrr:145,dPrN:32},
+ JAX:{db:61,ru:53,pa:10,scr:4,rpo:1,mot:28,nh:4,oop:4,snk:1,dDb:65,dBlz:11,dPrr:138,dPrN:32},
+ KC:{db:86,ru:60,pa:10,scr:5,rpo:3,mot:36,nh:0,oop:8,snk:0,dDb:70,dBlz:11,dPrr:150,dPrN:35},
+ LA:{db:33,ru:27,pa:6,scr:1,rpo:0,mot:28,nh:9,oop:4,snk:1,dDb:37,dBlz:5,dPrr:152,dPrN:36},
+ LAC:{db:73,ru:49,pa:12,scr:4,rpo:1,mot:47,nh:1,oop:12,snk:0,dDb:75,dBlz:10,dPrr:179,dPrN:42},
+ LV:{db:65,ru:60,pa:10,scr:3,rpo:2,mot:37,nh:1,oop:0,snk:1,dDb:74,dBlz:6,dPrr:164,dPrN:40},
+ MIA:{db:71,ru:44,pa:5,scr:2,rpo:3,mot:35,nh:2,oop:6,snk:0,dDb:59,dBlz:10,dPrr:139,dPrN:32},
+ MIN:{db:58,ru:55,pa:9,scr:4,rpo:0,mot:42,nh:4,oop:7,snk:1,dDb:90,dBlz:37,dPrr:243,dPrN:46},
+ NE:{db:73,ru:51,pa:11,scr:6,rpo:2,mot:37,nh:0,oop:15,snk:1,dDb:77,dBlz:13,dPrr:133,dPrN:28},
+ NO:{db:107,ru:47,pa:10,scr:1,rpo:4,mot:52,nh:19,oop:5,snk:0,dDb:80,dBlz:9,dPrr:174,dPrN:41},
+ NYG:{db:33,ru:33,pa:10,scr:1,rpo:2,mot:45,nh:1,oop:6,snk:2,dDb:41,dBlz:7,dPrr:172,dPrN:41},
+ NYJ:{db:77,ru:60,pa:9,scr:3,rpo:1,mot:37,nh:1,oop:3,snk:0,dDb:78,dBlz:12,dPrr:176,dPrN:40},
+ PHI:{db:77,ru:52,pa:7,scr:2,rpo:7,mot:36,nh:8,oop:13,snk:0,dDb:65,dBlz:10,dPrr:169,dPrN:39},
+ PIT:{db:96,ru:39,pa:11,scr:3,rpo:3,mot:34,nh:4,oop:8,snk:0,dDb:57,dBlz:2,dPrr:114,dPrN:28},
+ SEA:{db:57,ru:62,pa:11,scr:1,rpo:0,mot:28,nh:1,oop:5,snk:0,dDb:78,dBlz:12,dPrr:191,dPrN:44},
+ SF:{db:64,ru:51,pa:8,scr:7,rpo:0,mot:51,nh:0,oop:6,snk:3,dDb:64,dBlz:4,dPrr:137,dPrN:33},
+ TB:{db:82,ru:39,pa:16,scr:4,rpo:1,mot:40,nh:5,oop:15,snk:0,dDb:74,dBlz:17,dPrr:177,dPrN:38},
+ TEN:{db:65,ru:38,pa:7,scr:2,rpo:4,mot:25,nh:12,oop:11,snk:0,dDb:71,dBlz:7,dPrr:121,dPrN:28},
+ WAS:{db:86,ru:54,pa:8,scr:4,rpo:10,mot:41,nh:8,oop:14,snk:0,dDb:71,dBlz:13,dPrr:149,dPrN:34}
+}});

@@ -3,6 +3,7 @@ window.YEARS = {
   default: 2025,
   preferred: 2025,
   seasons: [
-  { y:2025, label:"2025", pbase:"data/plays/", baseline:true }
+  { y:2025, label:"2025", pbase:"data/plays/", baseline:true },
+  { y:2026, label:"2026", pbase:"data/2026/plays/", src:["data/2026/defense.js","data/2026/defplayers.js","data/2026/plays.js","data/2026/positions.js","data/2026/rbadv.js","data/2026/scheme.js","data/2026/snaps.js","data/2026/specialteams.js","data/2026/tempo.js"] }
   ]
 };
