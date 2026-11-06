@@ -698,7 +698,7 @@ let W={off:40,def:40,st:20};
 // ---------- SHARED PAGE HEADER (kicker + title + lead + interactivity hints) ----------
 const PAGE={
  overview:{k:'Step 1 · Start here',t:'2026 Scouting — Start Here',d:`The executive summary — pick any team to load its profile; the Saints also get the full 2026 matchup slate. Every number is computed live from the tabs behind it.`,h:['Pick a team to refresh the page','Click any slate row to open that opponent']},
- ratings:{k:'Step 2 · The league',t:'Team Ratings — 2025',d:`0–100 efficiency per phase; drag the weights to re-rank the holistic score live. Saints highlighted.`,h:['Drag the weight sliders to re-rank live','Click any column header to sort']},
+ ratings:{k:'Step 2 · The league',t:'Team Ratings — {Y}',d:`0–100 efficiency per phase; drag the weights to re-rank the holistic score live. Saints highlighted.`,h:['Drag the weight sliders to re-rank live','Click any column header to sort']},
  epa:{k:'Step 3 · League Stats',t:'League Stats — 2025',d:`Every 2025 pass and rush from the nflverse play-by-play. Saints in gold.`,h:['Switch boards with the tabs below','Click any column header to sort']},
  opponents:{k:'Step 4 · The slate',t:'Opponent Scouting Packages',d:`One card per team, 2026 opponents first — the matchup verdict, their tendencies, and live situational splits.`,h:['Pick any team','Switch Matchup / Offense / Defense','Filter by play type, score state & down']},
  field:{k:'Step 5 · The field',t:'Field Tendencies — Offense & Defense',d:`Every throw and carry, plotted on the field, for a team's offense or the plays its defense faced — filter by player, personnel, lane, zone, down, quarter and game.`,h:['Offense / Defense toggle','Pick a team','Pass chart / Run chart / Tendency map','Filter by game, personnel & more','Tap any dot for the play']},
@@ -707,7 +707,8 @@ const PAGE={
 };
 function pageHead(id){const p=PAGE[id];if(!p)return '';
  const hints=(p.h||[]).map(x=>`<span class="hint">${x}</span>`).join('');
- return `<div class="pagehead"><div class="kicker">${p.k}</div><h2>${p.t}</h2><p class="lead">${p.d}</p>${hints?`<div class="hintrow">${hints}</div>`:''}</div>`;}
+ const title=String(p.t).replace('{Y}',(typeof YEAR!=='undefined'?YEAR:''));
+ return `<div class="pagehead"><div class="kicker">${p.k}</div><h2>${title}</h2><p class="lead">${p.d}</p>${hints?`<div class="hintrow">${hints}</div>`:''}</div>`;}
 function renderRatings(){
  const s=$('#ratings');
  s.innerHTML=`${pageHead('ratings')}
@@ -3355,7 +3356,7 @@ function seedFlat(y){y=String(y);YDATA[y]=YDATA[y]||{};YKEYS.forEach(k=>{const g
 function clearYearCaches(){for(const k in PLAYCACHE)delete PLAYCACHE[k];for(const k in DEF_CACHE)delete DEF_CACHE[k];_rushRates=null;_passRates=null;_sched=null;_fanCtx=null;_fanMZ=null;_schemeCache=null;_runMeans=null;_passComp=null;_movers=null;}
 function setYear(y){y=String(y);if(!yearReady(y))return;YEAR=y;
  const base=YDATA[BASEYEAR]||{};
- YKEYS.forEach(k=>{let v=YDATA[y][k];if(v===undefined)v=base[k];if(v===undefined)return;if(k==='DATA')DATA=v;else window[k]=v;});
+ YKEYS.forEach(k=>{let v=YDATA[y][k];if(v===undefined)v=base[k];if(v===undefined)return;if(k==='DATA'){DATA=(v===base.DATA)?v:Object.assign({},base.DATA||{},v);}else window[k]=v;});
  PBASE=yearMeta(y).pbase||'data/plays/';
  clearYearCaches();
  try{localStorage.setItem('sd_year',y);}catch(e){}
@@ -3367,7 +3368,7 @@ function setYear(y){y=String(y);if(!yearReady(y))return;YEAR=y;
 function yearMaxWeek(){let m=0;const P=window.PLAYS||{};for(const t in P){['pass','rush'].forEach(k=>{(P[t][k]||[]).forEach(p=>{if(p[0]>m)m=p[0];});});}return m;}
 // A non-baseline season with no snap-split data is "partial" — participation (personnel/coverage/routes/snaps/tells) wasn't published for it.
 function yearPartial(){return String(YEAR)!==BASEYEAR && !(window.SNAPX&&window.SNAPX.teams&&Object.keys(window.SNAPX.teams).length);}
-function yearBannerText(){if(!yearPartial())return '';const w=yearMaxWeek();return `⚑ <b>${YEAR} — partial season${w?' (through Week '+w+')':''}.</b> Play-level boards (Field Tendencies, QB/WR/RB, Special Teams, Matchup, tendencies) use ${YEAR} games. Personnel groupings, coverage, routes, snap roles &amp; the tell-finder need participation data — <b>not yet published by nflverse for ${YEAR}</b>. Team Ratings, League EPA rankings, Fantasy &amp; coaching remain the ${BASEYEAR} baseline.`;}
+function yearBannerText(){if(!yearPartial())return '';const w=yearMaxWeek();return `⚑ <b>${YEAR} — partial season${w?' (through Week '+w+')':''}.</b> Team Ratings plus the play-level boards (Field Tendencies, QB/WR/RB, Special Teams, Matchup, tendencies) use ${YEAR} games. Personnel groupings, coverage, routes, snap roles &amp; the tell-finder need participation data — <b>not yet published by nflverse for ${YEAR}</b>. League EPA rankings, Fantasy &amp; coaching remain the ${BASEYEAR} baseline.`;}
 function paintYearPicker(){const bar=$('#yrbar');if(!bar)return;bar.querySelectorAll('button[data-yr]').forEach(b=>{const y=b.dataset.yr;const rd=yearReady(y);b.disabled=!rd;b.classList.toggle('on',rd&&y===YEAR);b.title=rd?('Show the '+y+' season'):(y+' — not built yet');});const note=$('#yrnote');if(note){const ss=(window.YEARS&&window.YEARS.seasons)||[];const missing=ss.filter(s=>!yearReady(s.y)).length;note.textContent=missing?(missing+' season'+(missing>1?'s':'')+' pending'):'';}const bn=$('#yrbanner');if(bn){const t=yearBannerText();bn.innerHTML=t;bn.hidden=!t;}}
 function buildYearPicker(){const bar=$('#yrbar');if(!bar)return;const ss=(window.YEARS&&window.YEARS.seasons)||[];
  let h='<span class="yrlab">Season</span><span class="yrgroup">';
